@@ -93,6 +93,20 @@ input[type="range"]{padding:0;border:0;box-shadow:none;accent-color:var(--accent
 .info-card h2{margin:0 0 8px;color:var(--ink);font-size:18px;letter-spacing:-.02em}
 .info-card p{margin:0}
 .hidden{display:none!important}
+
+.network{margin-top:34px;padding-top:26px;border-top:1px solid var(--line)}
+.network-label{margin-bottom:12px;color:var(--muted);font-size:13px;font-weight:700}
+.network-label strong{color:var(--ink)}
+.network-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.network-card{display:grid;grid-template-columns:48px minmax(0,1fr);gap:13px;align-items:center;padding:17px;border:1px solid #ececec;border-radius:19px;transition:transform .18s ease,border-color .18s ease}
+.network-card:hover{transform:translateY(-2px);border-color:#cfcfcf}
+.network-card.random{background:#F6FAFF;border-color:#D8E8FF}
+.network-card.calculate{background:#F4FBF8;border-color:#D2EEE5}
+.network-icon{width:48px;height:48px;display:grid;place-items:center;border-radius:15px;background:rgba(255,255,255,.8);font-size:23px}
+.network-card h2{margin:0 0 3px;font-size:17px;letter-spacing:-.025em}
+.network-card p{margin:0;color:var(--muted);font-size:13px;line-height:1.4}
+.network-card span{display:inline-block;margin-top:7px;font-size:12px;font-weight:800}
+
 @view-transition{navigation:auto}
 ::view-transition-old(root),::view-transition-new(root){animation:none;mix-blend-mode:normal}
 ::view-transition-old(active-tab),::view-transition-new(active-tab),::view-transition-group(active-tab){animation-duration:.34s;animation-timing-function:cubic-bezier(.22,.8,.2,1)}
@@ -110,7 +124,7 @@ input[type="range"]{padding:0;border:0;box-shadow:none;accent-color:var(--accent
   .tool-card p{grid-column:2;grid-row:2;margin:0;line-height:1.42;align-self:start}
   .hero{padding-top:38px}
   .tool-layout{padding-top:28px}
-  .row,.row.three,.info-grid,.stat-grid{grid-template-columns:1fr}
+  .row,.row.three,.info-grid,.stat-grid,.network-grid{grid-template-columns:1fr}
   .result-card{grid-template-columns:48px minmax(0,1fr)}
   .result-card .download{grid-column:1/-1}
   .thumb{width:48px;height:48px}
