@@ -17,6 +17,8 @@
 <a class="tool-tab " href="../webp-to-jpg/">🟡 WebP to JPG</a>
 <a class="tool-tab " href="../rotate-image/">↻ Rotate</a>
 <a class="tool-tab " href="../image-info/">ⓘ Info</a>
+<a class="tool-tab" href="../metadata-checker/">🔎 Metadata</a>
+<a class="tool-tab" href="../remove-exif/">🧹 EXIF Cleaner</a>
 </nav>
 <main class="tool-layout"><section class="tool-head"><a class="breadcrumb" href="../">← All image tools</a><h1>Convert Image</h1><p>Convert one or more images between JPG, PNG and WebP without uploading them to a server.</p></section>
 <section class="panel"><div class="dropzone" id="dropzone"><input class="file-input" id="fileInput" type="file"><div><div class="drop-icon">🖼️</div><h2>Drop images here</h2><p>JPEG, PNG and WebP supported</p><button class="btn chooseBtn" type="button">Choose images</button></div></div><div class="file-summary" id="fileSummary"></div><div class="controls"><div class="row"><div class="control"><label for="format">Output format</label><select id="format"><option value="image/jpeg">JPG</option><option value="image/png">PNG</option><option value="image/webp" selected>WebP</option></select></div><div class="control"><label for="quality">Quality <span id="qualityValue">92%</span></label><input id="quality" type="range" min="20" max="100" value="92"></div></div></div><div class="actions"><button class="btn" id="processBtn" disabled>Convert images</button></div><div class="results" id="results"></div></section>

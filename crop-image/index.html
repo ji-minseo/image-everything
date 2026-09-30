@@ -17,6 +17,8 @@
 <a class="tool-tab " href="../webp-to-jpg/">🟡 WebP to JPG</a>
 <a class="tool-tab " href="../rotate-image/">↻ Rotate</a>
 <a class="tool-tab " href="../image-info/">ⓘ Info</a>
+<a class="tool-tab" href="../metadata-checker/">🔎 Metadata</a>
+<a class="tool-tab" href="../remove-exif/">🧹 EXIF Cleaner</a>
 </nav>
 <main class="tool-layout"><section class="tool-head"><a class="breadcrumb" href="../">← All image tools</a><h1>Crop Image</h1><p>Crop an image to an exact area. Use pixel controls or start with a centered square crop.</p></section>
 <section class="panel"><div class="dropzone" id="dropzone"><input class="file-input" id="fileInput" type="file"><div><div class="drop-icon">🖼️</div><h2>Drop an image here</h2><p>JPEG, PNG and WebP supported</p><button class="btn chooseBtn" type="button">Choose images</button></div></div><div class="file-summary" id="fileSummary"></div><div class="controls"><div class="row"><div class="control"><label for="cropX">X</label><input id="cropX" type="number" min="0" value="0"></div><div class="control"><label for="cropY">Y</label><input id="cropY" type="number" min="0" value="0"></div></div><div class="row"><div class="control"><label for="cropW">Width</label><input id="cropW" type="number" min="1"></div><div class="control"><label for="cropH">Height</label><input id="cropH" type="number" min="1"></div></div></div><div class="actions"><button class="btn secondary" id="centerSquare" type="button">Center square</button><button class="btn" id="processBtn" disabled>Crop image</button></div><div class="preview-wrap" id="preview"></div><div class="results" id="results"></div></section>

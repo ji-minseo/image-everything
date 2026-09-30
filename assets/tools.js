@@ -9,7 +9,9 @@ const TOP_LINKS=[
 ["webp","🟣 To WebP","../image-to-webp/"],
 ["jpg","🟡 WebP to JPG","../webp-to-jpg/"],
 ["rotate","↻ Rotate","../rotate-image/"],
-["info","ⓘ Info","../image-info/"]
+["info","ⓘ Info","../image-info/"],
+["metadata","🔎 Metadata","../metadata-checker/"],
+["exif","🧹 EXIF Cleaner","../remove-exif/"]
 ];
 
 function formatBytes(bytes){
@@ -211,3 +213,193 @@ if(tool==="webp")initConvert("image/webp");
 if(tool==="jpg")initConvert("image/jpeg","image/webp");
 if(tool==="rotate")initRotate();
 if(tool==="info")initInfo();
+if(tool==="metadata")initMetadataChecker();
+if(tool==="exif")initExifCleaner();
+
+function asciiSlice(bytes,start,end){
+  let s=""; const lim=Math.min(end,bytes.length);
+  for(let i=start;i<lim;i++) s+=String.fromCharCode(bytes[i]);
+  return s;
+}
+function containsAscii(bytes,needle){
+  const n=[...needle].map(c=>c.charCodeAt(0));
+  outer: for(let i=0;i<=bytes.length-n.length;i++){
+    for(let j=0;j<n.length;j++) if(bytes[i+j]!==n[j]) continue outer;
+    return true;
+  }
+  return false;
+}
+function readU16BE(b,o){return (b[o]<<8)|b[o+1]}
+function readU32BE(b,o){return ((b[o]*0x1000000)+(b[o+1]<<16)+(b[o+2]<<8)+b[o+3])>>>0}
+function readU32LE(b,o){return (b[o]|(b[o+1]<<8)|(b[o+2]<<16)|(b[o+3]<<24))>>>0}
+function concatBytes(parts){
+  const len=parts.reduce((n,p)=>n+p.length,0),out=new Uint8Array(len);let o=0;
+  for(const p of parts){out.set(p,o);o+=p.length} return out;
+}
+function hasGpsInTiff(tiff){
+  if(tiff.length<8)return false;
+  const le=tiff[0]===0x49&&tiff[1]===0x49,be=tiff[0]===0x4d&&tiff[1]===0x4d;
+  if(!le&&!be)return false;
+  const u16=o=>le?(tiff[o]|(tiff[o+1]<<8)):readU16BE(tiff,o);
+  const u32=o=>le?readU32LE(tiff,o):readU32BE(tiff,o);
+  const ifd0=u32(4); if(ifd0+2>tiff.length)return false;
+  const count=u16(ifd0);
+  for(let i=0;i<count;i++){
+    const o=ifd0+2+i*12;if(o+12>tiff.length)break;
+    if(u16(o)===0x8825)return true;
+  }
+  return false;
+}
+function inspectMetadataBytes(bytes,type){
+  const result={format:type||"Unknown",exif:false,gps:false,xmp:false,provenance:false,notes:[]};
+  if(bytes.length>=2&&bytes[0]===0xff&&bytes[1]===0xd8){
+    result.format="JPEG";let p=2;
+    while(p+4<=bytes.length&&bytes[p]===0xff){
+      const marker=bytes[p+1];
+      if(marker===0xda||marker===0xd9)break;
+      if(marker===0x00||marker===0xd8){p+=2;continue}
+      const len=readU16BE(bytes,p+2);if(len<2||p+2+len>bytes.length)break;
+      const start=p+4,end=p+2+len,head=asciiSlice(bytes,start,Math.min(end,start+48));
+      if(marker===0xe1&&head.startsWith("Exif\0\0")){
+        result.exif=true;result.gps=result.gps||hasGpsInTiff(bytes.slice(start+6,end));
+      }
+      if(marker===0xe1&&head.includes("http://ns.adobe.com/xap/1.0/"))result.xmp=true;
+      if(marker===0xeb)result.provenance=result.provenance||containsAscii(bytes.slice(start,end),"c2pa")||containsAscii(bytes.slice(start,end),"jumb");
+      p=end;
+    }
+  }else if(bytes.length>=8&&asciiSlice(bytes,1,4)==="PNG"){
+    result.format="PNG";let p=8;
+    while(p+12<=bytes.length){
+      const len=readU32BE(bytes,p),kind=asciiSlice(bytes,p+4,p+8),dataStart=p+8,dataEnd=dataStart+len;
+      if(dataEnd+4>bytes.length)break;
+      const data=bytes.slice(dataStart,dataEnd);
+      if(kind==="eXIf"){result.exif=true;result.gps=result.gps||hasGpsInTiff(data)}
+      if((kind==="iTXt"||kind==="tEXt"||kind==="zTXt")&&(containsAscii(data,"XML:com.adobe.xmp")||containsAscii(data,"xmp")))result.xmp=true;
+      if(kind==="caBX"||containsAscii(data,"c2pa")||containsAscii(data,"contentauth"))result.provenance=true;
+      p=dataEnd+4;if(kind==="IEND")break;
+    }
+  }else if(bytes.length>=12&&asciiSlice(bytes,0,4)==="RIFF"&&asciiSlice(bytes,8,12)==="WEBP"){
+    result.format="WebP";let p=12;
+    while(p+8<=bytes.length){
+      const kind=asciiSlice(bytes,p,p+4),len=readU32LE(bytes,p+4),dataStart=p+8,dataEnd=dataStart+len;
+      if(dataEnd>bytes.length)break;
+      const data=bytes.slice(dataStart,dataEnd);
+      if(kind==="EXIF"){result.exif=true;result.gps=result.gps||hasGpsInTiff(data)}
+      if(kind==="XMP ")result.xmp=true;
+      if(kind==="C2PA"||kind==="JUMB"||containsAscii(data,"c2pa")||containsAscii(data,"contentauth"))result.provenance=true;
+      p=dataEnd+(len%2);
+    }
+  }else{
+    result.notes.push("This format is not deeply parsed; only a basic text scan was possible.");
+  }
+  if(!result.provenance)result.provenance=containsAscii(bytes,"c2pa")||containsAscii(bytes,"contentauth")||containsAscii(bytes,"Content Credentials");
+  if(!result.xmp)result.xmp=containsAscii(bytes,"http://ns.adobe.com/xap/1.0/")||containsAscii(bytes,"xmpmeta");
+  return result;
+}
+function boolBadge(v){return `<strong class="${v?"meta-yes":"meta-no"}">${v?"Detected":"Not detected"}</strong>`}
+function renderMetadataCard(file,result){
+  const card=document.createElement("article");card.className="meta-file";
+  card.innerHTML=`<h2>${escapeHtml(file.name)}</h2><div class="meta-sub">${escapeHtml(result.format)} · ${formatBytes(file.size)}</div>
+  <div class="meta-grid">
+    <div class="meta-row"><span>EXIF metadata</span>${boolBadge(result.exif)}</div>
+    <div class="meta-row"><span>GPS directory</span>${boolBadge(result.gps)}</div>
+    <div class="meta-row"><span>XMP metadata</span>${boolBadge(result.xmp)}</div>
+    <div class="meta-row"><span>Possible provenance signal</span>${boolBadge(result.provenance)}</div>
+  </div>${result.notes.length?`<div class="meta-note">${escapeHtml(result.notes.join(" "))}</div>`:""}`;
+  return card;
+}
+function initMetadataChecker(){
+  initDropzone({multiple:true,onFiles:async files=>{
+    const out=$("#results");out.innerHTML="";
+    for(const file of files){
+      try{
+        const bytes=new Uint8Array(await file.arrayBuffer());
+        out.appendChild(renderMetadataCard(file,inspectMetadataBytes(bytes,file.type)));
+      }catch(e){
+        const card=document.createElement("article");card.className="meta-file";
+        card.innerHTML=`<h2>${escapeHtml(file.name)}</h2><div class="meta-note">Could not inspect this file.</div>`;out.appendChild(card);
+      }
+    }
+  }});
+}
+function stripExifJpeg(bytes){
+  if(bytes[0]!==0xff||bytes[1]!==0xd8)throw new Error("Not JPEG");
+  const parts=[bytes.slice(0,2)];let p=2,removed=false;
+  while(p<bytes.length){
+    if(bytes[p]!==0xff){parts.push(bytes.slice(p));break}
+    const marker=bytes[p+1];
+    if(marker===0xda){parts.push(bytes.slice(p));break}
+    if(marker===0xd9){parts.push(bytes.slice(p,p+2));break}
+    if(marker===0x00||marker===0xd8){parts.push(bytes.slice(p,p+2));p+=2;continue}
+    if(p+4>bytes.length){parts.push(bytes.slice(p));break}
+    const len=readU16BE(bytes,p+2),end=p+2+len;
+    if(len<2||end>bytes.length){parts.push(bytes.slice(p));break}
+    const isExif=marker===0xe1&&asciiSlice(bytes,p+4,Math.min(end,p+10))==="Exif\0\0";
+    if(isExif)removed=true;else parts.push(bytes.slice(p,end));
+    p=end;
+  }
+  return {bytes:concatBytes(parts),removed};
+}
+function stripExifPng(bytes){
+  if(!(bytes.length>=8&&asciiSlice(bytes,1,4)==="PNG"))throw new Error("Not PNG");
+  const parts=[bytes.slice(0,8)];let p=8,removed=false;
+  while(p+12<=bytes.length){
+    const len=readU32BE(bytes,p),kind=asciiSlice(bytes,p+4,p+8),end=p+12+len;
+    if(end>bytes.length){parts.push(bytes.slice(p));break}
+    if(kind==="eXIf")removed=true;else parts.push(bytes.slice(p,end));
+    p=end;if(kind==="IEND")break;
+  }
+  if(p<bytes.length)parts.push(bytes.slice(p));
+  return {bytes:concatBytes(parts),removed};
+}
+function stripExifWebp(bytes){
+  if(!(bytes.length>=12&&asciiSlice(bytes,0,4)==="RIFF"&&asciiSlice(bytes,8,12)==="WEBP"))throw new Error("Not WebP");
+  const chunks=[];let p=12,removed=false;
+  while(p+8<=bytes.length){
+    const kind=asciiSlice(bytes,p,p+4),len=readU32LE(bytes,p+4),end=p+8+len+(len%2);
+    if(end>bytes.length)break;
+    if(kind==="EXIF"){removed=true}
+    else{
+      let chunk=bytes.slice(p,end);
+      if(kind==="VP8X"&&chunk.length>=9){chunk=chunk.slice();chunk[8]=chunk[8]&~0x08}
+      chunks.push(chunk);
+    }
+    p=end;
+  }
+  const enc=new TextEncoder(),payload=concatBytes([enc.encode("WEBP"),...chunks]),out=new Uint8Array(8+payload.length);
+  out.set(enc.encode("RIFF"),0);
+  const size=payload.length;out[4]=size&255;out[5]=(size>>>8)&255;out[6]=(size>>>16)&255;out[7]=(size>>>24)&255;out.set(payload,8);
+  return {bytes:out,removed};
+}
+function stripExifFile(bytes){
+  if(bytes.length>=2&&bytes[0]===0xff&&bytes[1]===0xd8)return {...stripExifJpeg(bytes),type:"image/jpeg",ext:"jpg"};
+  if(bytes.length>=8&&asciiSlice(bytes,1,4)==="PNG")return {...stripExifPng(bytes),type:"image/png",ext:"png"};
+  if(bytes.length>=12&&asciiSlice(bytes,0,4)==="RIFF"&&asciiSlice(bytes,8,12)==="WEBP")return {...stripExifWebp(bytes),type:"image/webp",ext:"webp"};
+  throw new Error("Supported formats: JPEG, PNG and WebP");
+}
+function initExifCleaner(){
+  let files=[];
+  initDropzone({multiple:true,onFiles:fs=>{
+    files=fs;resetResults();const sum=$("#fileSummary");sum.classList.add("show");
+    sum.textContent=`${files.length} image${files.length===1?"":"s"} ready`;$("#processBtn").disabled=!files.length;
+  }});
+  $("#processBtn")?.addEventListener("click",async()=>{
+    resetResults();$("#processBtn").disabled=true;
+    for(const file of files){
+      try{
+        const bytes=new Uint8Array(await file.arrayBuffer()),out=stripExifFile(bytes);
+        const blob=new Blob([out.bytes],{type:out.type}),label=`${baseName(file.name)}-no-exif.${out.ext}`;
+        renderResult(file,blob,label);
+        const last=$("#results")?.lastElementChild;
+        if(last&&!out.removed){
+          const meta=last.querySelector(".result-meta");
+          if(meta)meta.textContent=`${formatBytes(file.size)} · no EXIF block was found; file structure preserved`;
+        }
+      }catch(e){
+        const box=$("#results"),card=document.createElement("div");card.className="result-card";
+        card.innerHTML=`<div class="thumb" style="display:grid;place-items:center">!</div><div><div class="result-name">${escapeHtml(file.name)}</div><div class="result-meta">${escapeHtml(e.message||"Could not clean this file")}</div></div>`;box.appendChild(card);
+      }
+    }
+    $("#processBtn").disabled=false;
+  });
+}

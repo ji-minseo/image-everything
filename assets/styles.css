@@ -34,6 +34,8 @@ h1{margin:18px 0 14px;font-size:clamp(42px,8vw,78px);line-height:.97;letter-spac
 .tool-card:nth-child(6) .icon{background:#FFF2C9}
 .tool-card:nth-child(7) .icon{background:#DFF3E8}
 .tool-card:nth-child(8) .icon{background:#E8EEF5}
+.tool-card:nth-child(9) .icon{background:#E5F4FF}
+.tool-card:nth-child(10) .icon{background:#F8E6F0}
 .tool-card h2{margin:0 0 6px;font-size:22px;letter-spacing:-.035em}
 .tool-card p{margin:0;color:var(--muted);font-size:14px}
 .footer{padding:26px 0 42px;color:var(--muted);font-size:13px;border-top:1px solid var(--line)}
@@ -93,6 +95,16 @@ input[type="range"]{padding:0;border:0;box-shadow:none;accent-color:var(--accent
 .info-card h2{margin:0 0 8px;color:var(--ink);font-size:18px;letter-spacing:-.02em}
 .info-card p{margin:0}
 .hidden{display:none!important}
+.meta-report{display:grid;gap:12px;margin-top:20px}
+.meta-file{padding:18px;border:1px solid #ece8f4;border-radius:18px;background:#fff}
+.meta-file h2{margin:0 0 5px;font-size:18px;letter-spacing:-.025em;overflow-wrap:anywhere}
+.meta-sub{color:var(--muted);font-size:12px;margin-bottom:13px}
+.meta-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+.meta-row{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:10px 12px;border-radius:12px;background:#faf9fd;border:1px solid #efecf6;font-size:13px}
+.meta-row strong{font-size:12px}
+.meta-yes{color:#7a3fe0}
+.meta-no{color:#7b7b7b}
+.meta-note{margin-top:10px;color:var(--muted);font-size:12px;line-height:1.45}
 
 .network{margin-top:34px;padding-top:26px;border-top:1px solid var(--line)}
 .network-label{margin-bottom:12px;color:var(--muted);font-size:13px;font-weight:700}
@@ -124,7 +136,7 @@ input[type="range"]{padding:0;border:0;box-shadow:none;accent-color:var(--accent
   .tool-card p{grid-column:2;grid-row:2;margin:0;line-height:1.42;align-self:start}
   .hero{padding-top:38px}
   .tool-layout{padding-top:28px}
-  .row,.row.three,.info-grid,.stat-grid,.network-grid{grid-template-columns:1fr}
+  .row,.row.three,.info-grid,.stat-grid,.network-grid,.meta-grid{grid-template-columns:1fr}
   .result-card{grid-template-columns:48px minmax(0,1fr)}
   .result-card .download{grid-column:1/-1}
   .thumb{width:48px;height:48px}
