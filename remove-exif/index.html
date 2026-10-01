@@ -30,15 +30,16 @@
 <section class="panel">
 <div class="dropzone" id="dropzone"><input class="file-input" id="fileInput" type="file"><div><div class="drop-icon">🧹</div><h2>Drop images here</h2><p>JPEG, PNG and WebP supported</p><button class="btn chooseBtn" type="button">Choose images</button></div></div>
 <div class="file-summary" id="fileSummary"></div>
-<div class="actions"><button class="btn" id="processBtn" disabled>Remove EXIF & GPS</button></div>
+<div class="controls"><label class="checkline orientation-option"><input id="keepOrientation" type="checkbox" checked><span><strong>Keep image orientation</strong><small>Retains only the EXIF Orientation tag when a rotated or mirrored image needs it.</small></span></label></div>
+<div class="actions"><button class="btn" id="processBtn" disabled>Remove EXIF & GPS</button><a class="btn ghost hidden" id="verifyMetadataBtn" href="../metadata-checker/">Check cleaned metadata →</a></div>
 <div class="results" id="results"></div>
-<p class="notice">This tool targets EXIF metadata only. XMP and content-credential/provenance containers are not deliberately stripped. Any file modification can still affect the validity of signed provenance credentials. Removing EXIF may also remove camera orientation data.</p>
+<p class="notice">This tool targets EXIF metadata only. XMP and content-credential/provenance containers are not deliberately stripped. With Keep image orientation on, a minimal EXIF block containing only the Orientation tag may remain when needed. Any file modification can still affect signed provenance credentials.</p>
 </section>
 <div class="ad-slot">Future ad space</div>
 <section class="info info-grid">
 <article class="info-card"><h2>Privacy-focused cleanup</h2><p>EXIF can include camera details, timestamps and GPS coordinates. This tool removes the EXIF container from supported files.</p></article>
-<article class="info-card"><h2>No intentional recompression</h2><p>JPEG, PNG and WebP are rewritten at the container level so the encoded image data is not intentionally recompressed.</p></article>
-<article class="info-card"><h2>Provenance stays separate</h2><p>The cleaner does not deliberately strip XMP or provenance containers. Use Metadata Checker to inspect those signals before editing.</p></article>
+<article class="info-card"><h2>Keep orientation when needed</h2><p>Leave Keep image orientation on to retain only the Orientation tag for rotated or mirrored files when the format allows it, without intentionally recompressing the image pixels.</p></article>
+<article class="info-card"><h2>Verify after cleaning</h2><p>The cleaner does not deliberately strip XMP or provenance containers. After downloading, open <a class="text-link" href="../metadata-checker/">Metadata Checker</a> to inspect the cleaned file.</p></article>
 </section><section class="network">
 <div class="network-label">More from <strong>Every Tiny Tool ✦</strong></div>
 <div class="network-grid">

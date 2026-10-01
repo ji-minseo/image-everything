@@ -161,13 +161,6 @@ async function initCompress({accept="image/*",outputType=null,qualityEnabled=tru
     $("#processBtn").disabled=!files.length;
   }});
   $("#quality")?.addEventListener("input",e=>$("#qualityValue").textContent=e.target.value+"%");
-  const formatSelect=$("#format"),backgroundControl=$("#backgroundControl");
-  const syncBackgroundControl=()=>{
-    if(!backgroundControl)return;
-    const outputType=forceType||formatSelect?.value;
-    backgroundControl.classList.toggle("hidden",outputType!=="image/jpeg");
-  };
-  formatSelect?.addEventListener("change",syncBackgroundControl);syncBackgroundControl();
   $("#downloadZipBtn")?.addEventListener("click",async()=>{
     if(processed.length<2)return;
     const btn=$("#downloadZipBtn");btn.disabled=true;btn.textContent="Building ZIP…";
@@ -260,6 +253,13 @@ function initConvert(forceType=null,accept="image/*"){
     $("#fileSummary").classList.add("show");$("#fileSummary").textContent=`${files.length} image${files.length===1?"":"s"} ready`;$("#processBtn").disabled=!files.length
   }});
   $("#quality")?.addEventListener("input",e=>$("#qualityValue").textContent=e.target.value+"%");
+  const formatSelect=$("#format"),backgroundControl=$("#backgroundControl");
+  const syncBackgroundControl=()=>{
+    if(!backgroundControl)return;
+    const outputType=forceType||formatSelect?.value;
+    backgroundControl.classList.toggle("hidden",outputType!=="image/jpeg");
+  };
+  formatSelect?.addEventListener("change",syncBackgroundControl);syncBackgroundControl();
   $("#downloadZipBtn")?.addEventListener("click",async()=>{
     if(processed.length<2)return;
     const btn=$("#downloadZipBtn");btn.disabled=true;btn.textContent="Building ZIP…";
@@ -360,8 +360,52 @@ function hasGpsInTiff(tiff){
   }
   return false;
 }
+function readExifOrientation(tiff){
+  if(tiff.length>=6&&asciiSlice(tiff,0,6)==="Exif\0\0")tiff=tiff.slice(6);
+  if(tiff.length<8)return null;
+  const le=tiff[0]===0x49&&tiff[1]===0x49,be=tiff[0]===0x4d&&tiff[1]===0x4d;
+  if(!le&&!be)return null;
+  const u16=o=>o+2<=tiff.length?(le?(tiff[o]|(tiff[o+1]<<8)):readU16BE(tiff,o)):0;
+  const u32=o=>o+4<=tiff.length?(le?readU32LE(tiff,o):readU32BE(tiff,o)):0;
+  const ifd0=u32(4);if(ifd0+2>tiff.length)return null;
+  const count=u16(ifd0);
+  for(let i=0;i<count;i++){
+    const o=ifd0+2+i*12;if(o+12>tiff.length)break;
+    if(u16(o)===0x0112&&u16(o+2)===3&&u32(o+4)>=1){
+      const value=u16(o+8);
+      return value>=1&&value<=8?value:null;
+    }
+  }
+  return null;
+}
+function orientationLabel(value){
+  return ({1:"Standard",2:"Mirrored horizontal",3:"180°",4:"Mirrored vertical",5:"Mirrored + 90°",6:"90° clockwise",7:"Mirrored + 90° counterclockwise",8:"90° counterclockwise"})[value]||"Not found";
+}
+function minimalOrientationTiff(orientation){
+  return new Uint8Array([
+    0x49,0x49,0x2a,0x00,0x08,0x00,0x00,0x00,
+    0x01,0x00,
+    0x12,0x01,0x03,0x00,0x01,0x00,0x00,0x00,
+    orientation&255,(orientation>>>8)&255,0x00,0x00,
+    0x00,0x00,0x00,0x00
+  ]);
+}
+function u16be(n){return new Uint8Array([(n>>>8)&255,n&255])}
+function u32be(n){return new Uint8Array([(n>>>24)&255,(n>>>16)&255,(n>>>8)&255,n&255])}
+function makeJpegOrientationSegment(orientation){
+  const prefix=new Uint8Array([0x45,0x78,0x69,0x66,0x00,0x00]),payload=concatBytes([prefix,minimalOrientationTiff(orientation)]);
+  return concatBytes([new Uint8Array([0xff,0xe1]),u16be(payload.length+2),payload]);
+}
+function makePngChunk(kind,data){
+  const typeBytes=new TextEncoder().encode(kind),body=concatBytes([typeBytes,data]),crc=crc32(body);
+  return concatBytes([u32be(data.length),typeBytes,data,u32be(crc)]);
+}
+function makeWebpChunk(kind,data){
+  const typeBytes=new TextEncoder().encode(kind),pad=data.length%2?new Uint8Array([0]):new Uint8Array(0);
+  return concatBytes([typeBytes,u32le(data.length),data,pad]);
+}
 function inspectMetadataBytes(bytes,type){
-  const result={format:type||"Unknown",exif:false,gps:false,xmp:false,provenance:false,notes:[]};
+  const result={format:type||"Unknown",exif:false,gps:false,xmp:false,provenance:false,orientation:null,notes:[]};
   if(bytes.length>=2&&bytes[0]===0xff&&bytes[1]===0xd8){
     result.format="JPEG";let p=2;
     while(p+4<=bytes.length&&bytes[p]===0xff){
@@ -371,7 +415,7 @@ function inspectMetadataBytes(bytes,type){
       const len=readU16BE(bytes,p+2);if(len<2||p+2+len>bytes.length)break;
       const start=p+4,end=p+2+len,head=asciiSlice(bytes,start,Math.min(end,start+48));
       if(marker===0xe1&&head.startsWith("Exif\0\0")){
-        result.exif=true;result.gps=result.gps||hasGpsInTiff(bytes.slice(start+6,end));
+        result.exif=true;const tiff=bytes.slice(start+6,end);result.gps=result.gps||hasGpsInTiff(tiff);result.orientation=result.orientation||readExifOrientation(tiff);
       }
       if(marker===0xe1&&head.includes("http://ns.adobe.com/xap/1.0/"))result.xmp=true;
       if(marker===0xeb)result.provenance=result.provenance||containsAscii(bytes.slice(start,end),"c2pa")||containsAscii(bytes.slice(start,end),"jumb");
@@ -383,7 +427,7 @@ function inspectMetadataBytes(bytes,type){
       const len=readU32BE(bytes,p),kind=asciiSlice(bytes,p+4,p+8),dataStart=p+8,dataEnd=dataStart+len;
       if(dataEnd+4>bytes.length)break;
       const data=bytes.slice(dataStart,dataEnd);
-      if(kind==="eXIf"){result.exif=true;result.gps=result.gps||hasGpsInTiff(data)}
+      if(kind==="eXIf"){result.exif=true;result.gps=result.gps||hasGpsInTiff(data);result.orientation=result.orientation||readExifOrientation(data)}
       if((kind==="iTXt"||kind==="tEXt"||kind==="zTXt")&&(containsAscii(data,"XML:com.adobe.xmp")||containsAscii(data,"xmp")))result.xmp=true;
       if(kind==="caBX"||containsAscii(data,"c2pa")||containsAscii(data,"contentauth"))result.provenance=true;
       p=dataEnd+4;if(kind==="IEND")break;
@@ -394,7 +438,7 @@ function inspectMetadataBytes(bytes,type){
       const kind=asciiSlice(bytes,p,p+4),len=readU32LE(bytes,p+4),dataStart=p+8,dataEnd=dataStart+len;
       if(dataEnd>bytes.length)break;
       const data=bytes.slice(dataStart,dataEnd);
-      if(kind==="EXIF"){result.exif=true;result.gps=result.gps||hasGpsInTiff(data)}
+      if(kind==="EXIF"){result.exif=true;result.gps=result.gps||hasGpsInTiff(data);result.orientation=result.orientation||readExifOrientation(data)}
       if(kind==="XMP ")result.xmp=true;
       if(kind==="C2PA"||kind==="JUMB"||containsAscii(data,"c2pa")||containsAscii(data,"contentauth"))result.provenance=true;
       p=dataEnd+(len%2);
@@ -413,6 +457,7 @@ function renderMetadataCard(file,result){
   <div class="meta-grid">
     <div class="meta-row"><span>EXIF metadata</span>${boolBadge(result.exif)}</div>
     <div class="meta-row"><span>GPS directory</span>${boolBadge(result.gps)}</div>
+    <div class="meta-row"><span>Orientation tag</span><strong>${result.orientation?escapeHtml(orientationLabel(result.orientation)):"Not detected"}</strong></div>
     <div class="meta-row"><span>XMP metadata</span>${boolBadge(result.xmp)}</div>
     <div class="meta-row"><span>Possible provenance signal</span>${boolBadge(result.provenance)}</div>
   </div>${result.notes.length?`<div class="meta-note">${escapeHtml(result.notes.join(" "))}</div>`:""}`;
@@ -432,9 +477,9 @@ function initMetadataChecker(){
     }
   }});
 }
-function stripExifJpeg(bytes){
+function stripExifJpeg(bytes,keepOrientation=false){
   if(bytes[0]!==0xff||bytes[1]!==0xd8)throw new Error("Not JPEG");
-  const parts=[bytes.slice(0,2)];let p=2,removed=false;
+  const parts=[bytes.slice(0,2)];let p=2,removed=false,orientation=null,orientationPreserved=false;
   while(p<bytes.length){
     if(bytes[p]!==0xff){parts.push(bytes.slice(p));break}
     const marker=bytes[p+1];
@@ -445,33 +490,60 @@ function stripExifJpeg(bytes){
     const len=readU16BE(bytes,p+2),end=p+2+len;
     if(len<2||end>bytes.length){parts.push(bytes.slice(p));break}
     const isExif=marker===0xe1&&asciiSlice(bytes,p+4,Math.min(end,p+10))==="Exif\0\0";
-    if(isExif)removed=true;else parts.push(bytes.slice(p,end));
+    if(isExif){
+      removed=true;
+      const current=readExifOrientation(bytes.slice(p+10,end));
+      if(!orientation&&current)orientation=current;
+      if(keepOrientation&&!orientationPreserved&&current>=2&&current<=8){
+        parts.push(makeJpegOrientationSegment(current));orientationPreserved=true;
+      }
+    }else parts.push(bytes.slice(p,end));
     p=end;
   }
-  return {bytes:concatBytes(parts),removed};
+  return {bytes:concatBytes(parts),removed,orientation,orientationPreserved};
 }
-function stripExifPng(bytes){
+function stripExifPng(bytes,keepOrientation=false){
   if(!(bytes.length>=8&&asciiSlice(bytes,1,4)==="PNG"))throw new Error("Not PNG");
-  const parts=[bytes.slice(0,8)];let p=8,removed=false;
+  const parts=[bytes.slice(0,8)];let p=8,removed=false,orientation=null,orientationPreserved=false;
   while(p+12<=bytes.length){
-    const len=readU32BE(bytes,p),kind=asciiSlice(bytes,p+4,p+8),end=p+12+len;
+    const len=readU32BE(bytes,p),kind=asciiSlice(bytes,p+4,p+8),dataStart=p+8,dataEnd=dataStart+len,end=p+12+len;
     if(end>bytes.length){parts.push(bytes.slice(p));break}
-    if(kind==="eXIf")removed=true;else parts.push(bytes.slice(p,end));
+    if(kind==="eXIf"){
+      removed=true;const current=readExifOrientation(bytes.slice(dataStart,dataEnd));
+      if(!orientation&&current)orientation=current;
+      if(keepOrientation&&!orientationPreserved&&current>=2&&current<=8){
+        parts.push(makePngChunk("eXIf",minimalOrientationTiff(current)));orientationPreserved=true;
+      }
+    }else parts.push(bytes.slice(p,end));
     p=end;if(kind==="IEND")break;
   }
   if(p<bytes.length)parts.push(bytes.slice(p));
-  return {bytes:concatBytes(parts),removed};
+  return {bytes:concatBytes(parts),removed,orientation,orientationPreserved};
 }
-function stripExifWebp(bytes){
+function stripExifWebp(bytes,keepOrientation=false){
   if(!(bytes.length>=12&&asciiSlice(bytes,0,4)==="RIFF"&&asciiSlice(bytes,8,12)==="WEBP"))throw new Error("Not WebP");
-  const chunks=[];let p=12,removed=false;
-  while(p+8<=bytes.length){
-    const kind=asciiSlice(bytes,p,p+4),len=readU32LE(bytes,p+4),end=p+8+len+(len%2);
+  let scan=12,orientation=null,hasVp8x=false;
+  while(scan+8<=bytes.length){
+    const kind=asciiSlice(bytes,scan,scan+4),len=readU32LE(bytes,scan+4),dataStart=scan+8,dataEnd=dataStart+len,end=dataEnd+(len%2);
     if(end>bytes.length)break;
-    if(kind==="EXIF"){removed=true}
-    else{
+    if(kind==="VP8X")hasVp8x=true;
+    if(kind==="EXIF"&&!orientation)orientation=readExifOrientation(bytes.slice(dataStart,dataEnd));
+    scan=end;
+  }
+  const preserve=!!(keepOrientation&&hasVp8x&&orientation>=2&&orientation<=8);
+  const chunks=[];let p=12,removed=false,orientationPreserved=false;
+  while(p+8<=bytes.length){
+    const kind=asciiSlice(bytes,p,p+4),len=readU32LE(bytes,p+4),dataStart=p+8,dataEnd=dataStart+len,end=dataEnd+(len%2);
+    if(end>bytes.length)break;
+    if(kind==="EXIF"){
+      removed=true;
+      if(preserve&&!orientationPreserved){chunks.push(makeWebpChunk("EXIF",minimalOrientationTiff(orientation)));orientationPreserved=true}
+    }else{
       let chunk=bytes.slice(p,end);
-      if(kind==="VP8X"&&chunk.length>=9){chunk=chunk.slice();chunk[8]=chunk[8]&~0x08}
+      if(kind==="VP8X"&&chunk.length>=9){
+        chunk=chunk.slice();
+        chunk[8]=preserve?(chunk[8]|0x08):(chunk[8]&~0x08);
+      }
       chunks.push(chunk);
     }
     p=end;
@@ -479,37 +551,42 @@ function stripExifWebp(bytes){
   const enc=new TextEncoder(),payload=concatBytes([enc.encode("WEBP"),...chunks]),out=new Uint8Array(8+payload.length);
   out.set(enc.encode("RIFF"),0);
   const size=payload.length;out[4]=size&255;out[5]=(size>>>8)&255;out[6]=(size>>>16)&255;out[7]=(size>>>24)&255;out.set(payload,8);
-  return {bytes:out,removed};
+  return {bytes:out,removed,orientation,orientationPreserved};
 }
-function stripExifFile(bytes){
-  if(bytes.length>=2&&bytes[0]===0xff&&bytes[1]===0xd8)return {...stripExifJpeg(bytes),type:"image/jpeg",ext:"jpg"};
-  if(bytes.length>=8&&asciiSlice(bytes,1,4)==="PNG")return {...stripExifPng(bytes),type:"image/png",ext:"png"};
-  if(bytes.length>=12&&asciiSlice(bytes,0,4)==="RIFF"&&asciiSlice(bytes,8,12)==="WEBP")return {...stripExifWebp(bytes),type:"image/webp",ext:"webp"};
+function stripExifFile(bytes,keepOrientation=false){
+  if(bytes.length>=2&&bytes[0]===0xff&&bytes[1]===0xd8)return {...stripExifJpeg(bytes,keepOrientation),type:"image/jpeg",ext:"jpg"};
+  if(bytes.length>=8&&asciiSlice(bytes,1,4)==="PNG")return {...stripExifPng(bytes,keepOrientation),type:"image/png",ext:"png"};
+  if(bytes.length>=12&&asciiSlice(bytes,0,4)==="RIFF"&&asciiSlice(bytes,8,12)==="WEBP")return {...stripExifWebp(bytes,keepOrientation),type:"image/webp",ext:"webp"};
   throw new Error("Supported formats: JPEG, PNG and WebP");
 }
 function initExifCleaner(){
   let files=[];
+  const verify=$("#verifyMetadataBtn");
   initDropzone({multiple:true,onFiles:fs=>{
-    files=fs;resetResults();const sum=$("#fileSummary");sum.classList.add("show");
+    files=fs;resetResults();verify?.classList.add("hidden");const sum=$("#fileSummary");sum.classList.add("show");
     sum.textContent=`${files.length} image${files.length===1?"":"s"} ready`;$("#processBtn").disabled=!files.length;
   }});
   $("#processBtn")?.addEventListener("click",async()=>{
-    resetResults();$("#processBtn").disabled=true;
+    resetResults();verify?.classList.add("hidden");$("#processBtn").disabled=true;let success=0;
+    const keepOrientation=$("#keepOrientation")?.checked!==false;
     for(const file of files){
       try{
-        const bytes=new Uint8Array(await file.arrayBuffer()),out=stripExifFile(bytes);
+        const bytes=new Uint8Array(await file.arrayBuffer()),out=stripExifFile(bytes,keepOrientation);
         const blob=new Blob([out.bytes],{type:out.type}),label=`${baseName(file.name)}-no-exif.${out.ext}`;
-        renderResult(file,blob,label);
-        const last=$("#results")?.lastElementChild;
-        if(last&&!out.removed){
-          const meta=last.querySelector(".result-meta");
-          if(meta)meta.textContent=`${formatBytes(file.size)} · no EXIF block was found; file structure preserved`;
+        renderResult(file,blob,label);success++;
+        const last=$("#results")?.lastElementChild,meta=last?.querySelector(".result-meta");
+        if(meta){
+          if(!out.removed)meta.textContent=`${formatBytes(file.size)} · no EXIF block was found; file structure preserved`;
+          else if(out.orientationPreserved)meta.textContent=`${formatBytes(file.size)} → ${formatBytes(blob.size)} · private EXIF removed · orientation kept`;
+          else if(keepOrientation&&out.orientation>=2&&out.orientation<=8)meta.textContent=`${formatBytes(file.size)} → ${formatBytes(blob.size)} · EXIF removed · orientation tag could not be retained`;
+          else meta.textContent=`${formatBytes(file.size)} → ${formatBytes(blob.size)} · EXIF & GPS removed`;
         }
       }catch(e){
         const box=$("#results"),card=document.createElement("div");card.className="result-card";
         card.innerHTML=`<div class="thumb" style="display:grid;place-items:center">!</div><div><div class="result-name">${escapeHtml(file.name)}</div><div class="result-meta">${escapeHtml(e.message||"Could not clean this file")}</div></div>`;box.appendChild(card);
       }
     }
+    if(success)verify?.classList.remove("hidden");
     $("#processBtn").disabled=false;
   });
 }
