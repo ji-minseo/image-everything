@@ -44,10 +44,10 @@ function loadImage(file){
 function canvasBlob(canvas,type,quality){
   return new Promise((resolve,reject)=>canvas.toBlob(b=>b?resolve(b):reject(new Error("Could not create image")),type,quality));
 }
-function makeCanvas(img,w=img.naturalWidth,h=img.naturalHeight,type="image/png"){
+function makeCanvas(img,w=img.naturalWidth,h=img.naturalHeight,type="image/png",backgroundColor="#ffffff"){
   const c=document.createElement("canvas");c.width=w;c.height=h;
   const ctx=c.getContext("2d");
-  if(type==="image/jpeg"){ctx.fillStyle="#fff";ctx.fillRect(0,0,w,h)}
+  if(type==="image/jpeg"){ctx.fillStyle=backgroundColor||"#ffffff";ctx.fillRect(0,0,w,h)}
   ctx.imageSmoothingEnabled=true;ctx.imageSmoothingQuality="high";
   ctx.drawImage(img,0,0,w,h);
   return c;
@@ -161,6 +161,13 @@ async function initCompress({accept="image/*",outputType=null,qualityEnabled=tru
     $("#processBtn").disabled=!files.length;
   }});
   $("#quality")?.addEventListener("input",e=>$("#qualityValue").textContent=e.target.value+"%");
+  const formatSelect=$("#format"),backgroundControl=$("#backgroundControl");
+  const syncBackgroundControl=()=>{
+    if(!backgroundControl)return;
+    const outputType=forceType||formatSelect?.value;
+    backgroundControl.classList.toggle("hidden",outputType!=="image/jpeg");
+  };
+  formatSelect?.addEventListener("change",syncBackgroundControl);syncBackgroundControl();
   $("#downloadZipBtn")?.addEventListener("click",async()=>{
     if(processed.length<2)return;
     const btn=$("#downloadZipBtn");btn.disabled=true;btn.textContent="Building ZIP…";
@@ -264,7 +271,7 @@ function initConvert(forceType=null,accept="image/*"){
     const q=Number($("#quality")?.value||92)/100,type=forceType||$("#format").value;
     for(const file of files){
       try{
-        const img=await loadImage(file),canvas=makeCanvas(img,img.naturalWidth,img.naturalHeight,type);
+        const img=await loadImage(file),background=$("#backgroundColor")?.value||"#ffffff",canvas=makeCanvas(img,img.naturalWidth,img.naturalHeight,type,background);
         const blob=await canvasBlob(canvas,type,q),name=`${baseName(file.name)}.${extFor(type)}`;
         processed.push({name,blob});renderResult(file,blob,name);
       }catch(e){}

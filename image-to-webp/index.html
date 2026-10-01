@@ -3,8 +3,16 @@
      crossorigin="anonymous"></script>
 
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Image to WebP — Convert JPG & PNG to WebP | Image Everything</title>
-<meta name="description" content="Convert JPG and PNG images to WebP directly in your browser. Choose output quality and download lightweight WebP files.">
+<title>PNG to WebP & JPG to WebP Converter | Image Everything</title>
+<meta name="description" content="Convert PNG to WebP or JPG to WebP in your browser. Batch convert images, control WebP quality and download all results as a ZIP.">
+<script type="application/ld+json">
+{"@context":"https://schema.org","@type":"FAQPage","mainEntity":[
+{"@type":"Question","name":"How do I convert PNG to WebP?","acceptedAnswer":{"@type":"Answer","text":"Choose one or more PNG images, set the WebP quality, select Convert to WebP, then download each result or the full batch as a ZIP."}},
+{"@type":"Question","name":"Can I convert JPG to WebP?","acceptedAnswer":{"@type":"Answer","text":"Yes. This tool converts JPG and JPEG images to WebP directly in your browser."}},
+{"@type":"Question","name":"Are my images uploaded to a server?","acceptedAnswer":{"@type":"Answer","text":"No. Image conversion runs locally in your browser using browser image and canvas APIs."}},
+{"@type":"Question","name":"Is WebP always smaller than JPG or PNG?","acceptedAnswer":{"@type":"Answer","text":"Not always. File size depends on the source image, dimensions, content and quality setting, so results can vary."}}
+]}
+</script>
 <meta name="google-site-verification" content="CBlkb_437tiJ5H-kUBL7O8dh-hd-sO5K0XpoibZ67Dg">
 <link rel="canonical" href="https://image.everytinytool.com/image-to-webp/">
 <link rel="icon" type="image/svg+xml" href="../favicon.svg">
@@ -27,10 +35,25 @@
 <a class="tool-tab" href="../metadata-checker/">🔎 Metadata</a>
 <a class="tool-tab" href="../remove-exif/">🧹 EXIF Cleaner</a>
 </nav>
-<main class="tool-layout"><section class="tool-head"><a class="breadcrumb" href="../">← All image tools</a><h1>Image to WebP</h1><p>Turn JPEG, PNG or other browser-readable images into lightweight WebP files.</p></section>
-<section class="panel"><div class="dropzone" id="dropzone"><input class="file-input" id="fileInput" type="file"><div><div class="drop-icon">🖼️</div><h2>Drop images here</h2><p>JPEG, PNG and WebP supported</p><button class="btn chooseBtn" type="button">Choose images</button></div></div><div class="file-summary" id="fileSummary"></div><div class="controls"><div class="control"><label for="quality">WebP quality <span id="qualityValue">85%</span></label><input id="quality" type="range" min="20" max="100" value="85"></div></div><div class="actions"><button class="btn" id="processBtn" disabled>Convert to WebP</button></div><div class="results" id="results"></div></section>
+<main class="tool-layout"><section class="tool-head"><a class="breadcrumb" href="../">← All image tools</a><h1>PNG to WebP & JPG to WebP</h1><p>Convert PNG and JPG images to WebP directly in your browser. Adjust quality, process multiple files at once and download the whole batch as a ZIP.</p></section>
+<section class="panel"><div class="dropzone" id="dropzone"><input class="file-input" id="fileInput" type="file"><div><div class="drop-icon">🖼️</div><h2>Drop images here</h2><p>JPEG, PNG and WebP supported</p><button class="btn chooseBtn" type="button">Choose images</button></div></div><div class="file-summary" id="fileSummary"></div><div class="controls"><div class="control"><label for="quality">WebP quality <span id="qualityValue">85%</span></label><input id="quality" type="range" min="20" max="100" value="85"></div></div><div class="actions"><button class="btn" id="processBtn" disabled>Convert to WebP</button><button class="btn secondary hidden" id="downloadZipBtn" type="button">Download all as ZIP</button></div><div class="results" id="results"></div></section>
 <div class="ad-slot">Future ad space</div>
-<section class="info info-grid"><article class="info-card"><h2>Made for the web</h2><p>WebP can reduce file size for many web images while keeping useful visual quality.</p></article><article class="info-card"><h2>Control the tradeoff</h2><p>Lower the quality slider for smaller files or raise it when visual fidelity matters more.</p></article><article class="info-card"><h2>No account needed</h2><p>Choose images, convert them and download the results directly from the same page.</p></article></section>
+<section class="info info-grid"><article class="info-card"><h2>Made for the web</h2><p>WebP is a modern image format designed for efficient web delivery. Depending on the source image and quality setting, it can produce smaller files than JPG or PNG.</p></article><article class="info-card"><h2>Control the tradeoff</h2><p>Lower the quality slider for smaller files or raise it when visual fidelity matters more. Each result shows the original and converted file size.</p></article><article class="info-card"><h2>Batch conversion</h2><p>Convert several PNG or JPG files in one run, download them individually or save the whole batch as one ZIP file.</p></article></section>
+<section class="seo-content">
+  <h2>How to convert PNG or JPG to WebP</h2>
+  <ol class="steps"><li><strong>Choose images.</strong> Add PNG, JPG, JPEG or another browser-readable image.</li><li><strong>Set WebP quality.</strong> Use the quality slider to balance file size and visual detail.</li><li><strong>Convert and download.</strong> Save one file at a time or download multiple converted images together as a ZIP.</li></ol>
+  <div class="seo-grid">
+    <article><h2>What is WebP?</h2><p>WebP is an image format commonly used on websites because it supports efficient compression. It can handle photographic images as well as transparency, making it useful for many web assets.</p></article>
+    <article><h2>WebP vs JPG and PNG</h2><p>JPG is widely compatible and works well for photos. PNG supports lossless pixels and transparency. WebP can support both lossy and lossless-style workflows while often producing compact files for web use.</p></article>
+  </div>
+  <h2>Frequently asked questions</h2>
+  <div class="faq-list">
+    <details><summary>How do I convert PNG to WebP?</summary><p>Choose one or more PNG images, set the WebP quality and press Convert to WebP. You can then download each result or the entire batch as a ZIP.</p></details>
+    <details><summary>Can I convert JPG to WebP?</summary><p>Yes. JPG and JPEG images can be converted to WebP on the same page.</p></details>
+    <details><summary>Are my images uploaded?</summary><p>No. The conversion runs locally in your browser using browser image and canvas APIs.</p></details>
+    <details><summary>Is WebP always smaller?</summary><p>No. The final size depends on the original image, dimensions, image content and quality setting, so some files may shrink more than others.</p></details>
+  </div>
+</section>
 <section class="network">
 <div class="network-label">More from <strong>Every Tiny Tool ✦</strong></div>
 <div class="network-grid">
