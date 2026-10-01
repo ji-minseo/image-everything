@@ -14,6 +14,9 @@ const TOP_LINKS=[
 ["exif","🧹 EXIF Cleaner","../remove-exif/"]
 ];
 
+function escapeHtml(str){
+  return String(str).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"}[c]));
+}
 function formatBytes(bytes){
   if(bytes===0)return"0 B";
   const units=["B","KB","MB","GB"],i=Math.floor(Math.log(bytes)/Math.log(1024));
@@ -86,21 +89,102 @@ function addBottomTabs(){
 }
 addBottomTabs();
 
+function makeCrcTable(){
+  const table=new Uint32Array(256);
+  for(let n=0;n<256;n++){
+    let c=n;
+    for(let k=0;k<8;k++)c=(c&1)?(0xedb88320^(c>>>1)):(c>>>1);
+    table[n]=c>>>0;
+  }
+  return table;
+}
+const CRC_TABLE=makeCrcTable();
+function crc32(bytes){
+  let c=0xffffffff;
+  for(const b of bytes)c=CRC_TABLE[(c^b)&0xff]^(c>>>8);
+  return (c^0xffffffff)>>>0;
+}
+function u16le(n){return new Uint8Array([n&255,(n>>>8)&255])}
+function u32le(n){return new Uint8Array([n&255,(n>>>8)&255,(n>>>16)&255,(n>>>24)&255])}
+async function zipStored(entries){
+  const enc=new TextEncoder(),locals=[],centrals=[];let offset=0;
+  for(const entry of entries){
+    const name=enc.encode(entry.name),data=new Uint8Array(await entry.blob.arrayBuffer()),crc=crc32(data);
+    const local=concatBytes([
+      u32le(0x04034b50),u16le(20),u16le(0x0800),u16le(0),u16le(0),u16le(0),
+      u32le(crc),u32le(data.length),u32le(data.length),u16le(name.length),u16le(0),name,data
+    ]);
+    locals.push(local);
+    const central=concatBytes([
+      u32le(0x02014b50),u16le(20),u16le(20),u16le(0x0800),u16le(0),u16le(0),u16le(0),
+      u32le(crc),u32le(data.length),u32le(data.length),u16le(name.length),u16le(0),u16le(0),
+      u16le(0),u16le(0),u32le(0),u32le(offset),name
+    ]);
+    centrals.push(central);offset+=local.length;
+  }
+  const centralSize=centrals.reduce((n,p)=>n+p.length,0);
+  const end=concatBytes([
+    u32le(0x06054b50),u16le(0),u16le(0),u16le(entries.length),u16le(entries.length),
+    u32le(centralSize),u32le(offset),u16le(0)
+  ]);
+  return new Blob([...locals,...centrals,end],{type:"application/zip"});
+}
+function renderCompressionSummary(original,compressed){
+  const wrap=$("#compressionSummary");if(!wrap)return;
+  const max=Math.max(original,compressed,1),saved=original-compressed,pct=original?Math.round((saved/original)*100):0;
+  $("#originalSize").textContent=formatBytes(original);
+  $("#compressedSize").textContent=formatBytes(compressed);
+  $("#compressionSize").textContent=`${formatBytes(original)} → ${formatBytes(compressed)}`;
+  $("#compressionSaved").textContent=saved>=0?`${pct}% smaller · saved ${formatBytes(saved)}`:`${Math.abs(pct)}% larger`;
+  wrap.classList.remove("hidden");
+  const ob=$("#originalBar"),cb=$("#compressedBar");
+  ob.style.width="0%";cb.style.width="0%";
+  requestAnimationFrame(()=>requestAnimationFrame(()=>{
+    ob.style.width=`${Math.max(5,original/max*100)}%`;
+    cb.style.width=`${Math.max(5,compressed/max*100)}%`;
+  }));
+}
 async function initCompress(){
-  let files=[];
-  initDropzone({multiple:true,onFiles:fs=>{files=fs;resetResults();$("#fileSummary").classList.add("show");$("#fileSummary").textContent=`${files.length} image${files.length===1?"":"s"} ready`;$("#processBtn").disabled=!files.length}});
+  let files=[],processed=[];
+  const clearBatch=()=>{
+    processed=[];resetResults();
+    $("#downloadZipBtn")?.classList.add("hidden");
+    $("#compressionSummary")?.classList.add("hidden");
+  };
+  initDropzone({multiple:true,onFiles:fs=>{
+    files=fs;clearBatch();$("#fileSummary").classList.add("show");
+    $("#fileSummary").textContent=`${files.length} image${files.length===1?"":"s"} ready`;
+    $("#processBtn").disabled=!files.length;
+  }});
   $("#quality")?.addEventListener("input",e=>$("#qualityValue").textContent=e.target.value+"%");
+  $("#downloadZipBtn")?.addEventListener("click",async()=>{
+    if(processed.length<2)return;
+    const btn=$("#downloadZipBtn");btn.disabled=true;btn.textContent="Building ZIP…";
+    try{
+      const zip=await zipStored(processed);
+      downloadBlob(zip,`compressed-images-${processed.length}.zip`);
+    }finally{
+      btn.disabled=false;btn.textContent="Download all as ZIP";
+    }
+  });
   $("#processBtn")?.addEventListener("click",async()=>{
-    resetResults();$("#processBtn").disabled=true;
+    clearBatch();$("#processBtn").disabled=true;
     const q=Number($("#quality").value)/100;
+    let totalOriginal=0,totalCompressed=0;
     for(const file of files){
       try{
         const img=await loadImage(file);
         let type=["image/jpeg","image/png","image/webp"].includes(file.type)?file.type:"image/jpeg";
         const canvas=makeCanvas(img,img.naturalWidth,img.naturalHeight,type);
         const blob=await canvasBlob(canvas,type,q);
-        renderResult(file,blob,`${baseName(file.name)}-compressed.${extFor(type)}`);
+        const name=`${baseName(file.name)}-compressed.${extFor(type)}`;
+        processed.push({name,blob});totalOriginal+=file.size;totalCompressed+=blob.size;
+        renderResult(file,blob,name);
       }catch(e){}
+    }
+    if(processed.length){
+      renderCompressionSummary(totalOriginal,totalCompressed);
+      if(processed.length>1)$("#downloadZipBtn")?.classList.remove("hidden");
     }
     $("#processBtn").disabled=false;
   });
