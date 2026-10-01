@@ -107,13 +107,84 @@ function resetResults(){const r=$("#results");if(r)r.innerHTML=""}
 function initDropzone({multiple=false,accept="image/*",onFiles}={}){
   const dz=$("#dropzone"),input=$("#fileInput");
   if(!dz||!input)return;
+  let currentFiles=[],selectionUrls=[];
   input.multiple=multiple;input.accept=accept;
+
+  const summary=(()=>{
+    let el=$("#fileSummary");
+    if(!el){
+      el=document.createElement("div");el.id="fileSummary";el.className="file-summary";
+      dz.insertAdjacentElement("afterend",el);
+    }
+    return el;
+  })();
+
+  const clearSelectionUrls=()=>{
+    selectionUrls.forEach(url=>URL.revokeObjectURL(url));
+    selectionUrls=[];
+  };
+
+  const renderSelection=()=>{
+    clearSelectionUrls();
+    if(!currentFiles.length){
+      summary.classList.remove("show");
+      summary.innerHTML="";
+      return;
+    }
+    summary.classList.add("show");
+    const head=document.createElement("div");head.className="selected-files-head";
+    head.innerHTML=`<strong>${currentFiles.length} image${currentFiles.length===1?"":"s"} ready</strong><span>Remove anything you do not want to process.</span>`;
+    const grid=document.createElement("div");grid.className="selected-files-grid";
+
+    currentFiles.forEach((file,index)=>{
+      const item=document.createElement("div");item.className="selected-file";
+      const visual=document.createElement("div");visual.className="selected-file-thumb";
+      const canPreview=file.type.startsWith("image/")&&!/\.hei[cf]$/i.test(file.name);
+      if(canPreview){
+        const img=document.createElement("img"),url=URL.createObjectURL(file);selectionUrls.push(url);
+        img.src=url;img.alt="";
+        img.onerror=()=>{visual.innerHTML='<span aria-hidden="true">🖼️</span>'};
+        visual.appendChild(img);
+      }else{
+        visual.innerHTML=`<span aria-hidden="true">${/\.hei[cf]$/i.test(file.name)?"📱":"🖼️"}</span>`;
+      }
+
+      const info=document.createElement("div");info.className="selected-file-info";
+      info.innerHTML=`<div class="selected-file-name" title="${escapeHtml(file.name)}">${escapeHtml(file.name)}</div><div class="selected-file-size">${formatBytes(file.size)}</div>`;
+
+      const remove=document.createElement("button");remove.type="button";remove.className="selected-file-remove";
+      remove.setAttribute("aria-label",`Remove ${file.name}`);remove.textContent="×";
+      remove.addEventListener("click",async e=>{
+        e.preventDefault();e.stopPropagation();
+        currentFiles=currentFiles.filter((_,i)=>i!==index);
+        if(!currentFiles.length){
+          $("#processBtn")&&( $("#processBtn").disabled=true );
+          resetResults();
+          const preview=$("#preview");if(preview){preview.innerHTML="";preview.classList.remove("show")}
+          $("#cropStage")?.classList.add("hidden");
+        }
+        await Promise.resolve(onFiles?.([...currentFiles]));
+        renderSelection();
+      });
+
+      item.append(visual,info,remove);grid.appendChild(item);
+    });
+
+    summary.innerHTML="";summary.append(head,grid);
+  };
+
+  const deliver=async files=>{
+    currentFiles=multiple?[...files]:files.slice(0,1);
+    await Promise.resolve(onFiles?.([...currentFiles]));
+    renderSelection();
+  };
+
   $(".chooseBtn")?.addEventListener("click",()=>input.click());
   dz.addEventListener("click",e=>{if(!e.target.closest("button"))input.click()});
   ["dragenter","dragover"].forEach(t=>dz.addEventListener(t,e=>{e.preventDefault();dz.classList.add("dragover")}));
   ["dragleave","drop"].forEach(t=>dz.addEventListener(t,e=>{e.preventDefault();dz.classList.remove("dragover")}));
-  dz.addEventListener("drop",e=>onFiles([...e.dataTransfer.files].filter(f=>f.type.startsWith("image/")||/\.(heic|heif)$/i.test(f.name))));
-  input.addEventListener("change",()=>onFiles([...input.files]));
+  dz.addEventListener("drop",e=>deliver([...e.dataTransfer.files].filter(f=>f.type.startsWith("image/")||/\.(heic|heif)$/i.test(f.name))));
+  input.addEventListener("change",()=>{const selected=[...input.files];input.value="";deliver(selected)});
 }
 function addBottomTabs(){
   const ad=$(".ad-slot"),top=$(".tool-tabs");if(!ad||!top)return;

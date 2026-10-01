@@ -110,6 +110,20 @@ input[type="range"]{padding:0;border:0;box-shadow:none;accent-color:var(--accent
 .actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:18px}
 .file-summary{display:none;margin-top:18px;padding:14px 16px;border-radius:16px;background:#faf9fd;border:1px solid #ece8f5;font-size:14px}
 .file-summary.show{display:block}
+
+.selected-files-head{display:flex;align-items:baseline;justify-content:space-between;gap:12px;margin-bottom:12px}
+.selected-files-head strong{font-size:14px}
+.selected-files-head span{color:var(--muted);font-size:11px}
+.selected-files-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}
+.selected-file{display:grid;grid-template-columns:48px minmax(0,1fr) 30px;gap:10px;align-items:center;padding:9px;border:1px solid #ece8f5;border-radius:14px;background:#fff}
+.selected-file-thumb{width:48px;height:48px;display:grid;place-items:center;overflow:hidden;border-radius:10px;background:#f5f3fa;font-size:21px}
+.selected-file-thumb img{width:100%;height:100%;object-fit:cover}
+.selected-file-info{min-width:0}
+.selected-file-name{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:13px;font-weight:800}
+.selected-file-size{margin-top:2px;color:var(--muted);font-size:11px}
+.selected-file-remove{width:30px;height:30px;display:grid;place-items:center;border:0;border-radius:999px;background:#f1eff7;color:#555;font-size:20px;line-height:1}
+.selected-file-remove:hover{background:#111;color:#fff}
+
 .results{display:grid;gap:12px;margin-top:20px}
 .result-card{display:grid;grid-template-columns:56px minmax(0,1fr) auto;gap:14px;align-items:center;padding:13px;border:1px solid #ece8f4;border-radius:17px;background:#fff}
 .thumb{width:56px;height:56px;border-radius:12px;object-fit:cover;background:#f4f3f7;border:1px solid #eee}
@@ -203,6 +217,8 @@ input[type="range"]{padding:0;border:0;box-shadow:none;accent-color:var(--accent
   .bottom-tabs{margin-right:-16px;padding-right:16px;gap:6px}
   .bottom-tabs .tool-tab{padding:8px 11px;font-size:12.5px}
   .grid,.popular-grid,.home-info-grid{grid-template-columns:1fr;gap:12px}
+  .selected-files-grid{grid-template-columns:1fr}
+  .selected-files-head{align-items:flex-start;flex-direction:column;gap:2px}
   .tool-card{min-height:0;padding:14px;display:grid;grid-template-columns:60px minmax(0,1fr);grid-template-rows:auto auto;column-gap:15px;row-gap:3px;align-items:center}
   .tool-card .icon{grid-column:1;grid-row:1/span 2;margin-bottom:0}
   .tool-card h2{grid-column:2;grid-row:1;margin:0;align-self:end}
