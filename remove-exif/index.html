@@ -31,7 +31,7 @@
 <div class="dropzone" id="dropzone"><input class="file-input" id="fileInput" type="file"><div><div class="drop-icon">🧹</div><h2>Drop images here</h2><p>JPEG, PNG and WebP supported</p><button class="btn chooseBtn" type="button">Choose images</button></div></div>
 <div class="file-summary" id="fileSummary"></div>
 <div class="controls"><label class="checkline orientation-option"><input id="keepOrientation" type="checkbox" checked><span><strong>Keep image orientation</strong><small>Retains only the EXIF Orientation tag when a rotated or mirrored image needs it.</small></span></label></div>
-<div class="actions"><button class="btn" id="processBtn" disabled>Remove EXIF & GPS</button><a class="btn ghost hidden" id="verifyMetadataBtn" href="../metadata-checker/">Check cleaned metadata →</a></div>
+<div class="actions"><button class="btn" id="processBtn" disabled>Remove EXIF & GPS</button><button class="btn secondary hidden" id="downloadZipBtn" type="button">Download all as ZIP</button><a class="btn ghost hidden" id="verifyMetadataBtn" href="../metadata-checker/">Check cleaned metadata →</a></div>
 <div class="results" id="results"></div>
 <p class="notice">This tool targets EXIF metadata only. XMP and content-credential/provenance containers are not deliberately stripped. With Keep image orientation on, a minimal EXIF block containing only the Orientation tag may remain when needed. Any file modification can still affect signed provenance credentials.</p>
 </section>

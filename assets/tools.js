@@ -52,6 +52,36 @@ function makeCanvas(img,w=img.naturalWidth,h=img.naturalHeight,type="image/png",
   ctx.drawImage(img,0,0,w,h);
   return c;
 }
+async function encodeToTarget(canvas,type,targetBytes,maxQuality=.92){
+  if(!targetBytes)return canvasBlob(canvas,type,maxQuality);
+  let lo=.08,hi=Math.max(.08,Math.min(1,maxQuality)),best=null;
+  for(let i=0;i<8;i++){
+    const q=(lo+hi)/2,blob=await canvasBlob(canvas,type,q);
+    if(blob.size<=targetBytes){best=blob;lo=q}else hi=q;
+  }
+  return best||canvasBlob(canvas,type,.08);
+}
+function pngColorCountFromQuality(q){
+  return Math.max(16,Math.min(256,Math.round(16+q*240)));
+}
+async function encodePngQuantized(file,{colors=256,targetBytes=0}={}){
+  if(typeof UPNG==="undefined")throw new Error("PNG compression library did not load. Please refresh and try again.");
+  const img=await loadImage(file),canvas=makeCanvas(img,img.naturalWidth,img.naturalHeight,"image/png");
+  const ctx=canvas.getContext("2d"),rgba=ctx.getImageData(0,0,canvas.width,canvas.height).data;
+  const tryEncode=c=>new Blob([UPNG.encode([rgba.buffer.slice(0)],canvas.width,canvas.height,c)],{type:"image/png"});
+  let blob;
+  if(targetBytes){
+    const candidates=[256,192,128,96,64,48,32,24,16,8];
+    let smallest=null;
+    for(const c of candidates){
+      const out=tryEncode(c);if(!smallest||out.size<smallest.size)smallest=out;
+      if(out.size<=targetBytes){blob=out;break}
+    }
+    blob=blob||smallest;
+  }else blob=tryEncode(colors);
+  if(!blob||blob.size>=file.size)return {blob:file,keptOriginal:true};
+  return {blob,keptOriginal:false};
+}
 function ratioText(w,h){
   const gcd=(a,b)=>b?gcd(b,a%b):a,g=gcd(w,h);
   return `${w/g}:${h/g}`;
@@ -164,27 +194,40 @@ async function initCompress({accept="image/*",outputType=null,qualityEnabled=tru
   $("#downloadZipBtn")?.addEventListener("click",async()=>{
     if(processed.length<2)return;
     const btn=$("#downloadZipBtn");btn.disabled=true;btn.textContent="Building ZIP…";
-    try{
-      const zip=await zipStored(processed);
-      downloadBlob(zip,`compressed-images-${processed.length}.zip`);
-    }finally{
-      btn.disabled=false;btn.textContent="Download all as ZIP";
-    }
+    try{downloadBlob(await zipStored(processed),`compressed-images-${processed.length}.zip`)}
+    finally{btn.disabled=false;btn.textContent="Download all as ZIP"}
   });
   $("#processBtn")?.addEventListener("click",async()=>{
     clearBatch();$("#processBtn").disabled=true;
     const q=qualityEnabled?Number($("#quality")?.value||80)/100:.92;
+    const targetBytes=Math.max(0,Number($("#targetKB")?.value||0))*1024;
     let totalOriginal=0,totalCompressed=0;
     for(const file of files){
       try{
-        const img=await loadImage(file);
-        let type=outputType||(["image/jpeg","image/png","image/webp"].includes(file.type)?file.type:"image/jpeg");
-        const canvas=makeCanvas(img,img.naturalWidth,img.naturalHeight,type);
-        const blob=await canvasBlob(canvas,type,q);
+        let type=outputType||(["image/jpeg","image/png","image/webp"].includes(file.type)?file.type:"image/jpeg"),blob,keptOriginal=false;
+        if(type==="image/png"&&file.type==="image/png"&&typeof UPNG!=="undefined"){
+          const selected=Number($("#pngColors")?.value||pngColorCountFromQuality(q));
+          const result=await encodePngQuantized(file,{colors:selected,targetBytes});
+          blob=result.blob;keptOriginal=result.keptOriginal;
+        }else{
+          const img=await loadImage(file),canvas=makeCanvas(img,img.naturalWidth,img.naturalHeight,type);
+          blob=(type==="image/jpeg"||type==="image/webp")?await encodeToTarget(canvas,type,targetBytes,q):await canvasBlob(canvas,type,q);
+          if(blob.size>=file.size){blob=file;keptOriginal=true}
+        }
         const name=`${baseName(file.name)}-compressed.${extFor(type)}`;
         processed.push({name,blob});totalOriginal+=file.size;totalCompressed+=blob.size;
         renderResult(file,blob,name);
-      }catch(e){}
+        if(keptOriginal){
+          const meta=$("#results")?.lastElementChild?.querySelector(".result-meta");
+          if(meta)meta.textContent=`${formatBytes(file.size)} · already optimized — original kept`;
+        }else if(targetBytes){
+          const meta=$("#results")?.lastElementChild?.querySelector(".result-meta");
+          if(meta)meta.textContent+=blob.size<=targetBytes?" · target reached":" · smallest result found";
+        }
+      }catch(e){
+        const box=$("#results"),card=document.createElement("div");card.className="result-card";
+        card.innerHTML=`<div class="thumb" style="display:grid;place-items:center">!</div><div><div class="result-name">${escapeHtml(file.name)}</div><div class="result-meta">${escapeHtml(e.message||"Could not compress this file")}</div></div>`;box?.appendChild(card);
+      }
     }
     if(processed.length){
       renderCompressionSummary(totalOriginal,totalCompressed);
@@ -195,54 +238,127 @@ async function initCompress({accept="image/*",outputType=null,qualityEnabled=tru
 }
 async function initResize(){
   let file=null,img=null,lock=true;
+  const width=$("#width"),height=$("#height"),mode=$("#resizeMode"),pct=$("#resizePercent");
+  const renderPreview=(w,h)=>{
+    if(!img)return;
+    const c=makeCanvas(img,w||img.naturalWidth,h||img.naturalHeight);c.className="preview-canvas";
+    const wrap=$("#preview");wrap.innerHTML="";wrap.append(c);wrap.classList.add("show");
+  };
+  const syncMode=()=>{
+    const percent=mode?.value==="percent";
+    $("#pixelControls")?.classList.toggle("hidden",percent);
+    $("#percentControls")?.classList.toggle("hidden",!percent);
+    if(img&&percent){
+      const p=Number(pct?.value||50)/100;
+      renderPreview(Math.max(1,Math.round(img.naturalWidth*p)),Math.max(1,Math.round(img.naturalHeight*p)));
+    }else if(img)renderPreview(Math.max(1,Number(width.value)||img.naturalWidth),Math.max(1,Number(height.value)||img.naturalHeight));
+  };
   initDropzone({onFiles:async fs=>{
     file=fs[0];if(!file)return;img=await loadImage(file);setSummary(file,img);
-    $("#width").value=img.naturalWidth;$("#height").value=img.naturalHeight;$("#processBtn").disabled=false;
-    const c=makeCanvas(img);c.className="preview-canvas";const wrap=$("#preview");wrap.innerHTML="";wrap.append(c);wrap.classList.add("show");
+    width.value=img.naturalWidth;height.value=img.naturalHeight;$("#processBtn").disabled=false;syncMode();
   }});
   $("#lock")?.addEventListener("change",e=>lock=e.target.checked);
-  $("#width")?.addEventListener("input",()=>{if(lock&&img&&$("#width").value)$("#height").value=Math.max(1,Math.round(Number($("#width").value)*img.naturalHeight/img.naturalWidth))});
-  $("#height")?.addEventListener("input",()=>{if(lock&&img&&$("#height").value)$("#width").value=Math.max(1,Math.round(Number($("#height").value)*img.naturalWidth/img.naturalHeight))});
+  width?.addEventListener("input",()=>{if(lock&&img&&width.value)height.value=Math.max(1,Math.round(Number(width.value)*img.naturalHeight/img.naturalWidth));syncMode()});
+  height?.addEventListener("input",()=>{if(lock&&img&&height.value)width.value=Math.max(1,Math.round(Number(height.value)*img.naturalWidth/img.naturalHeight));syncMode()});
+  mode?.addEventListener("change",syncMode);
+  pct?.addEventListener("input",()=>{if($("#resizePercentValue"))$("#resizePercentValue").textContent=pct.value+"%";syncMode()});
+  $$(".preset-btn[data-size]").forEach(btn=>btn.addEventListener("click",()=>{
+    if(!img)return;const [w,h]=btn.dataset.size.split("x").map(Number);
+    mode.value="pixels";width.value=w;height.value=h;syncMode();
+  }));
   $("#processBtn")?.addEventListener("click",async()=>{
     if(!file||!img)return;resetResults();
-    const w=Math.max(1,Number($("#width").value)||1),h=Math.max(1,Number($("#height").value)||1);
+    let w,h;
+    if(mode?.value==="percent"){
+      const p=Math.max(.1,Number(pct?.value||50)/100);w=Math.max(1,Math.round(img.naturalWidth*p));h=Math.max(1,Math.round(img.naturalHeight*p));
+    }else{
+      w=Math.max(1,Number(width.value)||1);h=Math.max(1,Number(height.value)||1);
+    }
     const type=["image/jpeg","image/png","image/webp"].includes(file.type)?file.type:"image/png";
     const blob=await canvasBlob(makeCanvas(img,w,h,type),type,.92);
     renderResult(file,blob,`${baseName(file.name)}-${w}x${h}.${extFor(type)}`);
   });
 }
 async function initCrop(){
-  let file=null,img=null;
-  const updatePreview=()=>{
-    if(!img)return;
-    const x=Math.max(0,Number($("#cropX").value)||0),y=Math.max(0,Number($("#cropY").value)||0);
-    const w=Math.max(1,Math.min(Number($("#cropW").value)||img.naturalWidth,img.naturalWidth-x));
-    const h=Math.max(1,Math.min(Number($("#cropH").value)||img.naturalHeight,img.naturalHeight-y));
-    const c=document.createElement("canvas");c.width=w;c.height=h;c.className="preview-canvas";
-    c.getContext("2d").drawImage(img,x,y,w,h,0,0,w,h);
+  let file=null,img=null,ratio=null,objectUrl=null;
+  const stage=$("#cropStage"),stageImg=$("#cropImage"),box=$("#cropBox");
+  const vals=()=>({
+    x:Math.max(0,Number($("#cropX").value)||0),y:Math.max(0,Number($("#cropY").value)||0),
+    w:Math.max(1,Number($("#cropW").value)||1),h:Math.max(1,Number($("#cropH").value)||1)
+  });
+  const clampCrop=v=>{
+    if(!img)return v;
+    v.x=Math.min(v.x,img.naturalWidth-1);v.y=Math.min(v.y,img.naturalHeight-1);
+    v.w=Math.max(1,Math.min(v.w,img.naturalWidth-v.x));v.h=Math.max(1,Math.min(v.h,img.naturalHeight-v.y));
+    return v;
+  };
+  const updateOutput=()=>{
+    if(!img)return;const v=clampCrop(vals());
+    const c=document.createElement("canvas");c.width=v.w;c.height=v.h;c.className="preview-canvas";
+    c.getContext("2d").drawImage(img,v.x,v.y,v.w,v.h,0,0,v.w,v.h);
     const wrap=$("#preview");wrap.innerHTML="";wrap.append(c);wrap.classList.add("show");
+    syncBox();
+  };
+  const syncBox=()=>{
+    if(!img||!stageImg?.complete||!box)return;
+    const rect=stageImg.getBoundingClientRect(),stageRect=stage.getBoundingClientRect(),v=clampCrop(vals());
+    if(!rect.width||!rect.height)return;
+    const sx=rect.width/img.naturalWidth,sy=rect.height/img.naturalHeight;
+    box.style.left=(rect.left-stageRect.left+v.x*sx)+"px";
+    box.style.top=(rect.top-stageRect.top+v.y*sy)+"px";
+    box.style.width=(v.w*sx)+"px";box.style.height=(v.h*sy)+"px";
+  };
+  const setCrop=(x,y,w,h)=>{
+    const v=clampCrop({x:Math.round(x),y:Math.round(y),w:Math.round(w),h:Math.round(h)});
+    $("#cropX").value=v.x;$("#cropY").value=v.y;$("#cropW").value=v.w;$("#cropH").value=v.h;updateOutput();
+  };
+  const applyRatio=r=>{
+    ratio=r;
+    $$(".crop-ratios .preset-btn").forEach(b=>b.classList.toggle("active",(b.dataset.ratio==="free"&&r===null)||Number(b.dataset.ratio)===r));
+    if(!img||!r)return;
+    let w=img.naturalWidth,h=Math.round(w/r);
+    if(h>img.naturalHeight){h=img.naturalHeight;w=Math.round(h*r)}
+    setCrop((img.naturalWidth-w)/2,(img.naturalHeight-h)/2,w,h);
   };
   initDropzone({onFiles:async fs=>{
     file=fs[0];if(!file)return;img=await loadImage(file);setSummary(file,img);
     $("#cropX").value=0;$("#cropY").value=0;$("#cropW").value=img.naturalWidth;$("#cropH").value=img.naturalHeight;
-    $("#processBtn").disabled=false;updatePreview();
+    $("#processBtn").disabled=false;
+    if(objectUrl)URL.revokeObjectURL(objectUrl);objectUrl=URL.createObjectURL(file);stageImg.src=objectUrl;stage.classList.remove("hidden");
+    stageImg.onload=()=>{updateOutput();syncBox()};
   }});
-  ["#cropX","#cropY","#cropW","#cropH"].forEach(s=>$(s)?.addEventListener("input",updatePreview));
-  $("#centerSquare")?.addEventListener("click",()=>{
-    if(!img)return;const size=Math.min(img.naturalWidth,img.naturalHeight);
-    $("#cropW").value=size;$("#cropH").value=size;$("#cropX").value=Math.round((img.naturalWidth-size)/2);$("#cropY").value=Math.round((img.naturalHeight-size)/2);updatePreview();
+  ["#cropX","#cropY","#cropW","#cropH"].forEach(s=>$(s)?.addEventListener("input",()=>{
+    if(ratio&&s==="#cropW")$("#cropH").value=Math.max(1,Math.round(Number($("#cropW").value)/ratio));
+    if(ratio&&s==="#cropH")$("#cropW").value=Math.max(1,Math.round(Number($("#cropH").value)*ratio));
+    updateOutput();
+  }));
+  $$(".crop-ratios .preset-btn").forEach(btn=>btn.addEventListener("click",()=>applyRatio(btn.dataset.ratio==="free"?null:Number(btn.dataset.ratio))));
+  $("#centerSquare")?.addEventListener("click",()=>applyRatio(1));
+  let drag=null;
+  box?.addEventListener("pointerdown",e=>{
+    if(!img)return;e.preventDefault();box.setPointerCapture(e.pointerId);
+    const isResize=e.target.classList.contains("crop-handle"),rect=stageImg.getBoundingClientRect(),v=vals();
+    drag={isResize,startX:e.clientX,startY:e.clientY,v,rect};
   });
+  box?.addEventListener("pointermove",e=>{
+    if(!drag||!img)return;
+    const sx=img.naturalWidth/drag.rect.width,sy=img.naturalHeight/drag.rect.height;
+    const dx=(e.clientX-drag.startX)*sx,dy=(e.clientY-drag.startY)*sy;
+    if(drag.isResize){
+      let w=Math.max(1,drag.v.w+dx),h=Math.max(1,drag.v.h+dy);
+      if(ratio){h=w/ratio;if(h>img.naturalHeight-drag.v.y){h=img.naturalHeight-drag.v.y;w=h*ratio}}
+      setCrop(drag.v.x,drag.v.y,w,h);
+    }else setCrop(drag.v.x+dx,drag.v.y+dy,drag.v.w,drag.v.h);
+  });
+  const endDrag=()=>drag=null;box?.addEventListener("pointerup",endDrag);box?.addEventListener("pointercancel",endDrag);
+  window.addEventListener("resize",syncBox);
   $("#processBtn")?.addEventListener("click",async()=>{
-    if(!file||!img)return;resetResults();
-    const x=Math.max(0,Number($("#cropX").value)||0),y=Math.max(0,Number($("#cropY").value)||0);
-    const w=Math.max(1,Math.min(Number($("#cropW").value)||img.naturalWidth,img.naturalWidth-x));
-    const h=Math.max(1,Math.min(Number($("#cropH").value)||img.naturalHeight,img.naturalHeight-y));
+    if(!file||!img)return;resetResults();const v=clampCrop(vals());
     const type=["image/jpeg","image/png","image/webp"].includes(file.type)?file.type:"image/png";
-    const c=document.createElement("canvas");c.width=w;c.height=h;const ctx=c.getContext("2d");
-    if(type==="image/jpeg"){ctx.fillStyle="#fff";ctx.fillRect(0,0,w,h)}
-    ctx.drawImage(img,x,y,w,h,0,0,w,h);
-    const blob=await canvasBlob(c,type,.92);
-    renderResult(file,blob,`${baseName(file.name)}-cropped.${extFor(type)}`);
+    const c=document.createElement("canvas");c.width=v.w;c.height=v.h;const ctx=c.getContext("2d");
+    if(type==="image/jpeg"){ctx.fillStyle="#fff";ctx.fillRect(0,0,v.w,v.h)}
+    ctx.drawImage(img,v.x,v.y,v.w,v.h,0,0,v.w,v.h);
+    const blob=await canvasBlob(c,type,.92);renderResult(file,blob,`${baseName(file.name)}-cropped.${extFor(type)}`);
   });
 }
 function initConvert(forceType=null,accept="image/*"){
@@ -560,20 +676,26 @@ function stripExifFile(bytes,keepOrientation=false){
   throw new Error("Supported formats: JPEG, PNG and WebP");
 }
 function initExifCleaner(){
-  let files=[];
-  const verify=$("#verifyMetadataBtn");
+  let files=[],processed=[];
+  const verify=$("#verifyMetadataBtn"),zip=$("#downloadZipBtn");
+  const clearBatch=()=>{processed=[];resetResults();verify?.classList.add("hidden");zip?.classList.add("hidden")};
   initDropzone({multiple:true,onFiles:fs=>{
-    files=fs;resetResults();verify?.classList.add("hidden");const sum=$("#fileSummary");sum.classList.add("show");
+    files=fs;clearBatch();const sum=$("#fileSummary");sum.classList.add("show");
     sum.textContent=`${files.length} image${files.length===1?"":"s"} ready`;$("#processBtn").disabled=!files.length;
   }});
+  zip?.addEventListener("click",async()=>{
+    if(processed.length<2)return;zip.disabled=true;zip.textContent="Building ZIP…";
+    try{downloadBlob(await zipStored(processed),`cleaned-images-${processed.length}.zip`)}
+    finally{zip.disabled=false;zip.textContent="Download all as ZIP"}
+  });
   $("#processBtn")?.addEventListener("click",async()=>{
-    resetResults();verify?.classList.add("hidden");$("#processBtn").disabled=true;let success=0;
+    clearBatch();$("#processBtn").disabled=true;let success=0;
     const keepOrientation=$("#keepOrientation")?.checked!==false;
     for(const file of files){
       try{
         const bytes=new Uint8Array(await file.arrayBuffer()),out=stripExifFile(bytes,keepOrientation);
         const blob=new Blob([out.bytes],{type:out.type}),label=`${baseName(file.name)}-no-exif.${out.ext}`;
-        renderResult(file,blob,label);success++;
+        processed.push({name:label,blob});renderResult(file,blob,label);success++;
         const last=$("#results")?.lastElementChild,meta=last?.querySelector(".result-meta");
         if(meta){
           if(!out.removed)meta.textContent=`${formatBytes(file.size)} · no EXIF block was found; file structure preserved`;
@@ -587,6 +709,7 @@ function initExifCleaner(){
       }
     }
     if(success)verify?.classList.remove("hidden");
+    if(processed.length>1)zip?.classList.remove("hidden");
     $("#processBtn").disabled=false;
   });
 }

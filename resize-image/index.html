@@ -4,7 +4,7 @@
 
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Resize Image — Change Image Dimensions Online | Image Everything</title>
-<meta name="description" content="Resize an image to exact pixel dimensions in your browser. Keep the aspect ratio or set width and height manually.">
+<meta name="description" content="Resize images by pixels or percentage, keep aspect ratio, or use Instagram and YouTube size presets directly in your browser.">
 <meta name="google-site-verification" content="CBlkb_437tiJ5H-kUBL7O8dh-hd-sO5K0XpoibZ67Dg">
 <link rel="canonical" href="https://image.everytinytool.com/resize-image/">
 <link rel="icon" type="image/svg+xml" href="../favicon.svg">
@@ -27,10 +27,15 @@
 <a class="tool-tab" href="../metadata-checker/">🔎 Metadata</a>
 <a class="tool-tab" href="../remove-exif/">🧹 EXIF Cleaner</a>
 </nav>
-<main class="tool-layout"><section class="tool-head"><a class="breadcrumb" href="../">← All image tools</a><h1>Resize Image</h1><p>Change an image to exact pixel dimensions with an optional aspect-ratio lock.</p></section>
-<section class="panel"><div class="dropzone" id="dropzone"><input class="file-input" id="fileInput" type="file"><div><div class="drop-icon">🖼️</div><h2>Drop an image here</h2><p>JPEG, PNG and WebP supported</p><button class="btn chooseBtn" type="button">Choose images</button></div></div><div class="file-summary" id="fileSummary"></div><div class="controls"><div class="row"><div class="control"><label for="width">Width (px)</label><input id="width" type="number" min="1" inputmode="numeric"></div><div class="control"><label for="height">Height (px)</label><input id="height" type="number" min="1" inputmode="numeric"></div></div><label class="checkline"><input id="lock" type="checkbox" checked> Keep aspect ratio</label></div><div class="actions"><button class="btn" id="processBtn" disabled>Resize image</button></div><div class="preview-wrap" id="preview"></div><div class="results" id="results"></div></section>
+<main class="tool-layout"><section class="tool-head"><a class="breadcrumb" href="../">← All image tools</a><h1>Resize Image</h1><p>Resize by exact pixels, scale by percentage, or start from a common social-media preset.</p></section>
+<section class="panel"><div class="dropzone" id="dropzone"><input class="file-input" id="fileInput" type="file"><div><div class="drop-icon">🖼️</div><h2>Drop an image here</h2><p>JPEG, PNG and WebP supported</p><button class="btn chooseBtn" type="button">Choose images</button></div></div><div class="file-summary" id="fileSummary"></div><div class="controls">
+<div class="control"><label for="resizeMode">Resize mode</label><select id="resizeMode"><option value="pixels" selected>Pixels</option><option value="percent">Percentage</option></select></div>
+<div id="pixelControls"><div class="row"><div class="control"><label for="width">Width (px)</label><input id="width" type="number" min="1" inputmode="numeric"></div><div class="control"><label for="height">Height (px)</label><input id="height" type="number" min="1" inputmode="numeric"></div></div><label class="checkline"><input id="lock" type="checkbox" checked> Keep aspect ratio</label></div>
+<div id="percentControls" class="hidden"><div class="control"><label for="resizePercent">Scale <span id="resizePercentValue">50%</span></label><input id="resizePercent" type="range" min="10" max="200" value="50"></div></div>
+<div class="control"><label>Quick presets</label><div class="preset-row"><button class="preset-btn" type="button" data-size="1080x1080">Instagram 1:1</button><button class="preset-btn" type="button" data-size="1080x1350">Instagram 4:5</button><button class="preset-btn" type="button" data-size="1080x1920">Story / Reels</button><button class="preset-btn" type="button" data-size="1280x720">YouTube 16:9</button></div></div>
+</div><div class="actions"><button class="btn" id="processBtn" disabled>Resize image</button></div><div class="preview-wrap" id="preview"></div><div class="results" id="results"></div></section>
 <div class="ad-slot">Future ad space</div>
-<section class="info info-grid"><article class="info-card"><h2>Exact pixel sizing</h2><p>Enter the width or height you need and keep the aspect ratio locked to avoid stretching.</p></article><article class="info-card"><h2>Useful for web images</h2><p>Resize screenshots, product images, thumbnails and social graphics without opening a desktop editor.</p></article><article class="info-card"><h2>Local processing</h2><p>The resize is rendered directly in your browser and the output is created on your device.</p></article></section>
+<section class="info info-grid"><article class="info-card"><h2>Pixels or percentage</h2><p>Set exact dimensions or scale the original image from 10% to 200%. Keep aspect ratio enabled to avoid distortion.</p></article><article class="info-card"><h2>Social size presets</h2><p>Jump to Instagram square, portrait, Story/Reels or YouTube thumbnail dimensions, then adjust the values if needed.</p></article><article class="info-card"><h2>Local processing</h2><p>The resize is rendered directly in your browser and the output is created on your device.</p></article></section>
 <section class="network">
 <div class="network-label">More from <strong>Every Tiny Tool ✦</strong></div>
 <div class="network-grid">
