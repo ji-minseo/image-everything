@@ -12,6 +12,7 @@ const TOP_LINKS=[
 ["jpg-png","🔷 JPG to PNG","../jpg-to-png/"],
 ["webp","🟣 To WebP","../image-to-webp/"],
 ["jpg","🟡 WebP to JPG","../webp-to-jpg/"],
+["heic-jpg","📱 HEIC to JPG","../heic-to-jpg/"],
 ["rotate","↻ Rotate","../rotate-image/"],
 ["info","ⓘ Info","../image-info/"],
 ["metadata","🔎 Metadata","../metadata-checker/"],
@@ -396,6 +397,37 @@ function initConvert(forceType=null,accept="image/*"){
     $("#processBtn").disabled=false;
   });
 }
+function initHeicToJpg(){
+  let files=[],processed=[];
+  const clearBatch=()=>{processed=[];resetResults();$("#downloadZipBtn")?.classList.add("hidden")};
+  initDropzone({multiple:true,accept:".heic,.heif,image/heic,image/heif",onFiles:fs=>{
+    files=fs.filter(f=>/\.hei[cf]$/i.test(f.name)||f.type==="image/heic"||f.type==="image/heif");clearBatch();
+    $("#fileSummary").classList.add("show");$("#fileSummary").textContent=`${files.length} photo${files.length===1?"":"s"} ready`;$("#processBtn").disabled=!files.length;
+  }});
+  $("#quality")?.addEventListener("input",e=>$("#qualityValue").textContent=e.target.value+"%");
+  $("#downloadZipBtn")?.addEventListener("click",async()=>{
+    if(processed.length<2)return;const btn=$("#downloadZipBtn");btn.disabled=true;btn.textContent="Building ZIP…";
+    try{downloadBlob(await zipStored(processed),`heic-to-jpg-${processed.length}.zip`)}
+    finally{btn.disabled=false;btn.textContent="Download all as ZIP"}
+  });
+  $("#processBtn")?.addEventListener("click",async()=>{
+    clearBatch();$("#processBtn").disabled=true;const q=Number($("#quality")?.value||92)/100;
+    for(const file of files){
+      try{
+        if(typeof heic2any!=="function")throw new Error("HEIC converter did not load. Please refresh and try again.");
+        let out=await heic2any({blob:file,toType:"image/jpeg",quality:q});
+        if(Array.isArray(out))out=out[0];
+        const blob=out instanceof Blob?out:new Blob([out],{type:"image/jpeg"}),name=`${baseName(file.name)}.jpg`;
+        processed.push({name,blob});renderResult(file,blob,name);
+      }catch(e){
+        const box=$("#results"),card=document.createElement("div");card.className="result-card";
+        card.innerHTML=`<div class="thumb" style="display:grid;place-items:center">!</div><div><div class="result-name">${escapeHtml(file.name)}</div><div class="result-meta">${escapeHtml(e.message||"Could not convert this HEIC file")}</div></div>`;box?.appendChild(card);
+      }
+    }
+    if(processed.length>1)$("#downloadZipBtn")?.classList.remove("hidden");
+    $("#processBtn").disabled=false;
+  });
+}
 async function initRotate(){
   let file=null,img=null,angle=0,flipX=1,flipY=1;
   const draw=()=>{
@@ -437,6 +469,7 @@ if(tool==="png-jpg")initConvert("image/jpeg","image/png");
 if(tool==="jpg-png")initConvert("image/png","image/jpeg");
 if(tool==="webp")initConvert("image/webp");
 if(tool==="jpg")initConvert("image/jpeg","image/webp");
+if(tool==="heic-jpg")initHeicToJpg();
 if(tool==="rotate")initRotate();
 if(tool==="info")initInfo();
 if(tool==="metadata")initMetadataChecker();

@@ -40,6 +40,7 @@ h1{margin:18px 0 14px;font-size:clamp(42px,8vw,78px);line-height:.97;letter-spac
 .tool-card:nth-child(12) .icon{background:#DDEEFF}
 .tool-card:nth-child(13) .icon{background:#FFF1BF}
 .tool-card:nth-child(14) .icon{background:#E5E8FF}
+.tool-card:nth-child(15) .icon{background:#E7F4FF}
 .tool-card h2{margin:0 0 6px;font-size:22px;letter-spacing:-.035em}
 .tool-card p{margin:0;color:var(--muted);font-size:14px}
 .footer{padding:26px 0 42px;color:var(--muted);font-size:13px;border-top:1px solid var(--line)}
