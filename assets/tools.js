@@ -3,9 +3,13 @@ const $$=s=>[...document.querySelectorAll(s)];
 const tool=document.body.dataset.tool||"";
 const TOP_LINKS=[
 ["compress","🗜️ Compress","../compress-image/"],
+["jpg-compress","🟠 JPG Compressor","../jpg-compressor/"],
+["png-compress","🔵 PNG Compressor","../png-compressor/"],
 ["resize","↔️ Resize","../resize-image/"],
 ["crop","✂️ Crop","../crop-image/"],
 ["convert","🔁 Convert","../convert-image/"],
+["png-jpg","🟡 PNG to JPG","../png-to-jpg/"],
+["jpg-png","🔷 JPG to PNG","../jpg-to-png/"],
 ["webp","🟣 To WebP","../image-to-webp/"],
 ["jpg","🟡 WebP to JPG","../webp-to-jpg/"],
 ["rotate","↻ Rotate","../rotate-image/"],
@@ -144,15 +148,15 @@ function renderCompressionSummary(original,compressed){
     cb.style.width=`${Math.max(5,compressed/max*100)}%`;
   }));
 }
-async function initCompress(){
+async function initCompress({accept="image/*",outputType=null,qualityEnabled=true}={}){
   let files=[],processed=[];
   const clearBatch=()=>{
     processed=[];resetResults();
     $("#downloadZipBtn")?.classList.add("hidden");
     $("#compressionSummary")?.classList.add("hidden");
   };
-  initDropzone({multiple:true,onFiles:fs=>{
-    files=fs;clearBatch();$("#fileSummary").classList.add("show");
+  initDropzone({multiple:true,accept,onFiles:fs=>{
+    files=fs.filter(f=>accept==="image/*"||f.type===accept);clearBatch();$("#fileSummary").classList.add("show");
     $("#fileSummary").textContent=`${files.length} image${files.length===1?"":"s"} ready`;
     $("#processBtn").disabled=!files.length;
   }});
@@ -169,12 +173,12 @@ async function initCompress(){
   });
   $("#processBtn")?.addEventListener("click",async()=>{
     clearBatch();$("#processBtn").disabled=true;
-    const q=Number($("#quality").value)/100;
+    const q=qualityEnabled?Number($("#quality")?.value||80)/100:.92;
     let totalOriginal=0,totalCompressed=0;
     for(const file of files){
       try{
         const img=await loadImage(file);
-        let type=["image/jpeg","image/png","image/webp"].includes(file.type)?file.type:"image/jpeg";
+        let type=outputType||(["image/jpeg","image/png","image/webp"].includes(file.type)?file.type:"image/jpeg");
         const canvas=makeCanvas(img,img.naturalWidth,img.naturalHeight,type);
         const blob=await canvasBlob(canvas,type,q);
         const name=`${baseName(file.name)}-compressed.${extFor(type)}`;
@@ -242,19 +246,30 @@ async function initCrop(){
   });
 }
 function initConvert(forceType=null,accept="image/*"){
-  let files=[];
-  initDropzone({multiple:true,accept,onFiles:fs=>{files=fs;resetResults();$("#fileSummary").classList.add("show");$("#fileSummary").textContent=`${files.length} image${files.length===1?"":"s"} ready`;$("#processBtn").disabled=!files.length}});
+  let files=[],processed=[];
+  const clearBatch=()=>{processed=[];resetResults();$("#downloadZipBtn")?.classList.add("hidden")};
+  initDropzone({multiple:true,accept,onFiles:fs=>{
+    files=fs.filter(f=>accept==="image/*"||f.type===accept);clearBatch();
+    $("#fileSummary").classList.add("show");$("#fileSummary").textContent=`${files.length} image${files.length===1?"":"s"} ready`;$("#processBtn").disabled=!files.length
+  }});
   $("#quality")?.addEventListener("input",e=>$("#qualityValue").textContent=e.target.value+"%");
+  $("#downloadZipBtn")?.addEventListener("click",async()=>{
+    if(processed.length<2)return;
+    const btn=$("#downloadZipBtn");btn.disabled=true;btn.textContent="Building ZIP…";
+    try{downloadBlob(await zipStored(processed),`converted-images-${processed.length}.zip`)}
+    finally{btn.disabled=false;btn.textContent="Download all as ZIP"}
+  });
   $("#processBtn")?.addEventListener("click",async()=>{
-    resetResults();$("#processBtn").disabled=true;
+    clearBatch();$("#processBtn").disabled=true;
     const q=Number($("#quality")?.value||92)/100,type=forceType||$("#format").value;
     for(const file of files){
       try{
         const img=await loadImage(file),canvas=makeCanvas(img,img.naturalWidth,img.naturalHeight,type);
-        const blob=await canvasBlob(canvas,type,q);
-        renderResult(file,blob,`${baseName(file.name)}.${extFor(type)}`);
+        const blob=await canvasBlob(canvas,type,q),name=`${baseName(file.name)}.${extFor(type)}`;
+        processed.push({name,blob});renderResult(file,blob,name);
       }catch(e){}
     }
+    if(processed.length>1)$("#downloadZipBtn")?.classList.remove("hidden");
     $("#processBtn").disabled=false;
   });
 }
@@ -290,9 +305,13 @@ function initInfo(){
   }});
 }
 if(tool==="compress")initCompress();
+if(tool==="jpg-compress")initCompress({accept:"image/jpeg",outputType:"image/jpeg"});
+if(tool==="png-compress")initCompress({accept:"image/png",outputType:"image/png",qualityEnabled:false});
 if(tool==="resize")initResize();
 if(tool==="crop")initCrop();
 if(tool==="convert")initConvert();
+if(tool==="png-jpg")initConvert("image/jpeg","image/png");
+if(tool==="jpg-png")initConvert("image/png","image/jpeg");
 if(tool==="webp")initConvert("image/webp");
 if(tool==="jpg")initConvert("image/jpeg","image/webp");
 if(tool==="rotate")initRotate();
