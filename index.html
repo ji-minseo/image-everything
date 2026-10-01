@@ -11,6 +11,14 @@
   <link rel="canonical" href="https://image.everytinytool.com/">
   <link rel="icon" type="image/svg+xml" href="./favicon.svg">
   <link rel="stylesheet" href="./assets/styles.css">
+  <script type="application/ld+json">
+  {"@context":"https://schema.org","@type":"FAQPage","mainEntity":[
+    {"@type":"Question","name":"Are my images uploaded to a server?","acceptedAnswer":{"@type":"Answer","text":"The current Image Everything tools process supported images locally in your browser, so your image pixels do not need to be uploaded to our server."}},
+    {"@type":"Question","name":"Do I need an account to use Image Everything?","acceptedAnswer":{"@type":"Answer","text":"No. The tools are designed to work without creating an account."}},
+    {"@type":"Question","name":"Which image formats are supported?","acceptedAnswer":{"@type":"Answer","text":"Support varies by tool, with common workflows for JPG, JPEG, PNG and WebP."}},
+    {"@type":"Question","name":"Can I process multiple images at once?","acceptedAnswer":{"@type":"Answer","text":"Several tools support batch processing, and supported batch tools can offer a ZIP download for multiple results."}}
+  ]}
+  </script>
 </head>
 <body>
 <div class="shell">
@@ -37,6 +45,18 @@
   <h1>Image tasks, done.</h1>
   <p>Compress JPG and PNG files, resize, crop and convert images without an account. Your files stay in your browser while you work.</p>
 </section>
+<section class="home-section popular-section" aria-labelledby="popular-title">
+  <div class="section-heading"><span class="section-kicker">Quick start</span><h2 id="popular-title">Popular tools</h2><p>Start with four of the most useful everyday image tasks.</p></div>
+  <div class="popular-grid">
+    <a class="popular-card" href="./compress-image/"><div class="popular-icon">🗜️</div><div><h3>Compress Image</h3><p>Reduce JPG, PNG and WebP file size and compare the result.</p><span>Compress images →</span></div></a>
+    <a class="popular-card" href="./image-to-webp/"><div class="popular-icon">🟣</div><div><h3>PNG to WebP</h3><p>Convert PNG or JPG images to WebP with quality control and batch ZIP download.</p><span>Convert to WebP →</span></div></a>
+    <a class="popular-card" href="./png-to-jpg/"><div class="popular-icon">🟡</div><div><h3>PNG to JPG</h3><p>Convert PNG files to JPG and choose the color used behind transparent areas.</p><span>Convert to JPG →</span></div></a>
+    <a class="popular-card" href="./resize-image/"><div class="popular-icon">↔️</div><div><h3>Resize Image</h3><p>Change image dimensions in pixels with optional aspect-ratio locking.</p><span>Resize an image →</span></div></a>
+  </div>
+</section>
+
+<section class="home-section all-tools-section" aria-labelledby="all-tools-title">
+  <div class="section-heading"><span class="section-kicker">Everything in one place</span><h2 id="all-tools-title">All image tools</h2><p>Choose a focused tool for compression, conversion, editing or image privacy.</p></div>
 <section class="grid" aria-label="Image tools">
 <a class="tool-card" href="./compress-image/"><div class="icon">🗜️</div><h2>Compress Image</h2><p>Make JPEG, PNG and WebP files smaller with a simple quality control.</p></a>
 <a class="tool-card" href="./jpg-compressor/"><div class="icon">🟠</div><h2>JPG Compressor</h2><p>Compress JPG and JPEG photos with quality control, size comparison and ZIP download.</p></a>
@@ -52,6 +72,26 @@
 <a class="tool-card" href="./image-info/"><div class="icon">ⓘ</div><h2>Image Info</h2><p>Check pixel dimensions, file size, format and aspect ratio instantly.</p></a>
 <a class="tool-card" href="./metadata-checker/"><div class="icon">🔎</div><h2>Metadata Checker</h2><p>Check for EXIF, GPS, XMP and possible content-credential signals without changing the file.</p></a>
 <a class="tool-card" href="./remove-exif/"><div class="icon">🧹</div><h2>EXIF & GPS Cleaner</h2><p>Remove EXIF and embedded GPS metadata while keeping the encoded image data intact when supported.</p></a>
+</section>
+</section>
+
+<section class="home-explainer" aria-labelledby="why-title">
+  <div class="section-heading"><span class="section-kicker">Simple by design</span><h2 id="why-title">Fast tools without the upload maze</h2><p>Image Everything is built for small image tasks that should take seconds, not a signup flow.</p></div>
+  <div class="home-info-grid">
+    <article><h3>Browser-based processing</h3><p>Supported tools use browser image and canvas APIs so your image pixels can stay on your device while you work.</p></article>
+    <article><h3>No account required</h3><p>Open a tool, choose your file, process it and download the result. There is no account setup before you can start.</p></article>
+    <article><h3>Focused tools</h3><p>Dedicated pages such as JPG Compressor, PNG to JPG and WebP to JPG make it easier to jump straight to the job you need.</p></article>
+  </div>
+</section>
+
+<section class="home-faq" aria-labelledby="faq-title">
+  <div class="section-heading"><span class="section-kicker">Questions</span><h2 id="faq-title">Image Everything FAQ</h2></div>
+  <div class="faq-list">
+    <details><summary>Are my images uploaded to a server?</summary><p>The current supported tools process image pixels locally in your browser, so the image itself does not need to be sent to our server for normal processing.</p></details>
+    <details><summary>Do I need an account?</summary><p>No. Image Everything is designed to work without signup or login.</p></details>
+    <details><summary>Which formats can I use?</summary><p>Format support depends on the tool, with common workflows for JPG, JPEG, PNG and WebP.</p></details>
+    <details><summary>Can I process several images at once?</summary><p>Yes, on supported batch tools. Several converters and compressors can process multiple files and offer a ZIP download for the results.</p></details>
+  </div>
 </section>
 </main>
 <footer class="footer">Image Everything · Part of Every Tiny Tool.</footer>
