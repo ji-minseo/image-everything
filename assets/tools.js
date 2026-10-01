@@ -112,7 +112,7 @@ function initDropzone({multiple=false,accept="image/*",onFiles}={}){
   dz.addEventListener("click",e=>{if(!e.target.closest("button"))input.click()});
   ["dragenter","dragover"].forEach(t=>dz.addEventListener(t,e=>{e.preventDefault();dz.classList.add("dragover")}));
   ["dragleave","drop"].forEach(t=>dz.addEventListener(t,e=>{e.preventDefault();dz.classList.remove("dragover")}));
-  dz.addEventListener("drop",e=>onFiles([...e.dataTransfer.files].filter(f=>f.type.startsWith("image/"))));
+  dz.addEventListener("drop",e=>onFiles([...e.dataTransfer.files].filter(f=>f.type.startsWith("image/")||/\.(heic|heif)$/i.test(f.name))));
   input.addEventListener("change",()=>onFiles([...input.files]));
 }
 function addBottomTabs(){
@@ -239,10 +239,29 @@ async function initCompress({accept="image/*",outputType=null,qualityEnabled=tru
 }
 async function initResize(){
   let file=null,img=null,lock=true;
-  const width=$("#width"),height=$("#height"),mode=$("#resizeMode"),pct=$("#resizePercent");
+  const width=$("#width"),height=$("#height"),mode=$("#resizeMode"),pct=$("#resizePercent"),behavior=$("#resizeBehavior");
+  const makeResizeCanvas=(w,h,type="image/png")=>{
+    const fit=behavior?.value||"stretch";
+    if(fit==="stretch")return makeCanvas(img,w,h,type);
+    if(fit==="contain"){
+      const scale=Math.min(w/img.naturalWidth,h/img.naturalHeight);
+      const outW=Math.max(1,Math.round(img.naturalWidth*scale)),outH=Math.max(1,Math.round(img.naturalHeight*scale));
+      return makeCanvas(img,outW,outH,type);
+    }
+    const c=document.createElement("canvas");c.width=w;c.height=h;
+    const ctx=c.getContext("2d");
+    if(type==="image/jpeg"){ctx.fillStyle="#fff";ctx.fillRect(0,0,w,h)}
+    const scale=Math.max(w/img.naturalWidth,h/img.naturalHeight);
+    const drawW=img.naturalWidth*scale,drawH=img.naturalHeight*scale;
+    ctx.imageSmoothingEnabled=true;ctx.imageSmoothingQuality="high";
+    ctx.drawImage(img,(w-drawW)/2,(h-drawH)/2,drawW,drawH);
+    return c;
+  };
   const renderPreview=(w,h)=>{
     if(!img)return;
-    const c=makeCanvas(img,w||img.naturalWidth,h||img.naturalHeight);c.className="preview-canvas";
+    const type=["image/jpeg","image/png","image/webp"].includes(file?.type)?file.type:"image/png";
+    const c=mode?.value==="percent"?makeCanvas(img,w,h,type):makeResizeCanvas(w,h,type);
+    c.className="preview-canvas";
     const wrap=$("#preview");wrap.innerHTML="";wrap.append(c);wrap.classList.add("show");
   };
   const syncMode=()=>{
@@ -261,7 +280,7 @@ async function initResize(){
   $("#lock")?.addEventListener("change",e=>lock=e.target.checked);
   width?.addEventListener("input",()=>{if(lock&&img&&width.value)height.value=Math.max(1,Math.round(Number(width.value)*img.naturalHeight/img.naturalWidth));syncMode()});
   height?.addEventListener("input",()=>{if(lock&&img&&height.value)width.value=Math.max(1,Math.round(Number(height.value)*img.naturalWidth/img.naturalHeight));syncMode()});
-  mode?.addEventListener("change",syncMode);
+  mode?.addEventListener("change",syncMode);behavior?.addEventListener("change",syncMode);
   pct?.addEventListener("input",()=>{if($("#resizePercentValue"))$("#resizePercentValue").textContent=pct.value+"%";syncMode()});
   $$(".preset-btn[data-size]").forEach(btn=>btn.addEventListener("click",()=>{
     if(!img)return;const [w,h]=btn.dataset.size.split("x").map(Number);
@@ -269,14 +288,19 @@ async function initResize(){
   }));
   $("#processBtn")?.addEventListener("click",async()=>{
     if(!file||!img)return;resetResults();
-    let w,h;
+    let w,h,canvas;
     if(mode?.value==="percent"){
       const p=Math.max(.1,Number(pct?.value||50)/100);w=Math.max(1,Math.round(img.naturalWidth*p));h=Math.max(1,Math.round(img.naturalHeight*p));
+      const type=["image/jpeg","image/png","image/webp"].includes(file.type)?file.type:"image/png";
+      canvas=makeCanvas(img,w,h,type);
     }else{
       w=Math.max(1,Number(width.value)||1);h=Math.max(1,Number(height.value)||1);
+      const type=["image/jpeg","image/png","image/webp"].includes(file.type)?file.type:"image/png";
+      canvas=makeResizeCanvas(w,h,type);
+      w=canvas.width;h=canvas.height;
     }
     const type=["image/jpeg","image/png","image/webp"].includes(file.type)?file.type:"image/png";
-    const blob=await canvasBlob(makeCanvas(img,w,h,type),type,.92);
+    const blob=await canvasBlob(canvas,type,.92);
     renderResult(file,blob,`${baseName(file.name)}-${w}x${h}.${extFor(type)}`);
   });
 }
@@ -289,7 +313,7 @@ async function initCrop(){
   });
   const clampCrop=v=>{
     if(!img)return v;
-    v.x=Math.min(v.x,img.naturalWidth-1);v.y=Math.min(v.y,img.naturalHeight-1);
+    v.x=Math.max(0,Math.min(v.x,img.naturalWidth-1));v.y=Math.max(0,Math.min(v.y,img.naturalHeight-1));
     v.w=Math.max(1,Math.min(v.w,img.naturalWidth-v.x));v.h=Math.max(1,Math.min(v.h,img.naturalHeight-v.y));
     return v;
   };
