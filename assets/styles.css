@@ -234,3 +234,13 @@ input[type="range"]{padding:0;border:0;box-shadow:none;accent-color:var(--accent
   .compression-row{grid-template-columns:68px minmax(0,1fr);gap:8px}
   .compression-row>strong{grid-column:2;text-align:left;color:var(--muted);margin-top:-4px}
 }
+
+/* Network trust links shared across image-tool pages. */
+.footer{display:flex;align-items:center;justify-content:space-between;gap:14px;flex-wrap:wrap}
+.footer-trust-links{display:flex;align-items:center;gap:14px;flex-wrap:wrap;color:var(--muted);font-size:13px}
+.footer-trust-links a{text-decoration:none}
+.footer-trust-links a:hover,.footer-trust-links a:focus-visible{text-decoration:underline;text-underline-offset:3px}
+@media(max-width:720px){
+  .footer{align-items:flex-start;flex-direction:column}
+  .footer-trust-links{gap:9px 14px}
+}
