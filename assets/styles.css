@@ -244,3 +244,6 @@ input[type="range"]{padding:0;border:0;box-shadow:none;accent-color:var(--accent
   .footer{align-items:flex-start;flex-direction:column}
   .footer-trust-links{gap:9px 14px}
 }
+
+/* AdSense review readiness: hide unfinished ad placeholders until real ad units are installed. */
+.ad-slot{display:none!important}
