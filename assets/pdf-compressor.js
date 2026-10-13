@@ -245,6 +245,14 @@
     }
     function updateReady() {
       compress.disabled = !file || busy;
+      choose.disabled = busy;
+      remove.disabled = busy;
+      input.disabled = busy;
+      sizeField.disabled = busy;
+      percent.disabled = busy;
+      modeBtns.forEach(button => { button.disabled = busy; });
+      presetBtns.forEach(button => { button.disabled = busy; });
+      percentPresets.forEach(button => { button.disabled = busy; });
     }
     function setFile(next) {
       if (busy) return;
