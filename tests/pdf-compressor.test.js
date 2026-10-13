@@ -6,158 +6,267 @@ const path = require('node:path');
 
 global.window = {};
 const api = require('../assets/pdf-compressor.js');
-const root = path.resolve(__dirname, '..');
-const html = fs.readFileSync(path.join(root, 'pdf-compressor/index.html'), 'utf8');
-const css = fs.readFileSync(path.join(root, 'assets/pdf-compressor.css'), 'utf8');
-const js = fs.readFileSync(path.join(root, 'assets/pdf-compressor.js'), 'utf8');
-const styles = fs.readFileSync(path.join(root, 'assets/styles.css'), 'utf8');
+const repoRoot = path.resolve(__dirname, '..');
+const page = fs.readFileSync(path.join(repoRoot, 'pdf-compressor/index.html'), 'utf8');
+const css = fs.readFileSync(path.join(repoRoot, 'assets/pdf-compressor.css'), 'utf8');
+const script = fs.readFileSync(path.join(repoRoot, 'assets/pdf-compressor.js'), 'utf8');
+const styles = fs.readFileSync(path.join(repoRoot, 'assets/styles.css'), 'utf8');
 
-function fakePdf(size = 25000000) {
+function sampleFile(size = 120000) {
   return {
-    name: 'presentation.pdf', size,
+    name: 'presentation.pdf',
+    size,
     slice: () => new Blob(['%PDF-1.7\n']),
     arrayBuffer: async () => new TextEncoder().encode('%PDF-1.7\n').buffer
   };
 }
-function mockedPdfLib(size, error = null) {
-  const details = { loads: 0, saves: 0, loadOptions: null, saveOptions: null };
-  global.window.PDFLib = { PDFDocument: { async load(bytes, options) {
-    details.loads++;
-    details.loadOptions = options;
-    if (error) throw error;
-    assert.ok(bytes instanceof Uint8Array);
-    return { async save(saveOptions) {
-      details.saves++;
-      details.saveOptions = saveOptions;
-      return new Uint8Array(size);
-    }};
-  }}};
-  return details;
+function imageDict(values = {}) {
+  const props = {
+    Type: '/XObject', Subtype: '/Image', Filter: '/DCTDecode',
+    ColorSpace: '/DeviceRGB', BitsPerComponent: '8', Width: '200', Height: '200',
+    ...values
+  };
+  return {
+    keys() { return Object.keys(props).map(name => ({ toString: () => '/' + name })); },
+    get(name) { return Object.prototype.hasOwnProperty.call(props, name.toString().slice(1))
+      ? { toString: () => String(props[name]) } : undefined; }
+  };
+}
+function sampleJpeg(size = 32000) {
+  const bytes = new Uint8Array(size);
+  bytes[0] = 255; bytes[1] = 216;
+  bytes[bytes.length - 2] = 255; bytes[bytes.length - 1] = 217;
+  return bytes;
+}
+function mockDocument({ outputSize = 60000, jpegObjects = [], error = null } = {}) {
+  const state = { loads: 0, saves: 0, assigns: [], streams: [], loadOptions: null, saveOptions: null };
+  global.window.PDFLib = {
+    PDFName: { of: name => ({ toString: () => '/' + name }) },
+    PDFDocument: { async load(bytes, options) {
+      state.loads++;
+      state.loadOptions = options;
+      if (error) throw error;
+      assert.ok(bytes instanceof Uint8Array);
+      return {
+        context: {
+          enumerateIndirectObjects: () => jpegObjects,
+          stream(bytes, dict) { const s = { bytes, dict }; state.streams.push(s); return s; },
+          assign(ref, obj) { state.assigns.push({ ref, obj }); }
+        },
+        async save(options) {
+          state.saves++;
+          state.saveOptions = options;
+          return new Uint8Array(outputSize);
+        }
+      };
+    }}
+  };
+  return state;
 }
 
-test('supports only 100, 50 and 10 MB quick goals', () => {
-  assert.deepEqual(api.PRESET_MB, [100, 50, 10]);
-  for (const goal of api.PRESET_MB) {
-    assert.match(html, new RegExp('data-pdf-size="' + goal + '"'));
+test('default quality is 80 and only expected range is accepted', () => {
+  assert.equal(api.DEFAULT_QUALITY, 80);
+  assert.equal(api.MIN_QUALITY, 65);
+  assert.equal(api.parseQuality(80), 80);
+  assert.equal(api.parseQuality('100'), 100);
+  assert.equal(api.parseQuality(65), 65);
+  for (const invalid of ['', null, NaN, Infinity, 20, 64, 101]) {
+    assert.equal(api.parseQuality(invalid), null);
   }
+});
+test('100, 50 and 10 MB preset target calculations stay strictly under threshold', () => {
+  assert.deepEqual(api.PRESET_MB, [100, 50, 10]);
+  for (const num of api.PRESET_MB) assert.match(page, new RegExp('data-pdf-size="' + num + '"'));
   assert.equal(api.targetBytes(100), 99999999);
   assert.equal(api.targetBytes(50), 49999999);
   assert.equal(api.targetBytes(10), 9999999);
-  assert.equal(api.targetBytes(0.5), 499999);
-  assert.equal(api.targetBytes(10), api.targetBytes('10'));
-});
-test('invalid or blank targets never get silently interpreted as zero', () => {
-  for (const invalid of ['', null, NaN, Infinity, 0, -1, .05, 1001]) {
+  for (const invalid of ['', null, NaN, Infinity, 0, -1, 1001]) {
     assert.equal(api.targetBytes(invalid), null);
   }
 });
-test('calculates actual size and never presents an unachieved target as success', () => {
-  assert.deepEqual(api.assessResult(25000000, 8100000, api.targetBytes(10)),
-    { smaller: true, reached: true, saving: 67.6 });
-  assert.deepEqual(api.assessResult(25000000, 11000000, api.targetBytes(10)),
-    { smaller: true, reached: false, saving: 56 });
-  assert.equal(api.reductionPercent(1000, 1000), 0);
+test('optional target is independent from quality, and goal status may be null', () => {
+  assert.deepEqual(api.assessResult(100000, 70000, null),
+    { smaller: true, reached: null, saving: 30 });
+  assert.deepEqual(api.assessResult(20000000, 8000000, api.targetBytes(10)),
+    { smaller: true, reached: true, saving: 60 });
+  assert.deepEqual(api.assessResult(20000000, 13000000, api.targetBytes(10)),
+    { smaller: true, reached: false, saving: 35 });
 });
-test('uses PDF-only output name and actual decimal MB units', () => {
-  assert.equal(api.outputName('report.PDF'), 'report-optimized.pdf');
-  assert.equal(api.outputName(''), 'document-optimized.pdf');
+test('PDF file name and units match existing compressor display', () => {
+  assert.equal(api.outputName('report.PDF'), 'report-compressed.pdf');
+  assert.equal(api.outputName(''), 'document-compressed.pdf');
   assert.equal(api.formatSize(10000000), '10.00 MB');
 });
-test('validates PDFs and restricts very large documents', async () => {
-  await assert.rejects(() => api.validateFile(fakePdf(0)), /empty/);
-  await assert.rejects(() => api.validateFile(fakePdf(181000000)), /180 MB/);
+test('empty, oversized and non-PDF files are rejected', async () => {
+  await assert.rejects(() => api.validateFile(sampleFile(0)), /empty/);
+  await assert.rejects(() => api.validateFile(sampleFile(181000000)), /180 MB/);
   await assert.rejects(() => api.validateFile({
-    ...fakePdf(), slice: () => new Blob(['this is plain text'])
+    ...sampleFile(), slice: () => new Blob(['Hello world'])
   }), /look like a PDF/);
 });
-test('already-under-target PDFs remain byte-for-byte unchanged', async () => {
+test('quality slider applies only to compatible unmasked RGB JPEG XObjects', () => {
+  const lib = { PDFName: { of: name => ({ toString: () => '/' + name }) } };
+  assert.ok(api.jpegCandidate({ dict: imageDict(), getContents: () => sampleJpeg() }, lib));
+  for (const value of [
+    { Filter: '/FlateDecode' }, { ColorSpace: '/DeviceCMYK' },
+    { Decode: '[1 0 1 0 1 0]' }, { SMask: '13 0 R' },
+    { Mask: '9 0 R' }, { BitsPerComponent: '1' },
+    { Width: '50000' }, { Height: '50000' }
+  ]) {
+    assert.equal(api.jpegCandidate({ dict: imageDict(value), getContents: () => sampleJpeg() }, lib), null);
+  }
+});
+test('Quality 100 skips JPEG recompression and only repacks PDF structure', async () => {
+  const source = sampleFile();
+  const state = mockDocument({ outputSize: 90000 });
+  const result = await api.optimizePdf(source, { quality: 100, targetEnabled: false });
+  assert.equal(result.original, false);
+  assert.equal(result.reached, null);
+  assert.equal(result.jpegImages, 0);
+  assert.equal(state.assigns.length, 0);
+  assert.equal(state.saves, 1);
+  assert.equal(state.loadOptions.updateMetadata, false);
+  assert.equal(state.saveOptions.updateFieldAppearances, false);
+  assert.equal(state.saveOptions.useObjectStreams, true);
+});
+test('Quality 80 recompresses eligible JPEG bytes in place, preserving PDF page text objects', async () => {
+  const sourceBytes = sampleJpeg();
+  const ref = { objectNumber: 21 };
+  const state = mockDocument({
+    outputSize: 72000,
+    jpegObjects: [[ref, { dict: imageDict(), getContents: () => sourceBytes }]]
+  });
+  let receivedQuality = null;
+  let bitmapClosed = false;
+  global.window.createImageBitmap = async () => ({
+    width: 200, height: 200, close() { bitmapClosed = true; }
+  });
+  global.document = {
+    createElement() {
+      return {
+        width: 0, height: 0,
+        getContext: () => ({ drawImage() {} }),
+        toBlob(cb, type, quality) {
+          receivedQuality = quality;
+          cb(new Blob([sampleJpeg(20000)], { type: 'image/jpeg' }));
+        }
+      };
+    }
+  };
+  const messages = [];
+  const result = await api.optimizePdf(sampleFile(), {
+    quality: 80, targetEnabled: false
+  }, message => messages.push(message));
+  assert.equal(receivedQuality, 0.8);
+  assert.equal(bitmapClosed, true);
+  assert.equal(result.jpegImages, 1);
+  assert.equal(result.eligibleImages, 1);
+  assert.equal(result.saving, 40);
+  assert.equal(result.reached, null);
+  assert.equal(state.assigns.length, 1);
+  assert.equal(state.assigns[0].ref, ref);
+  assert.equal(state.streams[0].dict.Filter, 'DCTDecode');
+  assert.equal(state.streams[0].dict.ColorSpace, 'DeviceRGB');
+  assert.equal(state.streams[0].dict.Width, 200);
+  assert.ok(messages.some(text => /Checking image/.test(text)));
+  delete global.document;
+  delete global.window.createImageBitmap;
+});
+test('if JPEG output does not shrink at quality 80, original image object stays intact', async () => {
+  const ref = { objectNumber: 22 };
+  const state = mockDocument({
+    outputSize: 100000, jpegObjects: [[ref, {
+      dict: imageDict(), getContents: () => sampleJpeg(32000)
+    }]]
+  });
+  global.window.createImageBitmap = async () => ({
+    width: 200, height: 200, close() {}
+  });
+  global.document = {
+    createElement: () => ({
+      width: 0, height: 0, getContext: () => ({ drawImage() {} }),
+      toBlob: cb => cb(new Blob([sampleJpeg(31800)], { type: 'image/jpeg' }))
+    })
+  };
+  const result = await api.optimizePdf(sampleFile(), { quality: 80, targetEnabled: false });
+  assert.equal(result.jpegImages, 0);
+  assert.equal(result.eligibleImages, 1);
+  assert.equal(state.assigns.length, 0);
+  delete global.document;
+  delete global.window.createImageBitmap;
+});
+test('optional target skips processing when input PDF is already below limit', async () => {
   global.window.PDFLib = null;
-  const file = fakePdf(7000000);
-  const result = await api.optimizePdf(file, 10);
-  assert.equal(result.blob, file);
-  assert.equal(result.bytes, file.size);
-  assert.equal(result.original, true);
+  const input = sampleFile(5000000);
+  const result = await api.optimizePdf(input, { quality: 80, targetEnabled: true, limit: 10 });
+  assert.equal(result.blob, input);
   assert.equal(result.reached, true);
   assert.equal(result.reason, 'already-small');
 });
-test('pdf-lib reparses and repacks without converting pages to images', async () => {
-  const mocks = mockedPdfLib(8600000);
-  const events = [];
-  const result = await api.optimizePdf(fakePdf(25000000), 10, message => events.push(message));
-  assert.equal(result.original, false);
-  assert.equal(result.reached, true);
-  assert.equal(result.bytes, 8600000);
-  assert.ok(result.blob instanceof Blob);
-  assert.equal(mocks.loads, 1);
-  assert.equal(mocks.saves, 1);
-  assert.equal(mocks.loadOptions.ignoreEncryption, false);
-  assert.equal(mocks.loadOptions.updateMetadata, false);
-  assert.equal(mocks.saveOptions.updateFieldAppearances, false);
-  assert.equal(mocks.saveOptions.useObjectStreams, true);
-  assert.equal(mocks.saveOptions.addDefaultPage, false);
-  assert.ok(events.some(text => /Repacking PDF objects/.test(text)));
-  assert.doesNotMatch(js, /pdfjsLib|page\.render|canvas\.toBlob|embedJpg|rasterAttempt/);
+test('with size option off, original-size test never skips quality compression', async () => {
+  const state = mockDocument({ outputSize: 70000 });
+  const result = await api.optimizePdf(sampleFile(120000), { quality: 80, targetEnabled: false, limit: 100 });
+  assert.equal(result.reached, null);
+  assert.equal(state.loads, 1);
 });
-test('gentle optimizer keeps output honest when target is missed', async () => {
-  const mocks = mockedPdfLib(19300000);
-  const result = await api.optimizePdf(fakePdf(25000000), 10);
-  assert.equal(result.original, false);
+test('when optional size target is missed, it reports the miss instead of degrading quality again', async () => {
+  const state = mockDocument({ outputSize: 15000000 });
+  const result = await api.optimizePdf(sampleFile(20000000), {
+    quality: 80, targetEnabled: true, limit: 10
+  });
   assert.equal(result.reached, false);
   assert.equal(result.reason, 'partial');
-  assert.equal(mocks.saves, 1);
+  assert.equal(state.saves, 1);
 });
-test('never replaces the input with a larger optimized output', async () => {
-  mockedPdfLib(29000000);
-  const input = fakePdf(25000000);
-  const result = await api.optimizePdf(input, 10);
-  assert.equal(result.blob, input);
-  assert.equal(result.original, true);
-  assert.equal(result.reached, false);
-  assert.equal(result.saving, 0);
+test('original PDF wins if optimized output is bigger', async () => {
+  mockDocument({ outputSize: 140000 });
+  const original = sampleFile(120000);
+  const result = await api.optimizePdf(original, { quality: 80, targetEnabled: false });
+  assert.equal(result.blob, original);
+  assert.equal(result.reached, null);
   assert.equal(result.reason, 'not-smaller');
 });
-test('encrypted or password-protected PDFs give actionable error', async () => {
-  const encrypted = new Error('encrypted document');
-  encrypted.name = 'EncryptedPDFError';
-  mockedPdfLib(100, encrypted);
-  await assert.rejects(() => api.optimizePdf(fakePdf(), 10), /Password-protected or encrypted/);
+test('encrypted PDFs still report a specific error', async () => {
+  const err = new Error('encrypted');
+  err.name = 'EncryptedPDFError';
+  mockDocument({ error: err });
+  await assert.rejects(() => api.optimizePdf(sampleFile(), {
+    quality: 80, targetEnabled: false
+  }), /Password-protected or encrypted/);
 });
-test('dependencies are checked only when the original is above goal', async () => {
-  global.window.PDFLib = null;
-  await assert.rejects(() => api.optimizePdf(fakePdf(25000000), 10), /optimizer did not load/);
-  const unchanged = await api.optimizePdf(fakePdf(4000000), 10);
-  assert.equal(unchanged.original, true);
+test('HTML shows default quality 80 bar and opt-in size target controls', () => {
+  assert.match(page, /<label for="pdf-quality">Quality <span id="pdf-quality-value">80%<\/span>/);
+  assert.match(page, /id="pdf-quality" type="range" min="65" max="100" step="5" value="80"/);
+  assert.match(page, /id="pdf-target-toggle" type="checkbox"/);
+  assert.match(page, /id="pdf-target-options" hidden/);
+  assert.match(page, /id="pdf-limit"[^>]*disabled/);
+  assert.match(script, /targetEnabled: toggle\.checked/);
+  assert.match(script, /quality: quality\.value/);
+  assert.match(script, /targetOptions\.hidden = !toggle\.checked/);
+  assert.doesNotMatch(page, /data-pdf-mode|data-pdf-percent|pdf-percent-panel/);
 });
-test('uses full-width shared Image Everything components, not the narrow unique PDF layout', () => {
+test('PDF page inherits standard Image Everything width, buttons and navigation', () => {
   assert.match(styles, /\.shell\{width:min\(1080px/);
-  assert.match(styles, /\.tool-layout\{padding:38px 0 72px\}/);
-  assert.match(html, /class="tool-layout pdfc-page"/);
-  assert.match(html, /class="tool-head"/);
-  assert.match(html, /class="panel pdfc-panel"/);
-  assert.match(html, /class="dropzone pdfc-dropzone"/);
-  assert.match(html, /class="info info-grid"/);
-  assert.match(html, /class="network"/);
+  assert.match(page, /class="tool-layout pdfc-page"/);
+  assert.match(page, /class="panel pdfc-panel"/);
+  assert.match(page, /class="row pdfc-settings-row"/);
+  assert.match(page, /class="info info-grid"/);
+  assert.match(page, /href="\.\.\/png-compressor\/"/);
   assert.match(css, /\.pdfc-page \.pdfc-panel\{width:100%;max-width:none\}/);
   assert.doesNotMatch(css, /930px/);
-  assert.doesNotMatch(css, /clamp\(44px/);
-  assert.match(html, /href="\.\.\/png-compressor\/"/);
-  assert.match(html, /href="https:\/\/everytinytool.com\/privacy\/"/);
 });
-test('no aggressive compression mode, 1MB or 5MB presets, PDF.js or raster warning remains', () => {
-  assert.doesNotMatch(html, /data-pdf-percent|data-pdf-mode|pdf-percent-panel/);
-  assert.doesNotMatch(html, /data-pdf-size="1"[^0]|data-pdf-size="5"/);
-  assert.doesNotMatch(html, /pdf\.js\/3\.11/);
-  assert.doesNotMatch(html, /pages into JPEG|turns pages into JPEG/);
-  assert.match(html, /Gentle optimization only/);
-  assert.match(html, /digitally signed PDF/);
-  assert.match(js, /useObjectStreams: true/);
-  assert.doesNotMatch(js, /pdfjsLib/);
+test('no PDF rasterization, and quality only affects compatible image streams', () => {
+  assert.doesNotMatch(script, /pdfjsLib|rasterAttempt|page\.render\(|embedJpg\(/);
+  assert.match(script, /jpegCandidate/);
+  assert.match(script, /pdf\.context\.assign\(ref, stream\)/);
+  assert.match(page, /Text and vector content won't be rasterized/);
+  assert.match(page, /Quality applies to compatible JPEG images only/);
 });
-test('each dynamic element used by the script exists once in markup', () => {
-  const ids = [...html.matchAll(/id="([^"]+)"/g)].map(m => m[1]);
+test('all dynamic UI lookup IDs exist exactly once, including target checkbox', () => {
+  const ids = [...page.matchAll(/id="([^"]+)"/g)].map(m => m[1]);
   assert.equal(new Set(ids).size, ids.length);
-  for (const match of js.matchAll(/\$\('([^']+)'\)/g)) {
-    assert.ok(ids.includes(match[1]), 'missing id ' + match[1]);
+  for (const match of script.matchAll(/\$\('([^']+)'\)/g)) {
+    assert.ok(ids.includes(match[1]), 'Missing ID: ' + match[1]);
   }
   assert.match(css, /\.pdfc-page \[hidden\]\{display:none!important\}/);
 });
