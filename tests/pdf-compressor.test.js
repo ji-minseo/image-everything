@@ -279,3 +279,92 @@ test('all dynamic UI lookup IDs exist exactly once, including target checkbox', 
   }
   assert.match(css, /\.pdfc-page \[hidden\]\{display:none!important\}/);
 });
+
+test('the full PDF dropzone is clickable and keyboard focusable', () => {
+  assert.match(page, /id="pdf-dropzone" role="group" tabindex="0"/);
+  assert.match(page, /Press Enter or Space to choose a PDF/);
+  assert.match(css, /\.pdfc-page \.pdfc-dropzone\{min-height:240px;cursor:pointer\}/);
+  assert.match(css, /\.pdfc-page \.pdfc-dropzone:focus-visible/);
+});
+
+test('clicking the dropzone opens the picker exactly once without duplicate bubbling', () => {
+  const vm = require('node:vm');
+  const nodes = new Map();
+  let pickerOpens = 0;
+  const listeners = {};
+  const makeElement = id => ({
+    id, listeners: {},
+    hidden: false, disabled: false, checked: false, value: '',
+    style: {}, dataset: {},
+    classList: { toggle() {}, add() {}, remove() {} },
+    addEventListener(type, fn) { this.listeners[type] = fn; },
+    removeAttribute() {},
+    setAttribute() {},
+    click() {
+      if (this.id === 'pdf-file') {
+        pickerOpens++;
+        // Native input.click() also bubbles a synthetic click to its parent.
+        nodes.get('pdf-dropzone').listeners.click({ target: this });
+      }
+    },
+    closest() { return null; }
+  });
+  for (const [, id] of page.matchAll(/id="([^"]+)"/g)) {
+    nodes.set(id, makeElement(id));
+  }
+  const sizePresets = [100, 50, 10].map(n => {
+    const button = makeElement('preset-' + n);
+    button.dataset.pdfSize = String(n);
+    return button;
+  });
+  const fakeDoc = {
+    readyState: 'loading',
+    getElementById(id) { return nodes.get(id); },
+    querySelectorAll(query) {
+      return query === '[data-pdf-size]' ? sizePresets : [];
+    },
+    addEventListener(type, fn) { listeners[type] = fn; }
+  };
+  const fakeWindow = {};
+  vm.runInNewContext(script, {
+    window: fakeWindow, document: fakeDoc,
+    Blob, Uint8Array, TextDecoder, Number, Math, Set,
+    console
+  });
+  assert.equal(typeof listeners.DOMContentLoaded, 'function');
+  listeners.DOMContentLoaded();
+
+  const zone = nodes.get('pdf-dropzone');
+  const input = nodes.get('pdf-file');
+  const button = nodes.get('pdf-choose');
+
+  zone.listeners.click({ target: zone });
+  assert.equal(pickerOpens, 1, 'clicking dropzone whitespace must open once');
+
+  button.listeners.click();
+  zone.listeners.click({ target: { closest: () => button } });
+  assert.equal(pickerOpens, 2, 'Choose PDF must open only once');
+
+  zone.listeners.click({ target: input });
+  assert.equal(pickerOpens, 2, 'input click bubbling must not reopen picker');
+
+  let prevented = 0;
+  for (const key of ['Enter', ' ']) {
+    zone.listeners.keydown({
+      target: zone, key,
+      preventDefault() { prevented++; }
+    });
+  }
+  assert.equal(pickerOpens, 4, 'Enter and Space open the picker');
+  assert.equal(prevented, 2);
+
+  zone.listeners.keydown({
+    target: button, key: 'Enter',
+    preventDefault() { throw new Error('Button owns its keyboard event'); }
+  });
+  assert.equal(pickerOpens, 4, 'nested button keydown must not duplicate');
+
+  input.disabled = true;
+  // Busy status should prevent file picker interaction. Clicking elsewhere
+  // still works for a valid selected file in other test cases.
+});
