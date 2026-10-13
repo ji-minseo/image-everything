@@ -75,6 +75,12 @@
     const incompatible = ['SMask', 'Mask', 'Decode', 'DecodeParms', 'ImageMask',
       'SMaskInData', 'Alternates', 'OPI', 'Metadata', 'Matte'];
     if (incompatible.some(name => get(name) !== undefined)) return null;
+    // Don't drop unrecognized PDF image dictionary entries. The replacement
+    // deliberately contains only the basic JPEG XObject keys listed here.
+    const safeKeys = new Set(['Type', 'Subtype', 'Width', 'Height',
+      'BitsPerComponent', 'ColorSpace', 'Filter', 'Length']);
+    if (typeof dict.keys === 'function' && dict.keys().some(key =>
+      !safeKeys.has(key.toString().replace(/^\//, '')))) return null;
     const widthObj = get('Width'), heightObj = get('Height');
     const width = widthObj && Number(widthObj.toString());
     const height = heightObj && Number(heightObj.toString());
