@@ -44,6 +44,7 @@ function setupUploadInteractions() {
   });
   const zone = registered({
     id: 'dropzone',
+    closest() { return null; },
     classList: { add() {}, remove() {} }
   });
   const input = registered({
