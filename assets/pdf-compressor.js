@@ -294,7 +294,22 @@
       updateControls();
       clearResult();
     }
-    choose.addEventListener('click', () => input.click());
+    // Match the other image compressors: click anywhere in the upload area.
+    // Ignore clicks bubbling from its button or the hidden file input itself,
+    // otherwise a synthetic input.click() could reopen the picker recursively.
+    function openFilePicker() {
+      if (!busy) input.click();
+    }
+    choose.addEventListener('click', openFilePicker);
+    dropzone.addEventListener('click', event => {
+      if (busy || event.target === input || event.target.closest('button, input')) return;
+      openFilePicker();
+    });
+    dropzone.addEventListener('keydown', event => {
+      if (busy || event.target !== dropzone || !['Enter', ' '].includes(event.key)) return;
+      event.preventDefault();
+      openFilePicker();
+    });
     input.addEventListener('change', () => setFile(input.files && input.files[0]));
     remove.addEventListener('click', () => setFile(null));
     ['dragenter', 'dragover'].forEach(name => dropzone.addEventListener(name, event => {
