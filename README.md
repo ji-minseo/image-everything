@@ -21,7 +21,7 @@ URL: https://image.everytinytool.com/pdf-compressor/
 - **Target file size is disabled by default.** Toggle it on to choose **under 100 MB / 50 MB / 10 MB** or enter a custom MB limit.
 - The target is best effort: no additional image downsampling or automatic quality degradation is applied to force the goal. The output reports measured bytes and whether the optional target was met.
 - Under means strictly below a decimal MB threshold (10 MB = 10,000,000 bytes).
-- If the original already meets an enabled size target, or if reserialization doesn't save any bytes, the original PDF is kept.
+- The Quality setting always runs even when the original PDF is already below an enabled size goal. If processing doesn't save bytes, the original is returned unchanged; an already-met size goal is still correctly reported.
 
 ### Technical notes
 
