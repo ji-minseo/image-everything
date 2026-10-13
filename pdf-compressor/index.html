@@ -9,10 +9,10 @@
   <link rel="canonical" href="https://image.everytinytool.com/pdf-compressor/">
   <link rel="icon" type="image/svg+xml" href="../favicon.svg">
   <link rel="stylesheet" href="../assets/styles.css">
-  <link rel="stylesheet" href="../assets/pdf-compressor.css?v=20261013-1">
+  <link rel="stylesheet" href="../assets/pdf-compressor.css?v=20261013-2">
   <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js" defer></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf-lib/1.17.1/pdf-lib.min.js" defer></script>
-  <script src="../assets/pdf-compressor.js?v=20261013-1" defer></script>
+  <script src="../assets/pdf-compressor.js?v=20261013-2" defer></script>
   <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-2168810425673811" crossorigin="anonymous"></script>
   <script type="application/ld+json">{"@context":"https://schema.org","@type":"WebApplication","name":"PDF Compressor — Image Everything","url":"https://image.everytinytool.com/pdf-compressor/","description":"Browser-based PDF compressor with percentage reduction settings and file size targets.","applicationCategory":"UtilitiesApplication","operatingSystem":"Web browser","isAccessibleForFree":true}</script>
 </head>
@@ -82,6 +82,12 @@
         <div class="pdfc-percent-top"><label for="pdf-percent">Target reduction</label><strong id="pdf-percent-value">40% smaller</strong></div>
         <input id="pdf-percent" type="range" min="10" max="90" value="40" step="10" aria-describedby="pdf-percent-help">
         <div class="pdfc-range-labels"><span>10% lighter</span><span>50%</span><span>90% smaller</span></div>
+        <div class="pdfc-percent-presets" role="group" aria-label="Quick reduction goals">
+          <button type="button" data-pdf-percent="20">20% smaller</button>
+          <button type="button" data-pdf-percent="40" class="active">40% smaller</button>
+          <button type="button" data-pdf-percent="60">60% smaller</button>
+          <button type="button" data-pdf-percent="80">80% smaller</button>
+        </div>
         <p id="pdf-percent-help" class="pdfc-help">This is a requested reduction in file size, not a guaranteed output size or image-quality percentage.</p>
       </div>
       <div class="pdfc-important"><span aria-hidden="true">ⓘ</span><div><strong>Know before compressing</strong><p>To make PDFs much smaller, this tool turns pages into JPEG images. The result may lose selectable/searchable text, links, forms and vector detail. If your PDF is already below a size target, it is returned unchanged.</p></div></div>
