@@ -2,9 +2,6 @@
    Overall width, headings, form panels, navigation, footer and sections use
    the shared Image Everything assets/styles.css for visual consistency. */
 .pdfc-page [hidden]{display:none!important}
-.pdfc-page .tool-head,.pdfc-page .tool-head h1,.pdfc-page .tool-head p{
-  /* Preserve the same max-width, type scale and spacing as other tools. */
-}
 .pdfc-page .pdfc-panel{width:100%;max-width:none}
 .pdfc-page .pdfc-dropzone{min-height:240px}
 .pdfc-file:not([hidden]){
