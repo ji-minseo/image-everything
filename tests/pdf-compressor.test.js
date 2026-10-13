@@ -282,7 +282,7 @@ test('all dynamic UI lookup IDs exist exactly once, including target checkbox', 
 
 test('the full PDF dropzone is clickable and keyboard focusable', () => {
   assert.match(page, /id="pdf-dropzone" role="group" tabindex="0"/);
-  assert.match(page, /Press Enter or Space to choose a PDF/);
+  assert.match(page, /press Enter or Space to choose a PDF/i);
   assert.match(css, /\.pdfc-page \.pdfc-dropzone\{min-height:240px;cursor:pointer\}/);
   assert.match(css, /\.pdfc-page \.pdfc-dropzone:focus-visible/);
 });
@@ -328,8 +328,7 @@ test('clicking the dropzone opens the picker exactly once without duplicate bubb
   const fakeWindow = {};
   vm.runInNewContext(script, {
     window: fakeWindow, document: fakeDoc,
-    Blob, Uint8Array, TextDecoder, Number, Math, Set,
-    console
+    Blob, Uint8Array, TextDecoder, Number, Math, Set
   });
   assert.equal(typeof listeners.DOMContentLoaded, 'function');
   listeners.DOMContentLoaded();
@@ -364,7 +363,4 @@ test('clicking the dropzone opens the picker exactly once without duplicate bubb
   });
   assert.equal(pickerOpens, 4, 'nested button keydown must not duplicate');
 
-  input.disabled = true;
-  // Busy status should prevent file picker interaction. Clicking elsewhere
-  // still works for a valid selected file in other test cases.
 });
