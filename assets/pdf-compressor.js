@@ -30,7 +30,7 @@
     if (!(Number.isFinite(originalBytes) && originalBytes > 0) || !Number.isFinite(amount)) return null;
     if (mode === 'percent') {
       if (amount < 1 || amount > 95) return null;
-      return Math.max(1, Math.floor(originalBytes * (1 - amount / 100)));
+      return Math.max(1, Math.floor(originalBytes * (100 - amount) / 100));
     }
     if (mode === 'size') {
       if (amount < .1 || amount > 1000) return null;
