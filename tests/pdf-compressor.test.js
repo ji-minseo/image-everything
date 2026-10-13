@@ -195,13 +195,15 @@ test('if JPEG output does not shrink at quality 80, original image object stays 
   delete global.document;
   delete global.window.createImageBitmap;
 });
-test('optional target skips processing when input PDF is already below limit', async () => {
-  global.window.PDFLib = null;
+test('an already-met optional target does not override chosen Quality 80% processing', async () => {
+  const state = mockDocument({ outputSize: 4000000 });
   const input = sampleFile(5000000);
   const result = await api.optimizePdf(input, { quality: 80, targetEnabled: true, limit: 10 });
-  assert.equal(result.blob, input);
+  assert.equal(state.loads, 1);
+  assert.equal(state.saves, 1);
+  assert.equal(result.original, false);
   assert.equal(result.reached, true);
-  assert.equal(result.reason, 'already-small');
+  assert.equal(result.saving, 20);
 });
 test('with size option off, original-size test never skips quality compression', async () => {
   const state = mockDocument({ outputSize: 70000 });
@@ -225,6 +227,13 @@ test('original PDF wins if optimized output is bigger', async () => {
   assert.equal(result.blob, original);
   assert.equal(result.reached, null);
   assert.equal(result.reason, 'not-smaller');
+});
+test('original still satisfies an optional goal even if compression produces no savings', async () => {
+  mockDocument({ outputSize: 140000 });
+  const original = sampleFile(120000);
+  const result = await api.optimizePdf(original, { quality: 80, targetEnabled: true, limit: 10 });
+  assert.equal(result.original, true);
+  assert.equal(result.reached, true);
 });
 test('encrypted PDFs still report a specific error', async () => {
   const err = new Error('encrypted');
