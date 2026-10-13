@@ -130,13 +130,13 @@
 
   async function compressPdf(file, settings, onProgress, shouldCancel) {
     await checkPdf(file);
-    if (!root.pdfjsLib || !root.PDFLib) {
-      throw new Error('The PDF processing libraries did not load. Check your connection and try again.');
-    }
     const limit = targetBytes(settings.mode, settings.amount, file.size);
     if (limit === null) throw new Error('Choose a valid compression percentage or file size limit.');
     if (settings.mode === 'size' && file.size <= limit) {
       return { blob: file, bytes: file.size, original: true, reached: true, saving: 0, attempts: 0, pageCount: null };
+    }
+    if (!root.pdfjsLib || !root.PDFLib) {
+      throw new Error('The PDF processing libraries did not load. Check your connection and try again.');
     }
 
     root.pdfjsLib.GlobalWorkerOptions.workerSrc =
@@ -383,6 +383,6 @@
   }
   if (typeof module !== 'undefined' && module.exports) {
     module.exports = { MB, MAX_BYTES, MAX_PAGES, PROFILES, formatSize, targetBytes,
-      reductionPercent, chooseStartingProfile, makeOutputName, canvasDimensions, outcome, checkPdf };
+      reductionPercent, chooseStartingProfile, makeOutputName, canvasDimensions, outcome, checkPdf, compressPdf };
   }
 })(typeof window !== 'undefined' ? window : {});
