@@ -4,163 +4,160 @@ const assert = require('node:assert/strict');
 const fs = require('node:fs');
 const path = require('node:path');
 
-const root = path.resolve(__dirname, '..');
-// The browser bundles are injected by the page, so we mock only their public API
-// to regression-test workflow control flow. This is not visual/real-PDF validation.
 global.window = {};
 const api = require('../assets/pdf-compressor.js');
+const root = path.resolve(__dirname, '..');
 const html = fs.readFileSync(path.join(root, 'pdf-compressor/index.html'), 'utf8');
 const css = fs.readFileSync(path.join(root, 'assets/pdf-compressor.css'), 'utf8');
 const js = fs.readFileSync(path.join(root, 'assets/pdf-compressor.js'), 'utf8');
+const styles = fs.readFileSync(path.join(root, 'assets/styles.css'), 'utf8');
 
-test('correct and strict under-MB targets', () => {
-  assert.equal(api.targetBytes('size', 100, 145000000), 99999999);
-  assert.equal(api.targetBytes('size', 50, 145000000), 49999999);
-  assert.equal(api.targetBytes('size', 10, 145000000), 9999999);
-  assert.equal(api.targetBytes('size', 5, 145000000), 4999999);
-  assert.equal(api.targetBytes('size', 1, 145000000), 999999);
-  assert.equal(api.targetBytes('size', 0.5, 15000000), 499999);
+function fakePdf(size = 25000000) {
+  return {
+    name: 'presentation.pdf', size,
+    slice: () => new Blob(['%PDF-1.7\n']),
+    arrayBuffer: async () => new TextEncoder().encode('%PDF-1.7\n').buffer
+  };
+}
+function mockedPdfLib(size, error = null) {
+  const details = { loads: 0, saves: 0, loadOptions: null, saveOptions: null };
+  global.window.PDFLib = { PDFDocument: { async load(bytes, options) {
+    details.loads++;
+    details.loadOptions = options;
+    if (error) throw error;
+    assert.ok(bytes instanceof Uint8Array);
+    return { async save(saveOptions) {
+      details.saves++;
+      details.saveOptions = saveOptions;
+      return new Uint8Array(size);
+    }};
+  }}};
+  return details;
+}
+
+test('supports only 100, 50 and 10 MB quick goals', () => {
+  assert.deepEqual(api.PRESET_MB, [100, 50, 10]);
+  for (const goal of api.PRESET_MB) {
+    assert.match(html, new RegExp('data-pdf-size="' + goal + '"'));
+  }
+  assert.equal(api.targetBytes(100), 99999999);
+  assert.equal(api.targetBytes(50), 49999999);
+  assert.equal(api.targetBytes(10), 9999999);
+  assert.equal(api.targetBytes(0.5), 499999);
+  assert.equal(api.targetBytes(10), api.targetBytes('10'));
 });
-test('compression percentage targets refer to reduction in bytes, not image fidelity', () => {
-  assert.equal(api.targetBytes('percent', 20, 50000000), 40000000);
-  assert.equal(api.targetBytes('percent', 40, 50000000), 30000000);
-  assert.equal(api.targetBytes('percent', 60, 50000000), 20000000);
-  assert.equal(api.targetBytes('percent', 80, 50000000), 10000000);
-});
-test('invalid settings are rejected', () => {
-  for (const v of [0, -1, NaN, Infinity, 1001]) assert.equal(api.targetBytes('size', v, 5000), null);
-  for (const v of [0, -1, 96, 100]) assert.equal(api.targetBytes('percent', v, 5000), null);
-  assert.equal(api.targetBytes('something', 1, 5000), null);
-});
-test('compression result never claims a target was met unless actual output matches it', () => {
-  assert.deepEqual(api.outcome(50000000, 9000000, 9999999), { reached: true, smaller: true, saving: 82 });
-  const bad = api.outcome(50000000, 11000000, 9999999);
-  assert.equal(bad.reached, false);
-  assert.equal(bad.smaller, true);
-  assert.equal(bad.saving, 78);
-});
-test('file size and output names are formatted safely', () => {
-  assert.equal(api.formatSize(0), '0 B');
-  assert.equal(api.formatSize(10000000), '10.00 MB');
-  assert.equal(api.makeOutputName('report.PDF'), 'report-compressed.pdf');
-  assert.equal(api.makeOutputName(''), 'document-compressed.pdf');
-});
-test('pixel caps avoid allocating huge canvases for large PDF pages', () => {
-  for (const profile of api.PROFILES) {
-    const dimensions = api.canvasDimensions(4320, 6120, profile);
-    assert.ok(dimensions.width <= 3200 && dimensions.height <= 3200);
-    assert.ok(dimensions.width * dimensions.height <= profile.maxPixels);
+test('invalid or blank targets never get silently interpreted as zero', () => {
+  for (const invalid of ['', null, NaN, Infinity, 0, -1, .05, 1001]) {
+    assert.equal(api.targetBytes(invalid), null);
   }
 });
-test('page HTML connects every visible control to the compressor source', () => {
-  const required = ['pdf-compressor','pdf-file','pdf-dropzone','pdf-choose','pdf-file-selected',
-    'pdf-filename','pdf-original-label','pdf-remove','pdf-percent','pdf-percent-value',
-    'pdf-size','pdf-percent-panel','pdf-size-panel','pdf-compress','pdf-cancel','pdf-progress',
-    'pdf-meter','pdf-progress-text','pdf-result','pdf-result-title','pdf-output-size',
-    'pdf-input-size','pdf-saved','pdf-outcome','pdf-result-bar','pdf-download','pdf-status'];
-  const ids = [...html.matchAll(/id="([^"]+)"/g)].map(match => match[1]);
-  assert.equal(new Set(ids).size, ids.length);
-  for (const id of required) assert.ok(ids.includes(id), id + ' absent from markup');
-  for (const match of js.matchAll(/\$\('([^']+)'\)/g)) assert.ok(ids.includes(match[1]), match[1]);
-  assert.match(css, /\.pdfc-page \[hidden\]\{display:none!important\}/);
+test('calculates actual size and never presents an unachieved target as success', () => {
+  assert.deepEqual(api.assessResult(25000000, 8100000, api.targetBytes(10)),
+    { smaller: true, reached: true, saving: 67.6 });
+  assert.deepEqual(api.assessResult(25000000, 11000000, api.targetBytes(10)),
+    { smaller: true, reached: false, saving: 56 });
+  assert.equal(api.reductionPercent(1000, 1000), 0);
 });
-test('HTML describes the real PDF processing limits and preservation trade-offs', () => {
-  assert.match(html, /Under <strong>100 MB<\/strong>/);
-  assert.match(html, /Under <strong>50 MB<\/strong>/);
-  assert.match(html, /Under <strong>10 MB<\/strong>/);
-  for (const goal of [20, 40, 60, 80]) assert.match(html, new RegExp('data-pdf-percent="' + goal + '"'));
-  assert.match(js, /percentPresets\.forEach\(button => button\.classList\.toggle/);
-  assert.match(html, /reduction in file size/i);
-  assert.match(html, /selectable\/searchable text/);
-  assert.match(html, /No file uploads/);
-  assert.match(html, /pdf\.js\/3\.11\.174\/pdf\.min\.js/);
-  assert.match(html, /pdf-lib\/1\.17\.1\/pdf-lib\.min\.js/);
+test('uses PDF-only output name and actual decimal MB units', () => {
+  assert.equal(api.outputName('report.PDF'), 'report-optimized.pdf');
+  assert.equal(api.outputName(''), 'document-optimized.pdf');
+  assert.equal(api.formatSize(10000000), '10.00 MB');
 });
-const fakeFile = (size = 15000000) => ({
-  size, name: 'sample.pdf',
-  slice: () => new Blob(['%PDF-1.7\n']),
-  arrayBuffer: async () => new TextEncoder().encode('%PDF-1.7\n').buffer
+test('validates PDFs and restricts very large documents', async () => {
+  await assert.rejects(() => api.validateFile(fakePdf(0)), /empty/);
+  await assert.rejects(() => api.validateFile(fakePdf(181000000)), /180 MB/);
+  await assert.rejects(() => api.validateFile({
+    ...fakePdf(), slice: () => new Blob(['this is plain text'])
+  }), /look like a PDF/);
 });
-function mockLibraries(outputLength, pages = 2) {
-  global.document = {
-    createElement(tag) {
-      assert.equal(tag, 'canvas');
-      return {
-        width: 0, height: 0,
-        getContext: () => ({ fillRect() {}, fillStyle: '' }),
-        toBlob: cb => cb(new Blob([new Uint8Array(128)], { type: 'image/jpeg' }))
-      };
-    }
-  };
-  let renderCount = 0;
-  let destroyCount = 0;
-  global.window.pdfjsLib = {
-    GlobalWorkerOptions: { workerSrc: '' },
-    getDocument() {
-      return { promise: Promise.resolve({
-        numPages: pages,
-        getPage: async () => ({
-          getViewport: ({ scale }) => ({ width: 612 * scale, height: 792 * scale }),
-          render: () => { renderCount++; return { promise: Promise.resolve() }; },
-          cleanup() {}
-        }),
-        destroy: async () => { destroyCount++; }
-      }), destroy: async () => { destroyCount++; } };
-    }
-  };
-  global.window.PDFLib = { PDFDocument: { create: async () => ({
-    embedJpg: async () => ({}),
-    addPage: () => ({ drawImage() {} }),
-    save: async () => new Uint8Array(outputLength)
-  }) } };
-  return { get renders() { return renderCount; }, get destroys() { return destroyCount; } };
-}
-test('an already-small PDF is returned unchanged with its original text and links', async () => {
-  global.window.pdfjsLib = undefined;
-  global.window.PDFLib = undefined;
-  const file = fakeFile(8000000);
-  const result = await api.compressPdf(file, { mode: 'size', amount: 10 }, () => {}, () => false);
-  assert.equal(result.original, true);
+test('already-under-target PDFs remain byte-for-byte unchanged', async () => {
+  global.window.PDFLib = null;
+  const file = fakePdf(7000000);
+  const result = await api.optimizePdf(file, 10);
   assert.equal(result.blob, file);
+  assert.equal(result.bytes, file.size);
+  assert.equal(result.original, true);
   assert.equal(result.reached, true);
-  assert.equal(result.attempts, 0);
+  assert.equal(result.reason, 'already-small');
 });
-test('mocked PDF canvas rendering completes and reports the actual smaller size', async () => {
-  const mocks = mockLibraries(6200000);
-  const progress = [];
-  const result = await api.compressPdf(fakeFile(30000000), { mode: 'size', amount: 10 },
-    event => progress.push(event), () => false);
-  assert.equal(result.reached, true);
+test('pdf-lib reparses and repacks without converting pages to images', async () => {
+  const mocks = mockedPdfLib(8600000);
+  const events = [];
+  const result = await api.optimizePdf(fakePdf(25000000), 10, message => events.push(message));
   assert.equal(result.original, false);
-  assert.equal(result.bytes, 6200000);
-  assert.equal(result.pageCount, 2);
-  assert.ok(progress.length > 0);
-  assert.equal(mocks.renders, 2);
-  assert.equal(mocks.destroys, 1);
+  assert.equal(result.reached, true);
+  assert.equal(result.bytes, 8600000);
+  assert.ok(result.blob instanceof Blob);
+  assert.equal(mocks.loads, 1);
+  assert.equal(mocks.saves, 1);
+  assert.equal(mocks.loadOptions.ignoreEncryption, false);
+  assert.equal(mocks.loadOptions.updateMetadata, false);
+  assert.equal(mocks.saveOptions.updateFieldAppearances, false);
+  assert.equal(mocks.saveOptions.useObjectStreams, true);
+  assert.equal(mocks.saveOptions.addDefaultPage, false);
+  assert.ok(events.some(text => /Repacking PDF objects/.test(text)));
+  assert.doesNotMatch(js, /pdfjsLib|page\.render|canvas\.toBlob|embedJpg|rasterAttempt/);
 });
-test('a missed PDF size goal is honestly reported after stronger compression passes', async () => {
-  const mocks = mockLibraries(11000000);
-  const result = await api.compressPdf(fakeFile(30000000), { mode: 'size', amount: 10 },
-    () => {}, () => false);
+test('gentle optimizer keeps output honest when target is missed', async () => {
+  const mocks = mockedPdfLib(19300000);
+  const result = await api.optimizePdf(fakePdf(25000000), 10);
+  assert.equal(result.original, false);
   assert.equal(result.reached, false);
-  assert.equal(result.bytes, 11000000);
-  assert.equal(result.original, false);
-  assert.equal(mocks.renders, 12);
+  assert.equal(result.reason, 'partial');
+  assert.equal(mocks.saves, 1);
 });
-test('pages beyond browser-friendly cap are rejected before rendering', async () => {
-  const mocks = mockLibraries(1000000, 121);
-  await assert.rejects(() => api.compressPdf(fakeFile(30000000),
-    { mode: 'size', amount: 10 }, () => {}, () => false), /up to 120 PDF pages/);
-  assert.equal(mocks.renders, 0);
+test('never replaces the input with a larger optimized output', async () => {
+  mockedPdfLib(29000000);
+  const input = fakePdf(25000000);
+  const result = await api.optimizePdf(input, 10);
+  assert.equal(result.blob, input);
+  assert.equal(result.original, true);
+  assert.equal(result.reached, false);
+  assert.equal(result.saving, 0);
+  assert.equal(result.reason, 'not-smaller');
 });
-test('cancel stops a compression pass before processing another page', async () => {
-  mockLibraries(1000000);
-  await assert.rejects(() => api.compressPdf(fakeFile(30000000),
-    { mode: 'size', amount: 10 }, () => {}, () => true), /cancelled/);
+test('encrypted or password-protected PDFs give actionable error', async () => {
+  const encrypted = new Error('encrypted document');
+  encrypted.name = 'EncryptedPDFError';
+  mockedPdfLib(100, encrypted);
+  await assert.rejects(() => api.optimizePdf(fakePdf(), 10), /Password-protected or encrypted/);
 });
-test('empty, oversized and non-PDF files are declined', async () => {
-  await assert.rejects(() => api.checkPdf(fakeFile(0)), /empty/);
-  await assert.rejects(() => api.checkPdf(fakeFile(181000000)), /180 MB/);
-  const textFile = {...fakeFile(), slice: () => new Blob(['Hello world'])};
-  await assert.rejects(() => api.checkPdf(textFile), /valid PDF/);
+test('dependencies are checked only when the original is above goal', async () => {
+  global.window.PDFLib = null;
+  await assert.rejects(() => api.optimizePdf(fakePdf(25000000), 10), /optimizer did not load/);
+  const unchanged = await api.optimizePdf(fakePdf(4000000), 10);
+  assert.equal(unchanged.original, true);
+});
+test('uses full-width shared Image Everything components, not the narrow unique PDF layout', () => {
+  assert.match(styles, /\.shell\{width:min\(1080px/);
+  assert.match(styles, /\.tool-layout\{padding:38px 0 72px\}/);
+  assert.match(html, /class="tool-layout pdfc-page"/);
+  assert.match(html, /class="tool-head"/);
+  assert.match(html, /class="panel pdfc-panel"/);
+  assert.match(html, /class="dropzone pdfc-dropzone"/);
+  assert.match(html, /class="info info-grid"/);
+  assert.match(html, /class="network"/);
+  assert.match(css, /\.pdfc-page \.pdfc-panel\{width:100%;max-width:none\}/);
+  assert.doesNotMatch(css, /930px/);
+  assert.doesNotMatch(css, /clamp\(44px/);
+  assert.match(html, /href="\.\.\/png-compressor\/"/);
+  assert.match(html, /href="https:\/\/everytinytool.com\/privacy\/"/);
+});
+test('no aggressive compression mode, 1MB or 5MB presets, PDF.js or raster warning remains', () => {
+  assert.doesNotMatch(html, /data-pdf-percent|data-pdf-mode|pdf-percent-panel/);
+  assert.doesNotMatch(html, /data-pdf-size="1"[^0]|data-pdf-size="5"/);
+  assert.doesNotMatch(html, /pdf\.js\/3\.11/);
+  assert.doesNotMatch(html, /pages into JPEG|turns pages into JPEG/);
+  assert.match(html, /Gentle optimization only/);
+  assert.match(html, /digitally signed PDF/);
+  assert.match(js, /useObjectStreams: true/);
+  assert.doesNotMatch(js, /pdfjsLib/);
+});
+test('each dynamic element used by the script exists once in markup', () => {
+  const ids = [...html.matchAll(/id="([^"]+)"/g)].map(m => m[1]);
+  assert.equal(new Set(ids).size, ids.length);
+  for (const match of js.matchAll(/\$\('([^']+)'\)/g)) {
+    assert.ok(ids.includes(match[1]), 'missing id ' + match[1]);
+  }
+  assert.match(css, /\.pdfc-page \[hidden\]\{display:none!important\}/);
 });
