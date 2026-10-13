@@ -208,6 +208,7 @@
     const modeBtns = [...document.querySelectorAll('[data-pdf-mode]')];
     const presetBtns = [...document.querySelectorAll('[data-pdf-size]')];
     const percent = $('pdf-percent');
+    const percentPresets = [...document.querySelectorAll('[data-pdf-percent]')];
     const percentValue = $('pdf-percent-value');
     const sizeField = $('pdf-size');
     const percentPanel = $('pdf-percent-panel');
@@ -275,6 +276,7 @@
     }
     function updatePercent() {
       percentValue.textContent = percent.value + '% smaller';
+      percentPresets.forEach(button => button.classList.toggle('active', Number(button.dataset.pdfPercent) === Number(percent.value)));
       clearOutput();
     }
 
@@ -299,6 +301,11 @@
       clearOutput();
     });
     percent.addEventListener('input', updatePercent);
+    percentPresets.forEach(button => button.addEventListener('click', () => {
+      if (busy) return;
+      percent.value = button.dataset.pdfPercent;
+      updatePercent();
+    }));
     cancel.addEventListener('click', () => {
       runId++;
       say('Cancelling after the current PDF page finishes.');
