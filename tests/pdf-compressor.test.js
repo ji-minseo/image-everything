@@ -111,7 +111,7 @@ test('quality slider applies only to compatible unmasked RGB JPEG XObjects', () 
     { Filter: '/FlateDecode' }, { ColorSpace: '/DeviceCMYK' },
     { Decode: '[1 0 1 0 1 0]' }, { SMask: '13 0 R' },
     { Mask: '9 0 R' }, { BitsPerComponent: '1' },
-    { Width: '50000' }, { Height: '50000' }
+    { Width: '70000' }, { Height: '50000' }
   ]) {
     assert.equal(api.jpegCandidate({ dict: imageDict(value), getContents: () => sampleJpeg() }, lib), null);
   }
