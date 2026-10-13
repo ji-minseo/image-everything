@@ -1,129 +1,106 @@
-/* PDF Compressor — scoped UI for Image Everything */
-.pdfc-page{padding-top:36px}
+/* PDF Compressor · local enhancements only.
+   Overall width, headings, form panels, navigation, footer and sections use
+   the shared Image Everything assets/styles.css for visual consistency. */
 .pdfc-page [hidden]{display:none!important}
-.pdfc-page .tool-head{max-width:810px;margin-bottom:29px}
-.pdfc-page .tool-head h1{max-width:770px;margin:12px 0 16px;font-size:clamp(44px,7.2vw,76px);letter-spacing:-.062em}
-.pdfc-page .tool-head p{max-width:680px;line-height:1.65}
-.pdfc-purple{color:#7c5cfc}
-.pdfc-eyebrow{display:block;margin-top:23px;font-size:12px;color:#6b52d7;font-weight:850;letter-spacing:.09em}
-.pdfc-trust{display:flex;flex-wrap:wrap;gap:8px;margin-top:18px}
-.pdfc-trust span{display:inline-flex;align-items:center;border-radius:99px;padding:7px 11px;background:#f4f1ff;color:#5d46bd;font-size:12px;font-weight:790}
-.pdfc-panel{max-width:930px;overflow:visible;border:1px solid #ebe7f5;border-radius:27px;padding:clamp(18px,4vw,36px)}
-.pdfc-step-title{display:flex;gap:14px;align-items:start;margin:0 0 17px}
-.pdfc-step{display:grid;place-items:center;width:36px;height:36px;flex:none;border-radius:12px;background:#f1edff;color:#7254e4;font-size:12px;font-weight:900}
-.pdfc-step-title>div{display:grid;gap:1px}
-.pdfc-step-title strong{font-size:18px;font-weight:860;letter-spacing:-.025em}
-.pdfc-step-title small{font-size:12px;color:#777181}
-.pdfc-dropzone{min-height:225px;border-radius:20px;border-color:#cbbffa;background:#fcfbff;padding:25px 16px}
-.pdfc-dropzone h2{font-size:22px;margin:10px 0 6px}
-.pdfc-dropzone p{margin-bottom:15px}
-.pdfc-document-icon{display:grid;place-items:center;width:64px;height:71px;border-radius:13px;border:1px solid #d9cef5;background:#eee7ff;color:#6b52cf;box-shadow:0 10px 22px rgba(75,46,135,.11);font-size:17px;font-weight:950;letter-spacing:-.035em;margin:auto;transform:rotate(-4deg)}
-.pdfc-dropzone .btn{min-width:156px}
-.pdfc-selected{display:flex;align-items:center;gap:13px;padding:15px 14px;margin-top:14px;border:1px solid #e6dff6;border-radius:16px;background:#faf8ff}
-.pdfc-selected-icon{flex:none;display:grid;place-items:center;width:41px;height:48px;border-radius:9px;background:#efe9ff;font-size:12px;font-weight:900;color:#6c4dde}
-.pdfc-selected-copy{display:grid;gap:2px;min-width:0;flex:1}
-.pdfc-selected-copy strong{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:14px;font-weight:830}
-.pdfc-selected-copy span{font-size:12px;color:#766e86}
-.pdfc-remove{width:36px;height:36px;flex:none;border:0;border-radius:50%;background:#eeeaf6;font-size:23px;color:#584e69}
-.pdfc-remove:hover{background:#e6dcfc}
-.pdfc-divider{height:1px;background:#ebe8f1;margin:27px 0 25px}
-.pdfc-switch{display:grid;grid-template-columns:1fr 1fr;gap:5px;padding:5px;background:#f3f0f9;border:1px solid #ebe5f6;border-radius:15px}
-.pdfc-switch button{min-height:45px;border:0;border-radius:11px;background:transparent;font-size:14px;font-weight:800;color:#716983;transition:background .15s ease}
-.pdfc-switch button[aria-pressed="true"]{background:#fff;color:#513ab3;box-shadow:0 3px 12px rgba(49,34,96,.09)}
-.pdfc-option-panel{padding-top:23px}
-.pdfc-mini-label{font-size:11px;letter-spacing:.07em;font-weight:850;color:#756d83;margin-bottom:12px}
-.pdfc-preset-grid{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:8px}
-.pdfc-preset-grid button{display:grid;gap:4px;place-items:center;min-height:76px;border:1px solid #e5e1ed;background:#fff;border-radius:15px;color:#5c5766;font-size:11px;font-weight:700;line-height:1.3;transition:background .16s ease,border-color .16s ease,transform .16s ease}
-.pdfc-preset-grid button strong{color:#26212e;font-size:17px;letter-spacing:-.03em}
-.pdfc-preset-grid button:hover{border-color:#bca9fe}
-.pdfc-preset-grid button.active{background:#f2eeff;border-color:#7c5cfc;box-shadow:0 0 0 1px #7c5cfc inset;color:#6948da}
-.pdfc-preset-grid button.active strong{color:#5940bb}
-.pdfc-custom{display:flex;flex-wrap:wrap;align-items:center;gap:12px;justify-content:space-between;margin-top:17px}
-.pdfc-custom label{font-size:13px;color:#5e5668;font-weight:760}
-.pdfc-custom-input{display:flex;align-items:center;border:1px solid #e4ddf2;background:#fff;border-radius:12px;max-width:170px;overflow:hidden}
-.pdfc-custom-input input{width:100%;border:0;box-shadow:none!important;border-radius:0;padding:11px 12px;text-align:right;font-size:14px;font-weight:780}
-.pdfc-custom-input span{padding:0 12px 0 2px;font-size:12px;font-weight:800;color:#81768d}
-.pdfc-percent-top{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:15px}
-.pdfc-percent-top label{font-size:13px;font-weight:800}
-.pdfc-percent-top strong{font-size:18px;color:#6345d6}
-.pdfc-option-panel input[type="range"]{width:100%;height:9px;accent-color:#7c5cfc;cursor:pointer}
-.pdfc-range-labels{display:flex;justify-content:space-between;margin-top:7px;color:#7c748a;font-size:11px;font-weight:750}
-.pdfc-percent-presets{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;margin-top:18px}
-.pdfc-percent-presets button{min-height:39px;border:1px solid #e3dded;border-radius:10px;background:#fff;color:#6b6174;font-size:12px;font-weight:800}
-.pdfc-percent-presets button:hover{border-color:#b5a5ef}
-.pdfc-percent-presets button.active{background:#f1edff;border-color:#7c5cfc;color:#6347c9}
-.pdfc-help{color:#756e7d;font-size:12px;line-height:1.55;margin:13px 0 0}
-.pdfc-important{display:flex;gap:12px;margin:23px 0 0;padding:14px 15px;background:#fffaf0;border:1px solid #f2e5cc;border-radius:14px}
-.pdfc-important>span{font-size:19px;color:#9a6b24;line-height:1.4}
-.pdfc-important strong{font-size:13px;color:#715129}
-.pdfc-important p{margin:3px 0 0;color:#806c52;font-size:12px;line-height:1.6}
-.pdfc-actions{display:flex;flex-direction:column;align-items:flex-start;gap:8px;margin-top:22px}
-.pdfc-primary{display:flex;align-items:center;justify-content:center;gap:30px;min-height:52px;padding:13px 21px;font-size:15px}
-.pdfc-primary span{font-size:20px;font-weight:600}
-.pdfc-status{margin:0;color:#7b7581;font-size:12px;line-height:1.5}
-.pdfc-status[data-error="true"]{color:#b13a4d;font-weight:730}
-.pdfc-progress{margin-top:20px;padding:16px;border:1px solid #e3dcf9;border-radius:16px;background:#f9f7ff}
-.pdfc-progress-row{display:flex;justify-content:space-between;gap:12px;align-items:center;font-size:13px}
-.pdfc-progress-row strong{font-size:13px}
-.pdfc-progress-row span{font-size:11px;color:#786c91}
-.pdfc-progress progress{display:block;width:100%;height:11px;accent-color:#7c5cfc;border:0;margin:13px 0}
-.pdfc-progress progress::-webkit-progress-bar{background:#e8e2f5;border-radius:99px}
-.pdfc-progress progress::-webkit-progress-value{background:#7c5cfc;border-radius:99px}
-.pdfc-cancel{border:0;background:transparent;color:#6f53cf;font-weight:820;font-size:12px;padding:4px 0}
-.pdfc-result{margin-top:20px;padding:22px;border:1px solid #dcd0f8;background:linear-gradient(180deg,#f9f7ff,#fff);border-radius:19px}
-.pdfc-result-head{display:flex;gap:12px;align-items:center}
-.pdfc-result-icon{display:grid;place-items:center;width:39px;height:39px;background:#e7e0ff;color:#6141cc;border-radius:50%;font-size:21px;font-weight:900;flex:none}
-.pdfc-result-overline{font-size:10px;letter-spacing:.12em;font-weight:850;color:#806ab1}
-.pdfc-result h2{font-size:21px;margin:0;letter-spacing:-.04em}
-.pdfc-stats{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin-top:20px}
-.pdfc-stats>div{display:grid;gap:5px;padding:13px 15px;border:1px solid #e9e2f5;background:#fff;border-radius:13px;min-width:0}
-.pdfc-stats span{font-size:11px;color:#82798b;font-weight:750}
-.pdfc-stats strong{font-size:21px;line-height:1.1;letter-spacing:-.035em;white-space:nowrap}
-.pdfc-bar-track{height:10px;background:#eee9f7;overflow:hidden;border-radius:10px;margin-top:18px}
-.pdfc-bar-fill{height:100%;width:100%;border-radius:10px;background:linear-gradient(90deg,#a18afc,#7759ee);transition:width .4s ease}
-.pdfc-result-message{color:#6c6373;font-size:12px;line-height:1.65;margin:14px 0 0}
-.pdfc-download{display:inline-flex;gap:18px;align-items:center;margin-top:18px;text-decoration:none}
-.pdfc-content{max-width:930px;margin:64px 0 40px}
-.pdfc-steps{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
-.pdfc-steps article{padding:20px;border:1px solid #eae6f3;border-radius:19px;background:#fff}
-.pdfc-steps article>span{color:#775cd6;font-size:12px;font-weight:900}
-.pdfc-steps h3{font-size:17px;letter-spacing:-.03em;margin:13px 0 7px}
-.pdfc-steps p{color:#6e6874;font-size:13px;line-height:1.65;margin:0}
-.pdfc-info-box{padding:20px 22px;margin-top:20px;border:1px solid #e9e4f4;background:#faf9fd;border-radius:18px}
-.pdfc-info-box strong{font-size:17px}
-.pdfc-info-box p{color:#6b6671;font-size:13px;line-height:1.7;margin:7px 0 0}
-.pdfc-faq{margin-top:38px}
-.pdfc-faq h2{font-size:28px;letter-spacing:-.04em;margin:0 0 16px}
-.pdfc-faq details{border:1px solid #e9e4f3;border-radius:14px;margin-top:9px;background:#fff}
-.pdfc-faq summary{cursor:pointer;padding:16px 18px;font-size:14px;font-weight:820}
-.pdfc-faq details p{padding:0 18px 15px;margin:0;color:#6b6570;font-size:13px;line-height:1.7}
-@media(max-width:740px){
-  .pdfc-page{padding-top:27px}
-  .pdfc-page .tool-head h1{font-size:clamp(39px,10vw,58px)}
-  .pdfc-page .tool-head p{font-size:15px}
-  .pdfc-preset-grid{grid-template-columns:repeat(3,minmax(0,1fr))}
-  .pdfc-steps{grid-template-columns:1fr}
-  .pdfc-steps article{padding:17px}
-  .pdfc-stats strong{font-size:17px}
+.pdfc-page .tool-head,.pdfc-page .tool-head h1,.pdfc-page .tool-head p{
+  /* Preserve the same max-width, type scale and spacing as other tools. */
 }
-@media(max-width:440px){
-  .pdfc-panel{padding:16px;border-radius:21px}
-  .pdfc-step-title{gap:11px}
-  .pdfc-step-title strong{font-size:16px}
-  .pdfc-dropzone{min-height:210px}
-  .pdfc-trust span{font-size:10px}
-  .pdfc-preset-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
-  .pdfc-preset-grid button{min-height:69px}
-  .pdfc-custom-input{max-width:142px}
-  .pdfc-important{padding:12px}
-  .pdfc-primary{width:100%}
-  .pdfc-stats{gap:7px}
-  .pdfc-stats>div{padding:12px 8px}
-  .pdfc-stats strong{font-size:15px}
-  .pdfc-progress-row{align-items:flex-start}
+.pdfc-page .pdfc-panel{width:100%;max-width:none}
+.pdfc-page .pdfc-dropzone{min-height:240px}
+.pdfc-file:not([hidden]){
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:14px
 }
-@media(prefers-reduced-motion:reduce){.pdfc-bar-fill,.pdfc-preset-grid button,.pdfc-switch button{transition:none}}
-
-@media(max-width:440px){
-  .pdfc-percent-presets{grid-template-columns:repeat(2,minmax(0,1fr))}
+.pdfc-file-main{display:flex;align-items:center;min-width:0;gap:12px}
+.pdfc-file-icon{
+  display:grid;place-items:center;flex:none;
+  width:48px;height:54px;border-radius:11px;
+  color:#6b4ad2;background:#efe9ff;
+  font-size:12px;font-weight:900
 }
+.pdfc-file-meta{display:grid;gap:2px;min-width:0}
+.pdfc-file-meta strong{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:14px}
+.pdfc-file-meta span{font-size:12px;color:var(--muted)}
+.pdfc-file-remove{flex:none;padding:9px 12px!important;font-size:12px}
+.pdfc-controls{margin-top:22px}
+.pdfc-control-hint{margin:0 0 13px;color:var(--muted);font-size:13px;line-height:1.6}
+.pdfc-preset-row{gap:9px}
+.pdfc-preset-row .preset-btn{
+  padding:11px 17px;
+  font-size:13px;
+  min-height:44px
+}
+.pdfc-limit-field{
+  display:flex;align-items:center;
+  justify-content:space-between;
+  gap:14px;flex-wrap:wrap;
+  margin-top:18px
+}
+.pdfc-limit-field>label{margin:0!important}
+.pdfc-input-suffix{
+  display:flex;align-items:center;
+  max-width:180px;
+  width:100%;
+  border:1px solid #e5e1ef;border-radius:14px;background:#fff;
+  overflow:hidden
+}
+.pdfc-input-suffix:focus-within{border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-soft)}
+.pdfc-input-suffix input{
+  border:0!important;box-shadow:none!important;
+  outline:0;text-align:right;min-width:0;padding:11px 9px
+}
+.pdfc-input-suffix span{padding-right:13px;color:#7b7187;font-size:12px;font-weight:800}
+.pdfc-note{
+  border:1px solid #e9e4f2;
+  background:#faf9fd;
+  border-radius:14px;
+  padding:13px 15px;
+  line-height:1.65
+}
+.pdfc-note strong{color:#5543a2}
+.pdfc-actions{margin-top:18px}
+.pdfc-status{margin:9px 0 0;color:var(--muted);font-size:12px;line-height:1.5}
+.pdfc-status[data-error="true"]{color:#b34252;font-weight:750}
+.pdfc-progress{
+  display:flex;align-items:center;gap:12px;flex-wrap:wrap;
+  margin-top:19px;
+  padding:15px 16px;border-radius:16px;
+  border:1px solid #e9e3f8;background:#faf9fd;
+  font-size:13px
+}
+.pdfc-progress span:last-child{color:var(--muted);font-size:12px}
+.pdfc-spinner{
+  width:19px;height:19px;flex:none;
+  border:3px solid #e0d9f5;border-top-color:var(--accent);
+  border-radius:50%;animation:pdfc-spin .8s linear infinite
+}
+@keyframes pdfc-spin{to{transform:rotate(360deg)}}
+.pdfc-result{margin-top:24px}
+.pdfc-result .compression-bar.original{width:100%}
+.pdfc-result .compression-bar.compressed{width:0}
+.pdfc-result .compression-summary-head strong{font-size:22px}
+.pdfc-saving{margin:17px 0 0;color:#665a78;font-size:13px}
+.pdfc-saving strong{color:#5f42d3;font-size:19px}
+.pdfc-result-message{color:#716979;font-size:12px;line-height:1.6;margin:9px 0 0}
+.pdfc-guide{width:100%;max-width:none}
+.pdfc-guide>p{max-width:850px;color:#666;line-height:1.75}
+.pdfc-page .faq-list{margin-top:13px}
+.pdfc-page .faq-list details{background:#faf9fd}
+@media(max-width:720px){
+  .pdfc-file-meta strong{max-width:60vw}
+  .pdfc-preset-row{display:grid;grid-template-columns:repeat(3,minmax(0,1fr))}
+  .pdfc-preset-row .preset-btn{padding:10px 6px;font-size:12px}
+  .pdfc-result .compression-summary-head strong{font-size:20px}
+  .pdfc-page .pdfc-dropzone{min-height:240px}
+  .pdfc-page .pdfc-panel{max-width:none}
+}
+@media(max-width:460px){
+  .pdfc-file-meta strong{max-width:44vw}
+  .pdfc-limit-field{align-items:stretch}
+  .pdfc-input-suffix{max-width:none}
+  .pdfc-page .compression-row{grid-template-columns:69px minmax(0,1fr) 72px;gap:8px}
+  .pdfc-page .compression-row>strong{font-size:11px}
+}
+@media(prefers-reduced-motion:reduce){.pdfc-spinner{animation:none}}
