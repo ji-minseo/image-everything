@@ -185,10 +185,6 @@
     if (args.targetEnabled && goal === null) {
       throw new Error('Enter an optional size limit between 0.1 and 1000 MB.');
     }
-    if (goal !== null && file.size <= goal) {
-      return { blob: file, bytes: file.size, original: true, reached: true,
-        saving: 0, reason: 'already-small', jpegImages: 0, eligibleImages: 0 };
-    }
     if (!root.PDFLib || !root.PDFLib.PDFDocument) {
       throw new Error('The PDF optimizer did not load. Check your connection and try again.');
     }
@@ -209,7 +205,7 @@
       if (!bytes || !bytes.length) throw new Error('The PDF optimizer returned an empty file.');
       if (bytes.length >= file.size) {
         return { blob: file, bytes: file.size, original: true,
-          reached: goal === null ? null : false, saving: 0, reason: 'not-smaller',
+          reached: goal === null ? null : file.size <= goal, saving: 0, reason: 'not-smaller',
           jpegImages: 0, eligibleImages: jpeg.eligible };
       }
       const result = assessResult(file.size, bytes.length, goal);
@@ -349,10 +345,7 @@
         const imageInfo = outcome.jpegImages > 0
           ? ' JPEG images optimized: ' + outcome.jpegImages + '.'
           : ' No compatible JPEG image was recompressed; quality may not change this PDF.';
-        if (outcome.reason === 'already-small') {
-          resultTitle.textContent = 'Already under your target';
-          resultNote.textContent = 'The original PDF already fits your size goal and was kept unchanged.';
-        } else if (outcome.reason === 'not-smaller') {
+        if (outcome.reason === 'not-smaller') {
           resultTitle.textContent = 'No smaller PDF available';
           resultNote.textContent = 'The original file was kept because the result would not be smaller.' + imageInfo;
         } else if (outcome.reached === true) {
