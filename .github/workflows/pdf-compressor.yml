@@ -1,0 +1,33 @@
+name: PDF compressor checks
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'assets/pdf-compressor.js'
+      - 'assets/pdf-compressor.css'
+      - 'pdf-compressor/**'
+      - 'tests/pdf-compressor.test.js'
+      - '.github/workflows/pdf-compressor.yml'
+  pull_request:
+    paths:
+      - 'assets/pdf-compressor.js'
+      - 'assets/pdf-compressor.css'
+      - 'pdf-compressor/**'
+      - 'tests/pdf-compressor.test.js'
+      - '.github/workflows/pdf-compressor.yml'
+permissions:
+  contents: read
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out source
+        uses: actions/checkout@v4
+      - name: Install Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: JavaScript syntax check
+        run: node --check assets/pdf-compressor.js
+      - name: Test PDF compressor logic and UI contract
+        run: node --test tests/pdf-compressor.test.js
