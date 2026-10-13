@@ -1,0 +1,140 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>PDF Compressor — Compress PDF Under 10 MB, 50 MB & 100 MB | Image Everything</title>
+  <meta name="description" content="Compress PDFs online to under 10 MB, 50 MB or 100 MB, or choose a percentage reduction. Compare sizes and download. Files stay on your device.">
+  <meta name="google-site-verification" content="CBlkb_437tiJ5H-kUBL7O8dh-hd-sO5K0XpoibZ67Dg">
+  <link rel="canonical" href="https://image.everytinytool.com/pdf-compressor/">
+  <link rel="icon" type="image/svg+xml" href="../favicon.svg">
+  <link rel="stylesheet" href="../assets/styles.css">
+  <link rel="stylesheet" href="../assets/pdf-compressor.css?v=20261013-1">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js" defer></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf-lib/1.17.1/pdf-lib.min.js" defer></script>
+  <script src="../assets/pdf-compressor.js?v=20261013-1" defer></script>
+  <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-2168810425673811" crossorigin="anonymous"></script>
+  <script type="application/ld+json">{"@context":"https://schema.org","@type":"WebApplication","name":"PDF Compressor — Image Everything","url":"https://image.everytinytool.com/pdf-compressor/","description":"Browser-based PDF compressor with percentage reduction settings and file size targets.","applicationCategory":"UtilitiesApplication","operatingSystem":"Web browser","isAccessibleForFree":true}</script>
+</head>
+<body>
+<div class="shell">
+  <header class="topbar">
+    <a class="brand" href="../">Image <span>Everything ✦</span></a>
+    <span class="toplink">Free tools · No sign-up</span>
+  </header>
+  <nav class="tool-tabs" aria-label="Quick tool switcher">
+    <a class="tool-tab" href="../compress-image/">🗜️ Compress Image</a>
+    <a class="tool-tab active" href="./" aria-current="page">📄 PDF Compressor</a>
+    <a class="tool-tab" href="../jpg-compressor/">🟠 JPG Compressor</a>
+    <a class="tool-tab" href="../png-compressor/">🔵 PNG Compressor</a>
+    <a class="tool-tab" href="../resize-image/">↔️ Resize</a>
+    <a class="tool-tab" href="../convert-image/">🔁 Convert</a>
+    <a class="tool-tab" href="../heic-to-jpg/">📱 HEIC to JPG</a>
+    <a class="tool-tab" href="../image-info/">ⓘ Image Info</a>
+    <a class="tool-tab" href="../remove-exif/">🧹 EXIF Cleaner</a>
+  </nav>
+  <main id="pdf-compressor" class="tool-layout pdfc-page">
+    <section class="tool-head">
+      <a class="breadcrumb" href="../">← All image & file tools</a>
+      <span class="pdfc-eyebrow">FILE TOOLS / PDF</span>
+      <h1>Make your PDF <span class="pdfc-purple">smaller.</span></h1>
+      <p>Compress a PDF by percentage, or try to get it under a specific upload limit — 100 MB, 50 MB, 10 MB and more. Your file is processed in your browser.</p>
+      <div class="pdfc-trust"><span>◌ No file uploads</span><span>◌ No sign-up</span><span>◌ See actual results</span></div>
+    </section>
+    <section class="panel pdfc-panel" aria-label="PDF compression tool">
+      <div class="pdfc-step-title"><span class="pdfc-step">01</span><div><strong>Add your PDF</strong><small>PDF files · up to 180 MB · up to 120 pages</small></div></div>
+      <div id="pdf-dropzone" class="dropzone pdfc-dropzone">
+        <input id="pdf-file" class="file-input" type="file" accept=".pdf,application/pdf" aria-label="Choose a PDF file">
+        <div>
+          <div class="pdfc-document-icon" aria-hidden="true">PDF</div>
+          <h2>Drop your PDF here</h2>
+          <p>Or choose a file from your device.</p>
+          <button type="button" class="btn" id="pdf-choose">Choose PDF</button>
+        </div>
+      </div>
+      <div class="pdfc-selected" id="pdf-file-selected" hidden>
+        <div class="pdfc-selected-icon" aria-hidden="true">PDF</div>
+        <div class="pdfc-selected-copy"><strong id="pdf-filename">document.pdf</strong><span id="pdf-original-label">—</span></div>
+        <button type="button" id="pdf-remove" class="pdfc-remove" aria-label="Remove selected file">×</button>
+      </div>
+
+      <div class="pdfc-divider"></div>
+      <div class="pdfc-step-title"><span class="pdfc-step">02</span><div><strong>Choose how much to compress</strong><small>You can change this before every download.</small></div></div>
+      <div class="pdfc-switch" role="group" aria-label="Compression mode">
+        <button type="button" data-pdf-mode="size" aria-pressed="true">Target file size</button>
+        <button type="button" data-pdf-mode="percent" aria-pressed="false">Reduction (%)</button>
+      </div>
+      <div id="pdf-size-panel" class="pdfc-option-panel">
+        <div class="pdfc-mini-label">MAKE THE PDF SMALLER THAN</div>
+        <div class="pdfc-preset-grid" role="group" aria-label="Maximum PDF size">
+          <button type="button" data-pdf-size="100">Under <strong>100 MB</strong></button>
+          <button type="button" data-pdf-size="50">Under <strong>50 MB</strong></button>
+          <button type="button" data-pdf-size="10" class="active">Under <strong>10 MB</strong></button>
+          <button type="button" data-pdf-size="5">Under <strong>5 MB</strong></button>
+          <button type="button" data-pdf-size="1">Under <strong>1 MB</strong></button>
+        </div>
+        <div class="pdfc-custom">
+          <label for="pdf-size">Or enter your own limit (MB)</label>
+          <div class="pdfc-custom-input"><input id="pdf-size" type="number" inputmode="decimal" min="0.1" max="1000" step="0.1" value="10"><span>MB</span></div>
+        </div>
+      </div>
+      <div id="pdf-percent-panel" class="pdfc-option-panel" hidden>
+        <div class="pdfc-percent-top"><label for="pdf-percent">Target reduction</label><strong id="pdf-percent-value">40% smaller</strong></div>
+        <input id="pdf-percent" type="range" min="10" max="90" value="40" step="10" aria-describedby="pdf-percent-help">
+        <div class="pdfc-range-labels"><span>10% lighter</span><span>50%</span><span>90% smaller</span></div>
+        <p id="pdf-percent-help" class="pdfc-help">This is a requested reduction in file size, not a guaranteed output size or image-quality percentage.</p>
+      </div>
+      <div class="pdfc-important"><span aria-hidden="true">ⓘ</span><div><strong>Know before compressing</strong><p>To make PDFs much smaller, this tool turns pages into JPEG images. The result may lose selectable/searchable text, links, forms and vector detail. If your PDF is already below a size target, it is returned unchanged.</p></div></div>
+
+      <div class="pdfc-actions">
+        <button class="btn pdfc-primary" id="pdf-compress" type="button" disabled>Compress PDF <span aria-hidden="true">↗</span></button>
+        <p id="pdf-status" class="pdfc-status" role="status" aria-live="polite">Your PDF stays on your device. Nothing is uploaded.</p>
+      </div>
+      <div id="pdf-progress" class="pdfc-progress" hidden role="group" aria-label="PDF compression progress">
+        <div class="pdfc-progress-row"><strong>Compressing pages…</strong><span id="pdf-progress-text" aria-live="polite">Starting…</span></div>
+        <progress id="pdf-meter" max="100" value="0" aria-label="Compression progress">0%</progress>
+        <button id="pdf-cancel" class="pdfc-cancel" type="button" hidden>Cancel compression</button>
+      </div>
+      <div id="pdf-result" class="pdfc-result" hidden aria-live="polite">
+        <div class="pdfc-result-head"><span class="pdfc-result-icon" aria-hidden="true">✓</span><div><span class="pdfc-result-overline">RESULT</span><h2 id="pdf-result-title">Your PDF is ready</h2></div></div>
+        <div class="pdfc-stats">
+          <div><span>Original size</span><strong id="pdf-input-size">—</strong></div>
+          <div><span>Result size</span><strong id="pdf-output-size">—</strong></div>
+          <div><span>Reduction</span><strong id="pdf-saved">—</strong></div>
+        </div>
+        <div class="pdfc-bar-track" role="presentation"><div class="pdfc-bar-fill" id="pdf-result-bar"></div></div>
+        <p id="pdf-outcome" class="pdfc-result-message"></p>
+        <a class="btn pdfc-download" id="pdf-download" href="#" download hidden>Download PDF <span aria-hidden="true">↓</span></a>
+      </div>
+    </section>
+
+    <section class="pdfc-content" aria-labelledby="pdfc-guide">
+      <div class="section-heading"><span class="section-kicker">A little more detail</span><h2 id="pdfc-guide">How to compress a PDF</h2></div>
+      <div class="pdfc-steps">
+        <article><span>01</span><h3>Add a PDF file</h3><p>Drop a PDF into the box, or choose it from your phone or computer. Processing is local to your browser.</p></article>
+        <article><span>02</span><h3>Choose a target</h3><p>Try an upload limit like under 10 MB, or choose a percentage such as 40% smaller. The tool tests progressively stronger settings if needed.</p></article>
+        <article><span>03</span><h3>Check the real result</h3><p>See how many megabytes were saved and whether the target was reached. Download the result if it suits your needs.</p></article>
+      </div>
+      <div class="pdfc-info-box"><strong>Why the size target isn't guaranteed</strong><p>PDFs can contain photos, scans, fonts, vector graphics and embedded files. Some compress extremely well, while others are already optimized. Aggressive shrinking can make small text blurry. Always review the downloaded PDF before sharing or submitting it.</p></div>
+      <div class="pdfc-faq">
+        <h2>PDF compression FAQ</h2>
+        <details><summary>Can I compress a PDF to under 10 MB?</summary><p>Choose “Under 10 MB” and the tool will try several increasingly aggressive settings. If your PDF is already below 10 MB it stays unchanged. Some files cannot reach the limit without unacceptable loss, so the tool reports when the target was missed instead of claiming success.</p></details>
+        <details><summary>Does “40% smaller” guarantee a 40% reduction?</summary><p>No. It is your goal. The actual compression ratio depends on the images and data already in the PDF, and the resulting file size is displayed when processing finishes.</p></details>
+        <details><summary>Will I still be able to select or search PDF text?</summary><p>If the file needs recompression, the tool redraws each page as an image and saves a new PDF. This usually removes selectable/searchable text, editable form fields, bookmarks and clickable links. Use a professional document-preserving compressor if you need those features.</p></details>
+        <details><summary>Are my PDFs uploaded to a server?</summary><p>No. PDF pages are read and processed by JavaScript locally in your browser. The required processing libraries are downloaded by the browser, but the document file itself is not sent to our servers for compression.</p></details>
+        <details><summary>Can I compress a password-protected PDF?</summary><p>No. Unlock a password-protected PDF in a trusted application first. This tool also has a 180 MB upload-size processing limit and a 120-page limit to reduce browser memory problems.</p></details>
+        <details><summary>Why is my compressed PDF blurry?</summary><p>Image-based compression reduces image resolution and JPEG quality to save space. If readability matters more than file size, choose a less ambitious target. This tool is especially suitable for image-heavy scans and files where copyable text is not required.</p></details>
+      </div>
+    </section>
+    <section class="network">
+      <div class="network-label">More from <strong>Every Tiny Tool ✦</strong></div>
+      <div class="network-grid">
+        <a class="network-card random" href="https://random.everytinytool.com/"><div class="network-icon">🎲</div><div><h2>Random Everything</h2><p>Generators, decisions, random groups and quick games.</p><span>Explore random tools →</span></div></a>
+        <a class="network-card calculate" href="https://calculate.everytinytool.com/"><div class="network-icon">🧮</div><div><h2>Calculate Everything</h2><p>Everyday calculators for time, dates, numbers and shopping.</p><span>Explore calculators →</span></div></a>
+      </div>
+    </section>
+  </main>
+  <footer class="footer">Image Everything · <a href="https://everytinytool.com/privacy/">Privacy</a> · <a href="https://everytinytool.com/contact/">Contact</a> · PDF Compressor</footer>
+</div>
+</body>
+</html>
