@@ -179,8 +179,19 @@ function initDropzone({multiple=false,accept="image/*",onFiles}={}){
     renderSelection();
   };
 
-  $(".chooseBtn")?.addEventListener("click",()=>input.click());
-  dz.addEventListener("click",e=>{if(!e.target.closest("button"))input.click()});
+  // Match PDF Compressor: the whole dropzone is interactive, but its
+  // nested Choose button and the file input must never trigger a second picker.
+  const openFilePicker=()=>input.click();
+  $(".chooseBtn")?.addEventListener("click",openFilePicker);
+  dz.addEventListener("click",e=>{
+    if(e.target===input||e.target.closest("button, input, a, label"))return;
+    openFilePicker();
+  });
+  dz.addEventListener("keydown",e=>{
+    if(e.target!==dz||(e.key!=="Enter"&&e.key!==" "))return;
+    e.preventDefault();
+    openFilePicker();
+  });
   ["dragenter","dragover"].forEach(t=>dz.addEventListener(t,e=>{e.preventDefault();dz.classList.add("dragover")}));
   ["dragleave","drop"].forEach(t=>dz.addEventListener(t,e=>{e.preventDefault();dz.classList.remove("dragover")}));
   dz.addEventListener("drop",e=>deliver([...e.dataTransfer.files].filter(f=>f.type.startsWith("image/")||/\.(heic|heif)$/i.test(f.name))));
