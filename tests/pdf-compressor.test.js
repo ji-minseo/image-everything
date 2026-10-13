@@ -29,7 +29,7 @@ function imageDict(values = {}) {
   return {
     keys() { return Object.keys(props).map(name => ({ toString: () => '/' + name })); },
     get(name) { return Object.prototype.hasOwnProperty.call(props, name.toString().slice(1))
-      ? { toString: () => String(props[name]) } : undefined; }
+      ? { toString: () => String(props[name.toString().slice(1)]) } : undefined; }
   };
 }
 function sampleJpeg(size = 32000) {
