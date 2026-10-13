@@ -102,7 +102,7 @@
       <h2>How PDF compression works</h2>
       <p>Choose an image quality between 65% and 100% (80% by default). The compressor selectively re-encodes supported, unmasked RGB JPEG images without changing their pixel dimensions. Text, vector artwork and the page layout aren't converted into images. The PDF structure is then optimized.</p>
       <h2>Optional file size limits</h2>
-      <p>If you have an upload limit, enable the optional target and choose under 100 MB, 50 MB or 10 MB. The compressor tries at your selected quality but won't downsample pages or automatically drop quality further. The result shows whether your target was reached. A file already below the goal stays unchanged.</p>
+      <p>If you have an upload limit, enable the optional target and choose under 100 MB, 50 MB or 10 MB. The compressor tries at your selected quality but won't downsample pages or automatically drop quality further. The result shows whether your target was reached. Quality compression is still attempted when the original already meets the goal; if no smaller file results, we keep the original.</p>
       <h2>PDF compression FAQ</h2>
       <div class="faq-list">
         <details><summary>What does Quality 80% do?</summary><p>It sets the JPEG re-encoding quality for compatible embedded photos. It does not mean that every PDF becomes 20% smaller. PDFs without supported JPEGs may see only small structural reductions.</p></details>
