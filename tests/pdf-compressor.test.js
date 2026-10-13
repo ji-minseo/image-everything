@@ -68,6 +68,8 @@ test('HTML describes the real PDF processing limits and preservation trade-offs'
   assert.match(html, /Under <strong>100 MB<\/strong>/);
   assert.match(html, /Under <strong>50 MB<\/strong>/);
   assert.match(html, /Under <strong>10 MB<\/strong>/);
+  for (const goal of [20, 40, 60, 80]) assert.match(html, new RegExp('data-pdf-percent="' + goal + '"'));
+  assert.match(js, /percentPresets\.forEach\(button => button\.classList\.toggle/);
   assert.match(html, /reduction in file size/i);
   assert.match(html, /selectable\/searchable text/);
   assert.match(html, /No file uploads/);
