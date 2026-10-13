@@ -1,7 +1,8 @@
 /* PDF Compressor · Image Everything
-   Gentle PDF structure optimization only. No rasterization or JPEG rewriting.
-   Uses pdf-lib to reserialize an existing PDF with object streams.
-   Rewriting PDFs may affect signatures or advanced features. Always review.
+   Preserve PDF text and vector objects; selectively recompress eligible RGB
+   JPEG image XObjects in place at user-selected quality. Never rasterize pages.
+   The optional size goal is only a measured, best-effort target, not a forced
+   instruction to lower quality further. Entire document stays in the browser.
 */
 (function (root) {
   'use strict';
@@ -9,6 +10,10 @@
   const MB = 1000000;
   const MAX_BYTES = 180 * MB;
   const PRESET_MB = Object.freeze([100, 50, 10]);
+  const MIN_QUALITY = 65;
+  const DEFAULT_QUALITY = 80;
+  const MAX_IMAGE_PIXELS = 12 * 1000 * 1000;
+  const MIN_JPEG_BYTES = 24 * 1024;
 
   function formatSize(bytes) {
     if (!Number.isFinite(bytes) || bytes < 0) return '—';
@@ -18,11 +23,16 @@
     return (bytes / (1000 * MB)).toFixed(2) + ' GB';
   }
   function targetBytes(sizeMb) {
+    if (sizeMb === '' || sizeMb === null || sizeMb === undefined) return null;
     const value = Number(sizeMb);
-    if (sizeMb === '' || sizeMb === null || !Number.isFinite(value) ||
-        value < .1 || value > 1000) return null;
-    // "Under 10 MB" means strictly below 10,000,000 bytes.
+    if (!Number.isFinite(value) || value < .1 || value > 1000) return null;
     return Math.max(1, Math.ceil(value * MB) - 1);
+  }
+  function parseQuality(value) {
+    const n = Number(value);
+    if (value === '' || value === null || !Number.isFinite(n) ||
+        n < MIN_QUALITY || n > 100) return null;
+    return Math.round(n);
   }
   function reductionPercent(input, output) {
     if (!(input > 0) || !Number.isFinite(output) || output < 0) return 0;
@@ -30,12 +40,12 @@
   }
   function outputName(filename) {
     const base = String(filename || 'document').replace(/\.pdf$/i, '').trim() || 'document';
-    return base + '-optimized.pdf';
+    return base + '-compressed.pdf';
   }
   function assessResult(originalBytes, resultBytes, limitBytes) {
     return {
       smaller: resultBytes < originalBytes,
-      reached: resultBytes <= limitBytes,
+      reached: limitBytes === null ? null : resultBytes <= limitBytes,
       saving: reductionPercent(originalBytes, resultBytes)
     };
   }
@@ -48,16 +58,130 @@
     if (!header.includes('%PDF-')) throw new Error('This does not look like a PDF file.');
   }
 
-  async function optimizePdf(file, sizeMb, onStatus) {
-    await validateFile(file);
-    const limit = targetBytes(sizeMb);
-    if (limit === null) throw new Error('Enter a size limit between 0.1 and 1000 MB.');
+  // Only touch uncomplicated JPEG RGB image streams: leave masking,
+  // transparency, indexed/ICC/CMYK colors, calibrated decoding and
+  // more advanced image objects completely intact.
+  function jpegCandidate(object, lib) {
+    if (!object || !object.dict || typeof object.getContents !== 'function' ||
+        !lib || !lib.PDFName) return null;
+    const dict = object.dict;
+    const get = name => dict.get(lib.PDFName.of(name));
+    const str = name => {
+      const found = get(name);
+      return found && typeof found.toString === 'function' ? found.toString() : '';
+    };
+    if (str('Subtype') !== '/Image' || str('Filter') !== '/DCTDecode' ||
+        str('ColorSpace') !== '/DeviceRGB' || str('BitsPerComponent') !== '8') return null;
+    const incompatible = ['SMask', 'Mask', 'Decode', 'DecodeParms', 'ImageMask',
+      'SMaskInData', 'Alternates', 'OPI', 'Metadata', 'Matte'];
+    if (incompatible.some(name => get(name) !== undefined)) return null;
+    const widthObj = get('Width'), heightObj = get('Height');
+    const width = widthObj && Number(widthObj.toString());
+    const height = heightObj && Number(heightObj.toString());
+    if (!Number.isSafeInteger(width) || !Number.isSafeInteger(height) ||
+        width < 1 || height < 1 || width * height > MAX_IMAGE_PIXELS) return null;
+    const bytes = object.getContents();
+    if (!(bytes instanceof Uint8Array) || bytes.length < MIN_JPEG_BYTES ||
+        bytes[0] !== 0xff || bytes[1] !== 0xd8) return null;
+    return { width, height, bytes };
+  }
 
-    // When already below the limit, return the untouched PDF. This also
-    // preserves signatures/forms/annotations exactly, unlike reserialization.
-    if (file.size <= limit) {
-      return { blob: file, bytes: file.size, original: true,
-        reached: true, saving: 0, reason: 'already-small' };
+  async function createDecodedJpeg(bytes) {
+    const blob = new Blob([bytes], { type: 'image/jpeg' });
+    if (typeof root.createImageBitmap === 'function') {
+      const bitmap = await root.createImageBitmap(blob);
+      return { image: bitmap, close: () => bitmap.close && bitmap.close() };
+    }
+    // Safari fallback where createImageBitmap may be unavailable.
+    if (typeof root.Image !== 'function' || !root.URL || !root.URL.createObjectURL) return null;
+    const url = root.URL.createObjectURL(blob);
+    const image = new root.Image();
+    try {
+      await new Promise((resolve, reject) => {
+        image.onload = resolve;
+        image.onerror = () => reject(new Error('JPEG could not be decoded.'));
+        image.src = url;
+      });
+      return { image, close: () => {} };
+    } finally {
+      root.URL.revokeObjectURL(url);
+    }
+  }
+
+  async function encodeJpeg(bytes, width, height, quality) {
+    const decoded = await createDecodedJpeg(bytes);
+    if (!decoded || typeof document === 'undefined') return null;
+    try {
+      const image = decoded.image;
+      if ((image.naturalWidth || image.width) !== width ||
+          (image.naturalHeight || image.height) !== height) return null;
+      const canvas = document.createElement('canvas');
+      canvas.width = width;
+      canvas.height = height;
+      try {
+        const context = canvas.getContext('2d', { alpha: false });
+        if (!context) return null;
+        context.drawImage(image, 0, 0, width, height);
+        const blob = await new Promise((resolve, reject) => canvas.toBlob(
+          item => item ? resolve(item) : reject(new Error('JPEG encoder returned no data.')),
+          'image/jpeg', quality / 100
+        ));
+        if (blob.type !== 'image/jpeg' || blob.size >= bytes.length * .98) return null;
+        const data = new Uint8Array(await blob.arrayBuffer());
+        return data.length >= 4 && data[0] === 255 && data[1] === 216 &&
+          data[data.length - 2] === 255 && data[data.length - 1] === 217 ? data : null;
+      } finally {
+        canvas.width = 0;
+        canvas.height = 0;
+      }
+    } finally {
+      decoded.close();
+    }
+  }
+
+  async function recompressEmbeddedJpegs(pdf, quality, announce) {
+    const summary = { eligible: 0, optimized: 0, skipped: 0, savings: 0 };
+    if (quality === 100) return summary;
+    const lib = root.PDFLib;
+    if (!pdf || !pdf.context || !lib || !lib.PDFName) return summary;
+    const objects = pdf.context.enumerateIndirectObjects();
+    for (const [ref, object] of objects) {
+      const candidate = jpegCandidate(object, lib);
+      if (!candidate) continue;
+      summary.eligible++;
+      if (typeof announce === 'function') announce('Checking image ' + summary.eligible + '…');
+      try {
+        const optimized = await encodeJpeg(candidate.bytes, candidate.width, candidate.height, quality);
+        if (!optimized) { summary.skipped++; continue; }
+        const stream = pdf.context.stream(optimized, {
+          Type: 'XObject', Subtype: 'Image',
+          Width: candidate.width, Height: candidate.height,
+          ColorSpace: 'DeviceRGB', BitsPerComponent: 8, Filter: 'DCTDecode'
+        });
+        pdf.context.assign(ref, stream);
+        summary.optimized++;
+        summary.savings += candidate.bytes.length - optimized.length;
+      } catch (_) {
+        // Unsupported JPEG or canvas failure: leave that image unchanged.
+        summary.skipped++;
+      }
+    }
+    return summary;
+  }
+
+  async function optimizePdf(file, settings, onStatus) {
+    await validateFile(file);
+    const args = settings && typeof settings === 'object'
+      ? settings : { quality: DEFAULT_QUALITY, targetEnabled: true, limit: settings };
+    const quality = parseQuality(args.quality);
+    if (quality === null) throw new Error('Choose a quality between 65% and 100%.');
+    const goal = args.targetEnabled ? targetBytes(args.limit) : null;
+    if (args.targetEnabled && goal === null) {
+      throw new Error('Enter an optional size limit between 0.1 and 1000 MB.');
+    }
+    if (goal !== null && file.size <= goal) {
+      return { blob: file, bytes: file.size, original: true, reached: true,
+        saving: 0, reason: 'already-small', jpegImages: 0, eligibleImages: 0 };
     }
     if (!root.PDFLib || !root.PDFLib.PDFDocument) {
       throw new Error('The PDF optimizer did not load. Check your connection and try again.');
@@ -66,30 +190,28 @@
     let pdf;
     try {
       announce('Reading PDF structure…');
-      const bytes = new Uint8Array(await file.arrayBuffer());
-      // Never ignore encryption or update metadata while merely optimizing.
-      pdf = await root.PDFLib.PDFDocument.load(bytes, {
-        ignoreEncryption: false, updateMetadata: false, throwOnInvalidObject: true
+      pdf = await root.PDFLib.PDFDocument.load(
+        new Uint8Array(await file.arrayBuffer()),
+        { ignoreEncryption: false, updateMetadata: false, throwOnInvalidObject: true }
+      );
+      const jpeg = await recompressEmbeddedJpegs(pdf, quality, announce);
+      announce('Optimizing document structure…');
+      const bytes = await pdf.save({
+        useObjectStreams: true, updateFieldAppearances: false,
+        addDefaultPage: false, objectsPerTick: 50
       });
-      announce('Repacking PDF objects without converting pages to images…');
-      const saved = await pdf.save({
-        useObjectStreams: true,
-        updateFieldAppearances: false,
-        addDefaultPage: false,
-        objectsPerTick: 50
-      });
-      if (!saved || !saved.length) throw new Error('The PDF optimizer returned an empty file.');
-      if (saved.length >= file.size) {
-        // Never replace an input with a bigger or differently encoded file
-        // when no size reduction is achieved.
+      if (!bytes || !bytes.length) throw new Error('The PDF optimizer returned an empty file.');
+      if (bytes.length >= file.size) {
         return { blob: file, bytes: file.size, original: true,
-          reached: false, saving: 0, reason: 'not-smaller' };
+          reached: goal === null ? null : false, saving: 0, reason: 'not-smaller',
+          jpegImages: 0, eligibleImages: jpeg.eligible };
       }
-      const stats = assessResult(file.size, saved.length, limit);
+      const result = assessResult(file.size, bytes.length, goal);
       return {
-        blob: new Blob([saved], { type: 'application/pdf' }),
-        bytes: saved.length, original: false, reached: stats.reached,
-        saving: stats.saving, reason: stats.reached ? 'optimized' : 'partial'
+        blob: new Blob([bytes], { type: 'application/pdf' }),
+        bytes: bytes.length, original: false, reached: result.reached,
+        saving: result.saving, reason: result.reached === false ? 'partial' : 'optimized',
+        jpegImages: jpeg.optimized, eligibleImages: jpeg.eligible
       };
     } catch (error) {
       if (error && (error.name === 'EncryptedPDFError' || /encrypt|password/i.test(error.message || ''))) {
@@ -102,30 +224,21 @@
   function init() {
     const $ = id => document.getElementById(id);
     if (!$('pdf-compressor')) return;
-    const dropzone = $('pdf-dropzone');
-    const input = $('pdf-file');
-    const choose = $('pdf-choose');
-    const selected = $('pdf-file-selected');
-    const filename = $('pdf-filename');
-    const fileSize = $('pdf-original-label');
-    const remove = $('pdf-remove');
-    const presets = [...document.querySelectorAll('[data-pdf-size]')];
+    const dropzone = $('pdf-dropzone'), input = $('pdf-file');
+    const choose = $('pdf-choose'), selected = $('pdf-file-selected');
+    const filename = $('pdf-filename'), fileSize = $('pdf-original-label');
+    const remove = $('pdf-remove'), quality = $('pdf-quality');
+    const qualityValue = $('pdf-quality-value');
+    const toggle = $('pdf-target-toggle'), targetOptions = $('pdf-target-options');
     const limitField = $('pdf-limit');
-    const runButton = $('pdf-compress');
-    const status = $('pdf-status');
-    const progress = $('pdf-progress');
-    const result = $('pdf-result');
-    const originalLabel = $('pdf-input-size');
-    const outputLabel = $('pdf-output-size');
-    const savedLabel = $('pdf-saved');
-    const outputCaption = $('pdf-result-caption');
-    const resultTitle = $('pdf-result-title');
-    const resultNote = $('pdf-outcome');
-    const bar = $('pdf-result-bar');
-    const download = $('pdf-download');
-    let file = null;
-    let busy = false;
-    let downloadUrl = null;
+    const presets = [...document.querySelectorAll('[data-pdf-size]')];
+    const runButton = $('pdf-compress'), status = $('pdf-status');
+    const progress = $('pdf-progress'), result = $('pdf-result');
+    const originalLabel = $('pdf-input-size'), outputLabel = $('pdf-output-size');
+    const savedLabel = $('pdf-saved'), outputCaption = $('pdf-result-caption');
+    const resultTitle = $('pdf-result-title'), resultNote = $('pdf-outcome');
+    const bar = $('pdf-result-bar'), download = $('pdf-download');
+    let file = null, busy = false, downloadUrl = null;
 
     function message(text, error = false) {
       status.textContent = text;
@@ -135,7 +248,7 @@
       result.hidden = true;
       download.hidden = true;
       download.removeAttribute('href');
-      if (downloadUrl) URL.revokeObjectURL(downloadUrl);
+      if (downloadUrl) root.URL.revokeObjectURL(downloadUrl);
       downloadUrl = null;
     }
     function updateControls() {
@@ -143,8 +256,10 @@
       choose.disabled = busy;
       remove.disabled = busy;
       input.disabled = busy;
-      limitField.disabled = busy;
-      presets.forEach(button => { button.disabled = busy; });
+      quality.disabled = busy;
+      toggle.disabled = busy;
+      limitField.disabled = busy || !toggle.checked;
+      presets.forEach(button => { button.disabled = busy || !toggle.checked; });
     }
     function setFile(next) {
       if (busy) return;
@@ -155,86 +270,114 @@
       if (file) {
         filename.textContent = file.name || 'document.pdf';
         fileSize.textContent = formatSize(file.size);
-        message('Your file is ready. Choose a size goal and optimize.');
+        message('Your file is ready. Choose a quality and compress.');
       } else {
         message('Files are processed locally in your browser. Nothing is uploaded.');
       }
       updateControls();
     }
-    function selectLimit(value) {
+    function setLimit(value) {
       if (busy) return;
       limitField.value = String(value);
-      presets.forEach(button => button.classList.toggle('active', Number(button.dataset.pdfSize) === Number(value)));
+      presets.forEach(button => button.classList.toggle(
+        'active', Number(button.dataset.pdfSize) === Number(value)));
       clearResult();
     }
-
+    function updateQuality() {
+      qualityValue.textContent = quality.value + '%';
+      clearResult();
+    }
+    function updateTarget() {
+      targetOptions.hidden = !toggle.checked;
+      updateControls();
+      clearResult();
+    }
     choose.addEventListener('click', () => input.click());
     input.addEventListener('change', () => setFile(input.files && input.files[0]));
     remove.addEventListener('click', () => setFile(null));
-    ['dragover', 'dragenter'].forEach(eventName => dropzone.addEventListener(eventName, event => {
+    ['dragenter', 'dragover'].forEach(name => dropzone.addEventListener(name, event => {
       event.preventDefault();
       if (!busy) dropzone.classList.add('dragover');
     }));
-    ['drop', 'dragleave'].forEach(eventName => dropzone.addEventListener(eventName, event => {
+    ['drop', 'dragleave'].forEach(name => dropzone.addEventListener(name, event => {
       event.preventDefault();
       dropzone.classList.remove('dragover');
-      if (eventName === 'drop' && !busy && event.dataTransfer && event.dataTransfer.files.length) {
+      if (name === 'drop' && !busy && event.dataTransfer && event.dataTransfer.files.length) {
         setFile(event.dataTransfer.files[0]);
       }
     }));
-    presets.forEach(button => button.addEventListener('click', () => selectLimit(button.dataset.pdfSize)));
-    limitField.addEventListener('input', () => selectLimit(limitField.value));
+    presets.forEach(button => button.addEventListener('click', () => setLimit(button.dataset.pdfSize)));
+    limitField.addEventListener('input', () => setLimit(limitField.value));
+    quality.addEventListener('input', updateQuality);
+    toggle.addEventListener('change', updateTarget);
 
     runButton.addEventListener('click', async () => {
       if (!file || busy) return;
-      const limit = targetBytes(limitField.value);
-      if (limit === null) {
-        message('Enter a size limit between 0.1 and 1000 MB.', true);
-        return;
+      const settings = {
+        quality: quality.value,
+        targetEnabled: toggle.checked,
+        limit: limitField.value
+      };
+      if (parseQuality(settings.quality) === null) {
+        message('Choose quality from 65% to 100%.', true); return;
+      }
+      if (settings.targetEnabled && targetBytes(settings.limit) === null) {
+        message('Enter a file-size goal between 0.1 and 1000 MB.', true); return;
       }
       busy = true;
       updateControls();
       clearResult();
       progress.hidden = false;
       message('Optimizing PDF…');
-      // Yield a frame so the busy state is visible before heavy PDF parsing.
-      await new Promise(resolve => requestAnimationFrame(() => resolve()));
+      await new Promise(resolve => root.requestAnimationFrame
+        ? root.requestAnimationFrame(resolve) : resolve());
       try {
-        const outcome = await optimizePdf(file, limitField.value, text => message(text));
+        const outcome = await optimizePdf(file, settings, text => message(text));
         result.hidden = false;
         originalLabel.textContent = formatSize(file.size);
         outputLabel.textContent = formatSize(outcome.bytes);
         savedLabel.textContent = outcome.saving.toFixed(1) + '%';
-        outputCaption.textContent = outcome.original ? 'Original file' : 'Optimized PDF';
+        outputCaption.textContent = outcome.original ? 'Original file' : 'Compressed PDF';
         bar.style.width = Math.min(100, outcome.bytes / file.size * 100) + '%';
+
+        const imageInfo = outcome.jpegImages > 0
+          ? ' JPEG images optimized: ' + outcome.jpegImages + '.'
+          : ' No compatible JPEG image was recompressed; quality may not change this PDF.';
         if (outcome.reason === 'already-small') {
-          resultTitle.textContent = 'Already under your limit';
-          resultNote.textContent = 'The original PDF meets your target, so it was left unchanged.';
+          resultTitle.textContent = 'Already under your target';
+          resultNote.textContent = 'The original PDF already fits your size goal and was kept unchanged.';
         } else if (outcome.reason === 'not-smaller') {
           resultTitle.textContent = 'No smaller PDF available';
-          resultNote.textContent = 'The PDF is already compact enough that structure optimization did not help. Your original file was kept.';
-        } else if (outcome.reached) {
+          resultNote.textContent = 'The original file was kept because the result would not be smaller.' + imageInfo;
+        } else if (outcome.reached === true) {
           resultTitle.textContent = 'Target reached';
-          resultNote.textContent = 'The PDF was repacked without turning pages into images. Please verify forms, links and any digital signatures before use.';
+          resultNote.textContent = 'The output meets your optional limit.' + imageInfo +
+            ' Check forms and signatures before use.';
+        } else if (outcome.reached === false) {
+          resultTitle.textContent = 'PDF compressed · target not reached';
+          resultNote.textContent = 'Some bytes were saved, but your optional limit was not reached.' + imageInfo;
         } else {
-          resultTitle.textContent = 'PDF optimized · target not reached';
-          resultNote.textContent = 'We saved some space, but did not reach your requested limit. No images were downsampled and no pages were rasterized.';
+          resultTitle.textContent = 'Your PDF is ready';
+          resultNote.textContent = 'PDF structure optimized.' + imageInfo +
+            ' Text and vector pages were not rasterized. Check forms and signatures before use.';
         }
-        downloadUrl = URL.createObjectURL(outcome.blob);
+        downloadUrl = root.URL.createObjectURL(outcome.blob);
         download.href = downloadUrl;
         download.download = outcome.original ? file.name : outputName(file.name);
         download.hidden = false;
-        message(outcome.reached ? 'Ready — the selected limit is met.' :
-          'Finished — the selected limit was not reached.');
+        message(outcome.reached === false ? 'Finished — size goal not reached.' :
+          'Finished — download your PDF.');
       } catch (error) {
-        message(error && error.message ? error.message : 'This PDF could not be optimized.', true);
+        message(error && error.message ? error.message : 'This PDF could not be compressed.', true);
       } finally {
         progress.hidden = true;
         busy = false;
         updateControls();
       }
     });
-    selectLimit(10);
+    setLimit(10);
+    updateQuality();
+    updateTarget();
     updateControls();
   }
 
@@ -243,7 +386,8 @@
     else init();
   }
   if (typeof module !== 'undefined' && module.exports) {
-    module.exports = { MB, MAX_BYTES, PRESET_MB, formatSize, targetBytes,
-      reductionPercent, outputName, assessResult, validateFile, optimizePdf };
+    module.exports = { MB, MAX_BYTES, PRESET_MB, DEFAULT_QUALITY, MIN_QUALITY,
+      formatSize, targetBytes, parseQuality, reductionPercent, outputName,
+      assessResult, validateFile, jpegCandidate, recompressEmbeddedJpegs, optimizePdf };
   }
 })(typeof window !== 'undefined' ? window : {});
