@@ -1,0 +1,33 @@
+name: Background remover checks
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'assets/background-remover.js'
+      - 'assets/background-remover.css'
+      - 'remove-background/**'
+      - 'tests/background-remover.test.js'
+      - 'index.html'
+      - 'sitemap.xml'
+      - '.github/workflows/background-remover.yml'
+  pull_request:
+    paths:
+      - 'assets/background-remover.js'
+      - 'assets/background-remover.css'
+      - 'remove-background/**'
+      - 'tests/background-remover.test.js'
+      - '.github/workflows/background-remover.yml'
+permissions:
+  contents: read
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Validate JavaScript syntax
+        run: node --check assets/background-remover.js
+      - name: Test image segmentation integration and site linking
+        run: node --test tests/background-remover.test.js
