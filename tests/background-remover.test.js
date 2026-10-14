@@ -52,6 +52,7 @@ test('output naming, transparent and solid backgrounds', () => {
 test('limits oversized decoded images to a browser-friendly area', () => {
   const core = instantiate();
   assert.equal(core.isValidImageSize(2000,4000), true);
+  assert.equal(core.isValidImageSize(4032,3024), true); // standard 12MP smartphone photo
   assert.equal(core.isValidImageSize(6000,4000), false);
   assert.equal(core.isValidImageSize(0,500), false);
   assert.equal(core.isValidImageSize(NaN,500), false);
