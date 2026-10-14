@@ -9,7 +9,7 @@
   const MODEL_ID = 'onnx-community/ormbg-ONNX';
   const MODULE_URL = 'https://cdn.jsdelivr.net/npm/@huggingface/transformers@3.8.1';
   const MAX_INPUT_BYTES = 12 * 1024 * 1024;
-  const MAX_INPUT_PIXELS = 12 * 1000 * 1000;
+  const MAX_INPUT_PIXELS = 16 * 1000 * 1000;
   const SUPPORTED_TYPES = Object.freeze(['image/jpeg', 'image/png', 'image/webp']);
   let modelPromise = null;
 
@@ -97,7 +97,7 @@
     progress('Reading your image locally…');
     const source = await lib.RawImage.fromBlob(file);
     if (!isValidImageSize(source.width, source.height)) {
-      throw new Error('This image is too large to process safely in a browser. Resize it to 12 megapixels or less.');
+      throw new Error('This image is too large to process safely in a browser. Resize it to 16 megapixels or less.');
     }
     progress('Detecting the foreground. This may take a little while…');
     // The official background-removal pipeline returns an RGBA RawImage at
