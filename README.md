@@ -4,6 +4,29 @@ Free browser-based image and PDF utilities.
 
 Site: https://image.everytinytool.com/
 
+## Remove Background (AI)
+
+URL: https://image.everytinytool.com/remove-background/
+
+Free browser-based automatic foreground extraction for single JPG, PNG or WebP photos. Uses the Apache-2.0 licensed onnx-community/ormbg-ONNX model and Transformers.js 3.8.1 (Apache-2.0). No AGPL background-removal library is included.
+
+- The selected photo is processed locally with RawImage.fromBlob(file) and a WASM AI model. The app does not upload image contents to a server.
+- On first use, a ~44 MB quantized AI model and JavaScript libraries are downloaded from third-party hosts; loading can be slow and browsers may cache the files.
+- Model: onnx-community/ormbg-ONNX; dtype q8; CPU/WASM inference. Library CDN: https://cdn.jsdelivr.net/npm/@huggingface/transformers@3.8.1.
+- JPG/PNG/WebP; maximum file size 12 MB; maximum decoded dimensions 16 megapixels. Some phones and older browsers may run out of memory.
+- Output: before/after previews, transparent PNG download or white/black/custom color JPG export. Automatic hair and translucent object edges may be imperfect.
+- Accessible mouse/keyboard dropzone, progress messages, and one-inference-at-a-time controls.
+
+References:
+- https://huggingface.co/onnx-community/ormbg-ONNX
+- https://huggingface.co/docs/transformers.js/v3.8.1/en/index
+
+Testing commands:
+    node --check assets/background-remover.js
+    node --test tests/background-remover.test.js
+
+GitHub Actions runs the regression tests on changes. Tests simulate the AI model and UI events; they do NOT measure real background removal quality or guarantee that model downloads work on every browser. Real browser smoke tests are still needed.
+
 ## PDF Compressor
 
 URL: https://image.everytinytool.com/pdf-compressor/
