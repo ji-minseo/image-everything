@@ -165,7 +165,8 @@
     }
   }
 
-  function init() {
+  function init(dependencies) {
+    const executeRemoval = dependencies && dependencies.removeBackground || removeBackground;
     const $ = id => document.getElementById(id);
     if (!$('bg-remover')) return;
     const zone = $('bg-dropzone'), input = $('bg-file');
@@ -294,7 +295,7 @@
         // Let the browser paint the loading indicator before model loading.
         await new Promise(resolve => root.requestAnimationFrame
           ? root.requestAnimationFrame(resolve) : resolve());
-        const rendered = await removeBackground(file, message => {
+        const rendered = await executeRemoval(file, message => {
           progressText.textContent = message;
           inform(message);
         });
@@ -364,6 +365,6 @@
   if (typeof module !== 'undefined' && module.exports) {
     module.exports = { MODEL_ID, MODULE_URL, MAX_INPUT_BYTES, MAX_INPUT_PIXELS,
       validImage, outputFileName, formatBytes, backgroundColor, isValidImageSize,
-      progressMessage, loadModel, removeBackground };
+      progressMessage, loadModel, removeBackground, init };
   }
 })(typeof window !== 'undefined' ? window : {});
