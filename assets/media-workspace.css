@@ -57,3 +57,12 @@ body:has(#resolution) #status{font-size:12px;color:#766c7e;margin:14px 0}
 .video-processing-copy>span{font-size:12px;color:#706584;overflow-wrap:anywhere}
 .video-processing-count{font-size:13px;font-weight:800;color:#7452c9;font-variant-numeric:tabular-nums;white-space:nowrap}
 @media(prefers-reduced-motion:reduce){.video-processing-spinner{animation:none}}
+
+/* Video Compressor: same horizontal output card as image/PDF tools. */
+body:has(#resolution) #results>.video-output-item{display:grid!important;grid-template-columns:58px minmax(0,1fr) auto!important;align-items:center!important;gap:13px!important;padding:11px 13px!important;border:1px solid #eae4f2!important;border-radius:14px!important;background:#fff!important;min-width:0}
+body:has(#resolution) #results>.video-output-item>.video-output-thumb{width:58px!important;height:58px!important;max-width:none!important;min-width:58px!important;aspect-ratio:1!important;object-fit:cover!important;border:1px solid #eee8f5!important;border-radius:11px!important;background:#f8f5fc!important}
+body:has(#resolution) #results .video-output-info{min-width:0;display:grid;gap:4px}
+body:has(#resolution) #results .video-output-info strong{font-size:13px;font-weight:750;color:#292330;line-height:1.4;overflow-wrap:anywhere}
+body:has(#resolution) #results .video-output-info small{font-size:12px;line-height:1.5;color:#796e83;overflow-wrap:anywhere}
+body:has(#resolution) #results>.video-output-item>.btn{display:inline-flex;align-items:center;justify-content:center;min-width:96px;min-height:42px;padding:10px 16px;border:1px solid #d9ccef;border-radius:12px;background:#f0e9ff;color:#55349c;font-size:13px;font-weight:700}
+@media(max-width:520px){body:has(#resolution) #results>.video-output-item{grid-template-columns:52px minmax(0,1fr)!important;gap:10px!important}body:has(#resolution) #results>.video-output-item>.video-output-thumb{width:52px!important;height:52px!important;min-width:52px!important}body:has(#resolution) #results>.video-output-item>.btn{grid-column:1/-1;width:100%}}
