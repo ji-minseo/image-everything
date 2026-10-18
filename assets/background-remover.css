@@ -149,3 +149,7 @@
 
 /* Hide batch status text; the spinner remains visible during processing. */
 #bg-batch-status{display:none!important}
+
+/* The live batch status sits beside the spinner, not in a separate row. */
+#bg-batch-progress #bg-batch-status{display:block!important;flex:1;min-width:0;margin:0;font-size:13px;font-weight:700;line-height:1.5;color:#453956}
+#bg-batch-progress #bg-batch-status[hidden]{display:none!important}
