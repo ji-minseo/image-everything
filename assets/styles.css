@@ -320,3 +320,22 @@ input[type="range"]{padding:0;border:0;box-shadow:none;accent-color:var(--accent
 .compression-helper{margin:14px 0 12px;padding:12px 15px;border-radius:12px;border:1px solid #e8e0f2;background:#faf8ff;color:#6b6175;font-size:12px;line-height:1.75}
 .compress-progress{min-height:20px;margin:13px 0 4px;color:#634598;font-size:12px;font-weight:700;overflow-wrap:anywhere}
 .compress-progress:empty{display:none}
+
+/* Optional image size target: shared JPG/PNG design */
+.image-target-control{min-width:0}
+.image-target-toggle{display:flex!important;align-items:center;gap:8px;cursor:pointer;font-size:13px;font-weight:700}
+.image-target-toggle input{width:16px;height:16px;accent-color:#7952cf;margin:0}
+.image-target-toggle .optional{font-size:11px;font-weight:500;color:#8f819c}
+.image-target-options[hidden]{display:none!important}
+.image-target-options{display:grid;gap:12px;margin-top:12px;padding:14px;border-radius:14px;border:1px solid #ebe3f5;background:#fcfaff}
+.image-target-presets{display:flex;flex-wrap:wrap;gap:7px}
+.image-target-presets button{flex:1 1 auto;min-width:94px;padding:9px 10px;border:1px solid #e2d8ee;background:#fff;border-radius:10px;color:#5c5070;cursor:pointer;font:700 12px/1.4 inherit}
+.image-target-presets button.active{background:#f0e9ff;border-color:#c9b2ed;color:#5a369e}
+.image-target-presets button:hover:not(:disabled){border-color:#bfa8e3;background:#f6f0ff}
+.image-target-presets button:disabled{opacity:.55;cursor:not-allowed}
+.image-target-options>label{font-size:12px;font-weight:700;color:#5e5368}
+.image-target-input{display:flex;align-items:center;gap:9px;max-width:225px}
+.image-target-input input{width:100%;min-width:0;padding:10px 12px;border:1px solid #e1d7ed;border-radius:10px;background:#fff;color:#30253e;font-size:13px}
+.image-target-input span{font-size:12px;color:#81758b;font-weight:700}
+.image-target-options small{display:block;font-size:11px;line-height:1.6;color:#82768d}
+@media(max-width:600px){.image-target-presets button{min-width:calc(50% - 7px)}}
