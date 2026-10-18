@@ -21,6 +21,9 @@
   btn.addEventListener('click',()=>{
    if(btn.disabled)return;
    pending=true;
+   const total=document.querySelectorAll('#fileSummary .selected-file, #fileSummary .media-item, .selected-files-grid .selected-file').length ||
+    document.querySelectorAll('#meta-list .media-item, .pdfc-queue .pdfc-queue-row, .vs-selected, #fileSummary .selected-file').length || 1;
+   window.ETTProcessingCount?.(1,total);
    requestAnimationFrame(()=>{if(pending&&btn.disabled)line.hidden=false});
   },true);
   new MutationObserver(()=>{
