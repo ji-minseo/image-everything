@@ -65,9 +65,9 @@ async function encodeToTarget(canvas,type,targetBytes,maxQuality=.92){
 function pngColorCountFromQuality(q){
   return Math.max(16,Math.min(256,Math.round(16+q*240)));
 }
-async function encodePngQuantized(file,{colors=256,targetBytes=0}={}){
+async function encodePngQuantized(file,{colors=256,targetBytes=0,maxWidth=0}={}){
   if(typeof UPNG==="undefined")throw new Error("PNG compression library did not load. Please refresh and try again.");
-  const img=await loadImage(file),canvas=makeCanvas(img,img.naturalWidth,img.naturalHeight,"image/png");
+  const img=await loadImage(file),factor=maxWidth&&img.naturalWidth>maxWidth?maxWidth/img.naturalWidth:1,canvas=makeCanvas(img,Math.max(1,Math.round(img.naturalWidth*factor)),Math.max(1,Math.round(img.naturalHeight*factor)),"image/png");
   const ctx=canvas.getContext("2d",{willReadFrequently:true}),rgba=ctx.getImageData(0,0,canvas.width,canvas.height).data;
   const tryEncode=c=>new Blob([UPNG.encode([rgba.buffer.slice(0)],canvas.width,canvas.height,c)],{type:"image/png"});
   const colorLimit=Number.isFinite(colors)?Math.max(0,Math.min(256,colors)):256;
@@ -80,7 +80,7 @@ async function encodePngQuantized(file,{colors=256,targetBytes=0}={}){
     if(targetBytes&&blob.size<=targetBytes){achieved=blob;break}
   }
   const output=achieved||best;
-  if(!output||file.size<=output.size)return {blob:file,keptOriginal:true};
+  if(!output||(file.size<=output.size&&factor===1))return {blob:file,keptOriginal:true};
   return {blob:output,keptOriginal:false};
 }
 function ratioText(w,h){
@@ -304,7 +304,7 @@ async function initCompress({accept="image/*",outputType=null,qualityEnabled=tru
         if(type==="image/png"&&file.type==="image/png"&&typeof UPNG!=="undefined"){
           const selected=Number($("#pngColors")?.value||pngColorCountFromQuality(q));
           try{
-            const result=await encodePngQuantized(file,{colors:selected,targetBytes});
+            const result=await encodePngQuantized(file,{colors:selected,targetBytes,maxWidth:cfg.maxWidth});
             blob=result.blob;keptOriginal=result.keptOriginal;
           }catch(error){
             const img=await loadImage(file),factor=cfg.maxWidth&&img.naturalWidth>cfg.maxWidth?cfg.maxWidth/img.naturalWidth:1,canvas=makeCanvas(img,Math.max(1,Math.round(img.naturalWidth*factor)),Math.max(1,Math.round(img.naturalHeight*factor)),"image/png");
