@@ -375,6 +375,8 @@
           resultNote.textContent = 'PDF structure optimized.' + imageInfo +
             ' Text and vector pages were not rasterized. Check forms and signatures before use.';
         }
+        $('pdf-output-filename').textContent = outcome.original ? file.name : outputName(file.name);
+        $('pdf-output-meta').textContent = formatSize(file.size) + ' → ' + formatSize(outcome.bytes) + ' · ' + outcome.saving.toFixed(1) + '% smaller';
         downloadUrl = root.URL.createObjectURL(outcome.blob);
         download.href = downloadUrl;
         download.download = outcome.original ? file.name : outputName(file.name);
