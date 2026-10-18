@@ -284,10 +284,18 @@ async function initCompress({accept="image/*",outputType=null,qualityEnabled=tru
   });
   $("#processBtn")?.addEventListener("click",async()=>{
     clearBatch();$("#processBtn").disabled=true;
+    const isKorean=location.pathname.startsWith("/ko/");
+    let status=$("#compressProgress");
+    if(!status){status=document.createElement("div");status.id="compressProgress";status.className="compress-progress";status.setAttribute("role","status");status.setAttribute("aria-live","polite");$("#processBtn").parentElement.insertAdjacentElement("afterend",status);}
+    const controls=["#quality","#pngColors","#targetKB"].map(sel=>$(sel)).filter(Boolean);
+    controls.forEach(el=>el.disabled=true);
+    status.textContent=isKorean?"이미지 압축 준비 중…":"Preparing image compression…";
     const q=qualityEnabled?Number($("#quality")?.value||80)/100:.92;
     const targetBytes=Math.max(0,Number($("#targetKB")?.value||0))*1024;
     let totalOriginal=0,totalCompressed=0;
-    for(const file of files){
+    for(const [index,file] of files.entries()){
+      status.textContent=isKorean?`압축 중 ${index+1}/${files.length} · ${file.name}`:`Compressing ${index+1}/${files.length} · ${file.name}`;
+      await new Promise(resolve=>requestAnimationFrame(resolve));
       try{
         let type=outputType||(["image/jpeg","image/png","image/webp"].includes(file.type)?file.type:"image/jpeg"),blob,keptOriginal=false;
         if(type==="image/png"&&file.type==="image/png"&&typeof UPNG!=="undefined"){
@@ -325,6 +333,8 @@ async function initCompress({accept="image/*",outputType=null,qualityEnabled=tru
       renderCompressionSummary(totalOriginal,totalCompressed);
       if(processed.length>1)$("#downloadZipBtn")?.classList.remove("hidden");
     }
+    status.textContent=isKorean?`완료 · ${processed.length}/${files.length}개 파일 처리됨`:`Complete · ${processed.length} of ${files.length} files processed`;
+    controls.forEach(el=>el.disabled=false);
     $("#processBtn").disabled=false;
   });
 }
