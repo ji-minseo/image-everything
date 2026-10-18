@@ -44,12 +44,12 @@
     <section class="tool-head">
       <a class="breadcrumb" href="../">← All image tools</a>
       <h1>무료 PDF 용량 줄이기 · PDF 압축기</h1>
-      <p>Compress a PDF in your browser with adjustable image quality. Quality starts at 80%; a file-size limit is optional.</p>
+      <p>브라우저에서 PDF 이미지 품질을 조절해 파일 크기를 줄여보세요. 기본 품질은 80%이며 파일 크기 목표는 선택 사항입니다.</p>
     </section>
     <section class="panel pdfc-panel" aria-label="PDF optimizer">
       <div class="dropzone pdfc-dropzone" id="pdf-dropzone" role="group" tabindex="0" aria-label="PDF upload area. Click or press Enter or Space to choose a PDF, or drag and drop a file.">
         <input class="file-input" id="pdf-file" type="file" accept=".pdf,application/pdf" aria-label="Choose a PDF file">
-        <div><div class="drop-icon">📄</div><h2>Drop your PDF here</h2><p>PDF files up to 180 MB · Browser-only processing</p><button class="btn" id="pdf-choose" type="button">Choose PDF</button></div>
+        <div><div class="drop-icon">📄</div><h2>Drop your PDF here</h2><p>최대 180MB PDF · 브라우저에서 처리</p><button class="btn" id="pdf-choose" type="button">Choose PDF</button></div>
       </div>
       <div class="file-summary pdfc-file" id="pdf-file-selected" hidden>
         <div class="pdfc-file-main"><span class="pdfc-file-icon" aria-hidden="true">PDF</span><div class="pdfc-file-meta"><strong id="pdf-filename">document.pdf</strong><span id="pdf-original-label">—</span></div></div>
@@ -60,13 +60,13 @@
           <div class="control">
             <label for="pdf-quality">Quality <span id="pdf-quality-value">80%</span></label>
             <input id="pdf-quality" type="range" min="65" max="100" step="5" value="80" aria-describedby="pdf-quality-help">
-            <p id="pdf-quality-help" class="pdfc-control-hint">Applies to supported embedded JPEG images, not selectable text or vector graphics.</p>
+            <p id="pdf-quality-help" class="pdfc-control-hint">PDF에 포함된 지원 JPEG 이미지에 적용됩니다. 선택 가능한 텍스트나 벡터에는 적용되지 않습니다.</p>
           </div>
           <div class="control pdfc-target-control">
             <label class="checkline pdfc-target-toggle" for="pdf-target-toggle">
               <input id="pdf-target-toggle" type="checkbox"> Target file size <span class="optional">optional</span>
             </label>
-            <p class="pdfc-control-hint">Leave off to compress using only your chosen quality.</p>
+            <p class="pdfc-control-hint">끄면 선택한 화질 설정만 사용해 압축합니다.</p>
             <div class="pdfc-target-options" id="pdf-target-options" hidden>
               <div class="preset-row pdfc-preset-row" role="group" aria-label="Optional PDF size limits">
                 <button class="preset-btn" data-pdf-size="100" type="button">Under 100 MB</button>
@@ -74,14 +74,14 @@
                 <button class="preset-btn active" data-pdf-size="10" type="button">Under 10 MB</button>
               </div>
               <div class="pdfc-limit-field"><label for="pdf-limit">Custom limit (MB)</label><div class="pdfc-input-suffix"><input id="pdf-limit" type="number" min="0.1" max="1000" inputmode="decimal" step="0.1" value="10" disabled><span>MB</span></div></div>
-              <p class="pdfc-target-note">Best effort: your chosen quality won't be reduced further to force the limit.</p>
+              <p class="pdfc-target-note">설정한 화질을 더 낮춰 목표 용량을 강제로 맞추지는 않습니다.</p>
             </div>
           </div>
         </div>
       </div>
       <p class="notice pdfc-note"><strong>Quality applies to compatible JPEG images only.</strong> Text and vector content won't be rasterized. Images in other formats may be unchanged. Rewriting can affect signatures, forms or advanced PDF features, so review the result.</p>
       <div class="actions pdfc-actions"><button class="btn" id="pdf-compress" type="button" disabled>Compress PDF</button></div>
-      <p class="pdfc-status" id="pdf-status" role="status" aria-live="polite">Files are processed locally in your browser. Nothing is uploaded.</p>
+      <p class="pdfc-status" id="pdf-status" role="status" aria-live="polite">파일은 브라우저 내에서 처리하며 서버로 업로드하지 않습니다.</p>
       <div class="pdfc-progress" id="pdf-progress" hidden role="status" aria-live="polite"><span class="pdfc-spinner" aria-hidden="true"></span><strong>Compressing PDF…</strong><span>Optimizing supported JPEG images and document structure without rasterizing pages.</span></div>
       <div class="compression-summary pdfc-result" id="pdf-result" hidden>
         <div class="compression-summary-head"><div><span class="compression-kicker">Optimization result</span><strong id="pdf-result-title">Ready</strong></div><div class="compression-size" id="pdf-result-caption">Optimized PDF</div></div>
@@ -95,24 +95,24 @@
       </div>
     </section>
     <section class="info info-grid" aria-label="How it works">
-      <article class="info-card"><h2>1. Add your PDF</h2><p>Select a file from your device. It stays in your browser throughout the process.</p></article>
-      <article class="info-card"><h2>2. Choose a goal</h2><p>Start with Quality 80%. Enable the optional size goal only if you need a specific limit.</p></article>
-      <article class="info-card"><h2>3. Check the result</h2><p>See the actual space saved and whether it meets your target. If repacking makes it bigger, we keep the original.</p></article>
+      <article class="info-card"><h2>1. Add your PDF</h2><p>기기에서 PDF를 선택하세요. 작업 과정에서 파일은 브라우저에 머뭅니다.</p></article>
+      <article class="info-card"><h2>2. Choose a goal</h2><p>품질 80%에서 시작하고 특정 용량 제한이 필요할 때만 목표 용량을 켜세요.</p></article>
+      <article class="info-card"><h2>3. Check the result</h2><p>실제 줄어든 크기와 목표 달성 여부를 확인하세요. 다시 저장한 파일이 더 크면 원본을 유지합니다.</p></article>
     </section>
     <section class="seo-content pdfc-guide">
       <h2>How PDF compression works</h2>
-      <p>Choose an image quality between 65% and 100% (80% by default). The compressor selectively re-encodes supported, unmasked RGB JPEG images without changing their pixel dimensions. Text, vector artwork and the page layout aren't converted into images. The PDF structure is then optimized.</p>
+      <p>이미지 품질을 65~100% 사이에서 선택합니다(기본 80%). 지원되는 RGB JPEG 이미지만 픽셀 크기 변경 없이 다시 인코딩하며 텍스트·벡터·레이아웃은 이미지로 변환하지 않습니다. 이후 PDF 구조를 최적화합니다.</p>
       <h2>Optional file size limits</h2>
-      <p>If you have an upload limit, enable the optional target and choose under 100 MB, 50 MB or 10 MB. The compressor tries at your selected quality but won't downsample pages or automatically drop quality further. The result shows whether your target was reached. Quality compression is still attempted when the original already meets the goal; if no smaller file results, we keep the original.</p>
+      <p>제출 용량 제한이 있다면 100MB·50MB·10MB 이하 목표를 선택하세요. 설정한 화질보다 더 낮추거나 페이지 해상도를 줄여 강제로 맞추지는 않습니다. 목표 달성 여부를 결과에서 확인할 수 있으며 압축 효과가 없으면 원본을 유지합니다.</p>
       <h2>PDF compression FAQ</h2>
       <div class="faq-list">
-        <details><summary>What does Quality 80% do?</summary><p>It sets the JPEG re-encoding quality for compatible embedded photos. It does not mean that every PDF becomes 20% smaller. PDFs without supported JPEGs may see only small structural reductions.</p></details>
-        <details><summary>Can I compress a PDF to under 10 MB?</summary><p>Enable the optional Target file size control and choose Under 10 MB. The compressor reports the actual result and whether the goal was met. It does not lower your chosen quality further to force a result.</p></details>
-        <details><summary>Will text become blurry?</summary><p>Text and vector artwork aren't rasterized. JPEG photos can lose image detail according to the chosen quality, but are not resized. Choose Quality 100% to skip JPEG re-encoding.</p></details>
-        <details><summary>Are all PDF images affected by the quality slider?</summary><p>No. The tool only re-encodes safe, compatible RGB JPEG image streams without masks or special color decoding. Other types remain unchanged.</p></details>
-        <details><summary>Are PDFs uploaded to a server?</summary><p>No. The file is processed inside your browser. The pdf-lib JavaScript library downloads from a CDN, but the PDF itself isn't sent to our servers.</p></details>
-        <details><summary>Can I use encrypted or signed PDFs?</summary><p>Encrypted PDFs are not supported. Rewriting digitally signed PDFs can invalidate signatures; use original files for official signed documents.</p></details>
-        <details><summary>Can I compress a PDF larger than 100 MB?</summary><p>You can select PDFs up to 180 MB. Large files may exceed browser memory, especially on mobile devices.</p></details>
+        <details><summary>What does Quality 80% do?</summary><p>지원되는 PDF 내부 JPEG 사진을 다시 인코딩할 때의 화질 설정입니다. PDF 용량이 반드시 20% 줄어든다는 뜻은 아니며 지원 JPEG가 없다면 감소 폭이 작을 수 있습니다.</p></details>
+        <details><summary>Can I compress a PDF to under 10 MB?</summary><p>목표 파일 크기를 켜고 10MB 이하를 선택하세요. 실제 결과와 목표 달성 여부를 표시하며 화질을 임의로 더 낮추지는 않습니다.</p></details>
+        <details><summary>Will text become blurry?</summary><p>텍스트와 벡터는 이미지로 변환하지 않습니다. JPEG 사진은 화질 설정에 따라 세부 표현이 줄어들 수 있으나 크기 자체는 변경하지 않습니다. 100% 설정을 선택하면 JPEG 재인코딩을 생략합니다.</p></details>
+        <details><summary>Are all PDF images affected by the quality slider?</summary><p>아니요. 특수 색상 처리나 마스크가 없는 지원 RGB JPEG 이미지에만 적용되며 다른 형식의 이미지는 그대로 유지됩니다.</p></details>
+        <details><summary>Are PDFs uploaded to a server?</summary><p>아니요. PDF 자체는 브라우저에서 처리합니다. pdf-lib 라이브러리는 CDN에서 불러올 수 있지만 PDF 파일은 서버에 보내지 않습니다.</p></details>
+        <details><summary>Can I use encrypted or signed PDFs?</summary><p>암호화된 PDF는 지원하지 않습니다. 전자서명된 PDF를 다시 저장하면 서명이 무효화될 수 있으므로 공식 서명 문서는 원본을 사용하세요.</p></details>
+        <details><summary>Can I compress a PDF larger than 100 MB?</summary><p>최대 180MB PDF를 선택할 수 있지만 큰 파일은 특히 모바일에서 브라우저 메모리 한계를 초과할 수 있습니다.</p></details>
       </div>
     </section>
     <section class="network">
