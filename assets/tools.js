@@ -328,7 +328,6 @@ async function initCompress({accept="image/*",outputType=null,qualityEnabled=tru
     $("#processBtn").disabled=false;
   });
 }
-async 
 function enableSimpleBatch(toolName,getFiles,makeOne){
   const button=$("#processBtn"),zip=$("#downloadZipBtn");if(!button)return;
   let results=[];if(!zip){const z=document.createElement("button");z.id="downloadZipBtn";z.type="button";z.className="btn secondary hidden";z.textContent="Download all as ZIP";button.insertAdjacentElement("afterend",z)}
