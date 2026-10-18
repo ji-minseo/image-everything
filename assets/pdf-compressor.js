@@ -239,7 +239,7 @@
     const originalLabel = $('pdf-input-size'), outputLabel = $('pdf-output-size');
     const savedLabel = $('pdf-saved'), outputCaption = $('pdf-result-caption');
     const resultTitle = $('pdf-result-title'), resultNote = $('pdf-outcome');
-    const bar = $('pdf-result-bar'), download = $('pdf-download');
+    const bar = $('pdf-result-bar'), download = $('pdf-download'), outputList = $('pdf-output-list');
     let file = null, busy = false, downloadUrl = null;
 
     function message(text, error = false) {
@@ -248,6 +248,7 @@
     }
     function clearResult() {
       result.hidden = true;
+      if (outputList) outputList.hidden = true;
       download.hidden = true;
       download.removeAttribute('href');
       if (downloadUrl) root.URL.revokeObjectURL(downloadUrl);
@@ -381,6 +382,7 @@
         download.href = downloadUrl;
         download.download = outcome.original ? file.name : outputName(file.name);
         download.hidden = false;
+        if (outputList) outputList.hidden = false;
         message(outcome.reached === false ? 'Finished — size goal not reached.' :
           'Finished — download your PDF.');
       } catch (error) {
