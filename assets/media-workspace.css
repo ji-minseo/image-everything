@@ -31,3 +31,8 @@ body[data-mode="clean"] #meta-results .ett-clean-result-info small{font-size:12p
 body[data-mode="clean"] #meta-results>.media-item>.btn{flex:none;margin-left:auto;display:inline-flex;align-items:center;justify-content:center;min-width:96px;min-height:42px;padding:10px 16px;border:1px solid #d9ccef;border-radius:12px;background:#f0e9ff;color:#55349c;font-size:13px;font-weight:700;box-shadow:none}
 body[data-mode="clean"] #meta-results>.media-item>.btn:hover{background:#e7dcff}
 @media(max-width:520px){body[data-mode="clean"] #meta-results>.media-item{flex-wrap:wrap;gap:10px}body[data-mode="clean"] #meta-results>.media-item>.media-preview{flex-basis:52px;width:52px!important;height:52px!important;min-width:52px}body[data-mode="clean"] #meta-results .ett-clean-result-info{flex-basis:calc(100% - 66px)}body[data-mode="clean"] #meta-results>.media-item>.btn{width:100%}}
+
+/* Force horizontal result rows: standalone page uses .media-item legacy block styles. */
+body[data-mode="clean"] #meta-results > div.media-item:has(.ett-clean-result-info){display:grid!important;grid-template-columns:58px minmax(0,1fr) auto!important;align-items:center!important;gap:13px!important;flex-wrap:nowrap!important}
+body[data-mode="clean"] #meta-results > div.media-item .ett-clean-result-info{width:auto!important;min-width:0!important}
+@media(max-width:520px){body[data-mode="clean"] #meta-results > div.media-item:has(.ett-clean-result-info){grid-template-columns:52px minmax(0,1fr)!important}body[data-mode="clean"] #meta-results > div.media-item:has(.ett-clean-result-info) > button{grid-column:1/-1!important;width:100%!important}}
