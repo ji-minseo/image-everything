@@ -100,26 +100,26 @@
       <article class="info-card"><h2>3. Check the result</h2><p>실제 줄어든 크기와 목표 달성 여부를 확인하세요. 다시 저장한 파일이 더 크면 원본을 유지합니다.</p></article>
     </section>
     <section class="seo-content pdfc-guide">
-      <h2>How PDF compression works</h2>
+      <h2>PDF 압축 작동 방식</h2>
       <p>이미지 품질을 65~100% 사이에서 선택합니다(기본 80%). 지원되는 RGB JPEG 이미지만 픽셀 크기 변경 없이 다시 인코딩하며 텍스트·벡터·레이아웃은 이미지로 변환하지 않습니다. 이후 PDF 구조를 최적화합니다.</p>
-      <h2>Optional file size limits</h2>
+      <h2>선택적 파일 크기 제한</h2>
       <p>제출 용량 제한이 있다면 100MB·50MB·10MB 이하 목표를 선택하세요. 설정한 화질보다 더 낮추거나 페이지 해상도를 줄여 강제로 맞추지는 않습니다. 목표 달성 여부를 결과에서 확인할 수 있으며 압축 효과가 없으면 원본을 유지합니다.</p>
       <h2>PDF compression FAQ</h2>
       <div class="faq-list">
-        <details><summary>What does Quality 80% do?</summary><p>지원되는 PDF 내부 JPEG 사진을 다시 인코딩할 때의 화질 설정입니다. PDF 용량이 반드시 20% 줄어든다는 뜻은 아니며 지원 JPEG가 없다면 감소 폭이 작을 수 있습니다.</p></details>
-        <details><summary>Can I compress a PDF to under 10 MB?</summary><p>목표 파일 크기를 켜고 10MB 이하를 선택하세요. 실제 결과와 목표 달성 여부를 표시하며 화질을 임의로 더 낮추지는 않습니다.</p></details>
-        <details><summary>Will text become blurry?</summary><p>텍스트와 벡터는 이미지로 변환하지 않습니다. JPEG 사진은 화질 설정에 따라 세부 표현이 줄어들 수 있으나 크기 자체는 변경하지 않습니다. 100% 설정을 선택하면 JPEG 재인코딩을 생략합니다.</p></details>
-        <details><summary>Are all PDF images affected by the quality slider?</summary><p>아니요. 특수 색상 처리나 마스크가 없는 지원 RGB JPEG 이미지에만 적용되며 다른 형식의 이미지는 그대로 유지됩니다.</p></details>
-        <details><summary>Are PDFs uploaded to a server?</summary><p>아니요. PDF 자체는 브라우저에서 처리합니다. pdf-lib 라이브러리는 CDN에서 불러올 수 있지만 PDF 파일은 서버에 보내지 않습니다.</p></details>
-        <details><summary>Can I use encrypted or signed PDFs?</summary><p>암호화된 PDF는 지원하지 않습니다. 전자서명된 PDF를 다시 저장하면 서명이 무효화될 수 있으므로 공식 서명 문서는 원본을 사용하세요.</p></details>
-        <details><summary>Can I compress a PDF larger than 100 MB?</summary><p>최대 180MB PDF를 선택할 수 있지만 큰 파일은 특히 모바일에서 브라우저 메모리 한계를 초과할 수 있습니다.</p></details>
+        <details><summary>품질 80%는 어떤 의미인가요?</summary><p>지원되는 PDF 내부 JPEG 사진을 다시 인코딩할 때의 화질 설정입니다. PDF 용량이 반드시 20% 줄어든다는 뜻은 아니며 지원 JPEG가 없다면 감소 폭이 작을 수 있습니다.</p></details>
+        <details><summary>PDF를 10MB 이하로 압축할 수 있나요?</summary><p>목표 파일 크기를 켜고 10MB 이하를 선택하세요. 실제 결과와 목표 달성 여부를 표시하며 화질을 임의로 더 낮추지는 않습니다.</p></details>
+        <details><summary>글자가 흐릿해지나요?</summary><p>텍스트와 벡터는 이미지로 변환하지 않습니다. JPEG 사진은 화질 설정에 따라 세부 표현이 줄어들 수 있으나 크기 자체는 변경하지 않습니다. 100% 설정을 선택하면 JPEG 재인코딩을 생략합니다.</p></details>
+        <details><summary>모든 PDF 이미지에 품질 설정이 적용되나요?</summary><p>아니요. 특수 색상 처리나 마스크가 없는 지원 RGB JPEG 이미지에만 적용되며 다른 형식의 이미지는 그대로 유지됩니다.</p></details>
+        <details><summary>PDF가 서버에 업로드되나요?</summary><p>아니요. PDF 자체는 브라우저에서 처리합니다. pdf-lib 라이브러리는 CDN에서 불러올 수 있지만 PDF 파일은 서버에 보내지 않습니다.</p></details>
+        <details><summary>암호화 또는 서명된 PDF도 사용할 수 있나요?</summary><p>암호화된 PDF는 지원하지 않습니다. 전자서명된 PDF를 다시 저장하면 서명이 무효화될 수 있으므로 공식 서명 문서는 원본을 사용하세요.</p></details>
+        <details><summary>100MB 이상의 PDF도 압축할 수 있나요?</summary><p>최대 180MB PDF를 선택할 수 있지만 큰 파일은 특히 모바일에서 브라우저 메모리 한계를 초과할 수 있습니다.</p></details>
       </div>
     </section>
     <section class="network">
       <div class="network-label">More from <strong>Every Tiny Tool ✦</strong></div>
       <div class="network-grid">
-        <a class="network-card random" href="https://random.everytinytool.com/"><div class="network-icon">🎲</div><div><h2>Random Everything</h2><p>Generators, decisions, random groups and quick games.</p><span>Explore random tools →</span></div></a>
-        <a class="network-card calculate" href="https://calculate.everytinytool.com/"><div class="network-icon">🧮</div><div><h2>Calculate Everything</h2><p>Everyday calculators for time, dates, numbers and shopping.</p><span>Explore calculators →</span></div></a>
+        <a class="network-card random" href="https://random.everytinytool.com/"><div class="network-icon">🎲</div><div><h2>Random Everything</h2><p>생성기·랜덤 선택·팀 나누기와 간단한 게임을 만나보세요.</p><span>Explore random tools →</span></div></a>
+        <a class="network-card calculate" href="https://calculate.everytinytool.com/"><div class="network-icon">🧮</div><div><h2>Calculate Everything</h2><p>시간·날짜·숫자·쇼핑 등 일상에서 필요한 계산기입니다.</p><span>Explore calculators →</span></div></a>
       </div>
     </section>
   <section class="seo-content ko-search-guide" aria-label="PDF 파일 용량 줄이는 방법"><h2>PDF 파일 용량 줄이는 방법</h2><p>PDF를 추가하고 화질과 선택적인 파일 크기 목표를 설정한 뒤 압축하세요. 이미지가 없는 PDF나 이미 압축된 PDF는 크기가 거의 줄지 않을 수 있습니다.</p><p>회원가입 없이 이용할 수 있으며, 파일 처리 가능 범위와 브라우저 지원 여부는 도구마다 다릅니다. 원본은 별도로 보관하고 출력 결과를 확인하세요.</p></section></main>
