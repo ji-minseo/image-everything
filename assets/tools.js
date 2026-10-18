@@ -89,6 +89,7 @@ function ratioText(w,h){
 }
 function setSummary(file,img){
   const el=$("#fileSummary"); if(!el)return;
+  if(el.querySelector(".selected-files-grid"))return;
   el.classList.add("show");
   el.textContent=`${file.name} · ${img.naturalWidth}×${img.naturalHeight}px · ${formatBytes(file.size)}`;
 }
@@ -99,7 +100,7 @@ function renderResult(file,blob,label){
   thumb.src=URL.createObjectURL(blob);
   const info=document.createElement("div");
   const pct=file.size?Math.round((1-blob.size/file.size)*100):0;
-  info.innerHTML=`<div class="result-name">${label}</div><div class="result-meta">${formatBytes(file.size)} → ${formatBytes(blob.size)}${pct>0?` · ${pct}% smaller`:""}</div>`;
+  info.innerHTML=`<div class="result-name">${escapeHtml(label)}</div><div class="result-meta">${formatBytes(file.size)} → ${formatBytes(blob.size)}${pct>0?` · ${pct}% smaller`:""}</div>`;
   const a=document.createElement("a");a.className="download";a.textContent="Download";a.href=URL.createObjectURL(blob);a.download=label;
   card.append(thumb,info,a);box.appendChild(card);
 }
@@ -270,7 +271,7 @@ async function initCompress({accept="image/*",outputType=null,qualityEnabled=tru
   };
   initDropzone({multiple:true,accept,onFiles:fs=>{
     files=fs.filter(f=>accept==="image/*"||f.type===accept);clearBatch();$("#fileSummary").classList.add("show");
-    $("#fileSummary").textContent=`${files.length} image${files.length===1?"":"s"} ready`;
+    
     $("#processBtn").disabled=!files.length;
   }});
   $("#quality")?.addEventListener("input",e=>$("#qualityValue").textContent=e.target.value+"%");
@@ -473,7 +474,7 @@ function initConvert(forceType=null,accept="image/*"){
   const clearBatch=()=>{processed=[];resetResults();$("#downloadZipBtn")?.classList.add("hidden")};
   initDropzone({multiple:true,accept,onFiles:fs=>{
     files=fs.filter(f=>accept==="image/*"||f.type===accept);clearBatch();
-    $("#fileSummary").classList.add("show");$("#fileSummary").textContent=`${files.length} image${files.length===1?"":"s"} ready`;$("#processBtn").disabled=!files.length
+    $("#fileSummary").classList.add("show");$("#processBtn").disabled=!files.length
   }});
   $("#quality")?.addEventListener("input",e=>$("#qualityValue").textContent=e.target.value+"%");
   const formatSelect=$("#format"),backgroundControl=$("#backgroundControl");
