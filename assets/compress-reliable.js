@@ -5,7 +5,7 @@ const fmt=n=>n>=1048576?(n/1048576).toFixed(2)+' MB':n>=1024?(n/1024).toFixed(1)
 const download=(blob,name)=>{const u=URL.createObjectURL(blob),a=document.createElement('a');a.href=u;a.download=name;document.body.append(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(u),10000)};
 const toBlob=(canvas,type,q)=>new Promise((ok,fail)=>canvas.toBlob(b=>b?ok(b):fail(Error('Could not encode image.')),type,q));
 const decode=f=>new Promise((ok,fail)=>{const u=URL.createObjectURL(f),img=new Image();img.onload=()=>{URL.revokeObjectURL(u);ok(img)};img.onerror=()=>{URL.revokeObjectURL(u);fail(Error('Could not read image.'))};img.src=u});
-async function encode(file,q,target){const img=await decode(file),c=document.createElement('canvas');c.width=img.naturalWidth;c.height=img.naturalHeight;if(!c.width||!c.height||c.width*c.height>50000000)throw Error('Image dimensions are unsupported or too large.');const ctx=c.getContext('2d');if(!ctx)throw Error('Canvas unavailable.');ctx.drawImage(img,0,0);const type=['image/jpeg','image/png','image/webp'].includes(file.type)?file.type:'image/png';
+async function encode(file,q,target,cfg={}){const img=await decode(file),c=document.createElement('canvas');const factor=cfg.maxWidth&&img.naturalWidth>cfg.maxWidth?cfg.maxWidth/img.naturalWidth:1;c.width=Math.max(1,Math.round(img.naturalWidth*factor));c.height=Math.max(1,Math.round(img.naturalHeight*factor));if(!c.width||!c.height||c.width*c.height>50000000)throw Error('Image dimensions are unsupported or too large.');const ctx=c.getContext('2d');if(!ctx)throw Error('Canvas unavailable.');const type=cfg.format||(['image/jpeg','image/png','image/webp'].includes(file.type)?file.type:'image/png');if(type==='image/jpeg'){ctx.fillStyle='#fff';ctx.fillRect(0,0,c.width,c.height)}ctx.drawImage(img,0,0,c.width,c.height);
 let b=await toBlob(c,type,q);
 if(type==='image/png'&&typeof UPNG!=='undefined'){
   try{
@@ -32,7 +32,7 @@ if(target&&type!=='image/png'){
   }
   b=best||smallest;
 }
-if(b.size>=file.size)return {blob:file,kept:true,type,metTarget:!target||file.size<=target};
+if(b.size>=file.size&&type===file.type&&factor===1)return {blob:file,kept:true,type,metTarget:!target||file.size<=target};
 return {blob:b,kept:false,type,metTarget:!target||b.size<=target};
 }
 function init(){const input=$('#fileInput'),drop=$('#dropzone'),pick=$('.chooseBtn'),summary=$('#fileSummary'),run=$('#processBtn'),results=$('#results'),zipBtn=$('#downloadZipBtn');if(!input||!drop||!run||!results)return;
@@ -50,21 +50,15 @@ function select(files){state.files=[...files].filter(f=>['image/jpeg','image/png
 input.addEventListener('change',()=>{select(input.files);input.value=''});
 drop.addEventListener('drop',e=>select(e.dataTransfer.files));
 $('#quality')?.addEventListener('input',e=>{const el=$('#qualityValue');if(el)el.textContent=e.target.value+'%'});
-const targetToggle=$('#imageTargetOn'),targetOptions=$('#imageTargetOptions'),targetInput=$('#imageTargetMB');
-const targetButtons=[...document.querySelectorAll('[data-image-target]')];
-const syncTarget=()=>{if(targetToggle&&targetOptions&&targetInput){targetOptions.hidden=!targetToggle.checked;targetInput.disabled=!targetToggle.checked}};
-targetToggle?.addEventListener('change',syncTarget);
-targetButtons.forEach(b=>b.addEventListener('click',()=>{targetInput.value=b.dataset.imageTarget;targetButtons.forEach(x=>x.classList.toggle('active',x===b))}));
-targetInput?.addEventListener('input',()=>targetButtons.forEach(b=>b.classList.toggle('active',Number(b.dataset.imageTarget)===Number(targetInput.value))));
-syncTarget();
+const settings=window.ImageCompressionSettings?.init?.(document);
 function addResult(f,blob,name,extra){const card=document.createElement('div');card.className='result-card';const img=document.createElement('img');img.className='thumb';img.alt='';const u=URL.createObjectURL(blob);img.src=u;const info=document.createElement('div');const t=document.createElement('div');t.className='result-name';t.textContent=name;const meta=document.createElement('div');meta.className='result-meta';meta.textContent=fmt(f.size)+' → '+fmt(blob.size)+(extra?' · '+extra:'');info.append(t,meta);const a=document.createElement('a');a.className='download';a.textContent='Download';a.href=u;a.download=name;card.append(img,info,a);results.append(card)}
 run.addEventListener('click',async()=>{if(!state.files.length)return;run.disabled=true;results.replaceChildren();state.output=[];zipBtn?.classList.add('hidden');
 const ko=location.pathname.startsWith('/ko/');
 let progress=$('#compressProgress');
 if(!progress){progress=document.createElement('div');progress.id='compressProgress';progress.className='compress-progress';progress.setAttribute('role','status');run.parentElement.insertAdjacentElement('afterend',progress)}
-const controls=['#quality','#imageTargetOn','#imageTargetMB'].map($).filter(Boolean).concat(targetButtons);
-controls.forEach(el=>el.disabled=true);const q=Math.max(.2,Math.min(1,Number($('#quality')?.value||80)/100)),target=targetToggle?.checked?Math.max(0,Number(targetInput?.value||0))*1048576:Math.max(0,Number($('#targetKB')?.value||0))*1024;let totalIn=0,totalOut=0;
-for(const [index,f] of state.files.entries()){progress.textContent=ko?`압축 중 ${index+1}/${state.files.length} · ${f.name}`:`Compressing ${index+1}/${state.files.length} · ${f.name}`;await new Promise(ok=>requestAnimationFrame(ok));try{const out=await encode(f,q,target);const ext=out.type==='image/png'?'png':out.type==='image/webp'?'webp':'jpg',name=f.name.replace(/\.[^.]+$/,'')+'-compressed.'+ext;state.output.push({name,blob:out.blob});totalIn+=f.size;totalOut+=out.blob.size;addResult(f,out.blob,name,(out.kept?(ko?'원본 유지':'original kept'):(ko?'압축 완료':'compressed'))+(target?(out.metTarget?(ko?' · 목표 달성':' · target met'):(ko?' · 목표 미달 (최선 결과)':' · target not reached (best effort)')):''))}catch(e){const p=document.createElement('p');p.textContent=f.name+': '+e.message;results.append(p)}}
+const controls=['#quality','#compressTargetValue','#compressTargetUnit','#compressMaxWidth'].map($).filter(Boolean).concat([...document.querySelectorAll('.compress-choice button')]);
+controls.forEach(el=>el.disabled=true);const q=Math.max(.2,Math.min(1,Number($('#quality')?.value||80)/100)),cfg=settings?.get()||{},target=cfg.target||0;let totalIn=0,totalOut=0;
+for(const [index,f] of state.files.entries()){progress.textContent=ko?`압축 중 ${index+1}/${state.files.length} · ${f.name}`:`Compressing ${index+1}/${state.files.length} · ${f.name}`;await new Promise(ok=>requestAnimationFrame(ok));try{const out=await encode(f,q,target,cfg);const ext=out.type==='image/png'?'png':out.type==='image/webp'?'webp':'jpg',name=f.name.replace(/\.[^.]+$/,'')+'-compressed.'+ext;state.output.push({name,blob:out.blob});totalIn+=f.size;totalOut+=out.blob.size;addResult(f,out.blob,name,(out.kept?(ko?'원본 유지':'original kept'):(ko?'압축 완료':'compressed'))+(target?(out.metTarget?(ko?' · 목표 달성':' · target met'):(ko?' · 목표 미달 (최선 결과)':' · target not reached (best effort)')):''))}catch(e){const p=document.createElement('p');p.textContent=f.name+': '+e.message;results.append(p)}}
 if(totalIn){const panel=$('#compressionSummary');panel?.classList.remove('hidden');const pct=Math.round((1-totalOut/totalIn)*100);if($('#compressionSaved'))$('#compressionSaved').textContent=pct+'% smaller';if($('#compressionSize'))$('#compressionSize').textContent=fmt(totalIn)+' → '+fmt(totalOut);if($('#originalSize'))$('#originalSize').textContent=fmt(totalIn);if($('#compressedSize'))$('#compressedSize').textContent=fmt(totalOut);if($('#originalBar'))$('#originalBar').style.width='100%';if($('#compressedBar'))$('#compressedBar').style.width=Math.max(3,totalOut/totalIn*100)+'%';}
 if(state.output.length>1)zipBtn?.classList.remove('hidden');progress.textContent=ko?`완료 · ${state.output.length}/${state.files.length}개 파일 처리됨`:`Complete · ${state.output.length} of ${state.files.length} files processed`;controls.forEach(el=>el.disabled=false);run.disabled=!state.files.length;
 });
