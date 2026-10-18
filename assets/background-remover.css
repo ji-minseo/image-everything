@@ -96,3 +96,26 @@
 #bg-batch-results .bg-output-row>div{width:100%;padding:15px 17px;min-width:0}
 #bg-batch-results .bg-output-row .btn{align-self:flex-start;margin:0 17px 17px}
 @media(max-width:600px){#bg-batch-results .bg-large-preview{height:290px}}
+
+/* Match uploaded image list to the existing selected-file cards precisely. */
+#bg-batch-list{display:grid;grid-template-columns:minmax(0,1fr);gap:12px;margin:18px 0}
+#bg-batch-list .media-item.selected-file{display:flex;align-items:center;gap:16px;box-sizing:border-box;padding:12px;min-width:0;border:1px solid #e8e5ef;border-radius:14px;background:#fff}
+#bg-batch-list .selected-file-thumb{display:flex;align-items:center;justify-content:center;flex:0 0 76px;width:76px;height:65px;min-width:76px;max-width:76px;min-height:65px;max-height:65px;border-radius:8px;background:#f7f7fa;overflow:hidden}
+#bg-batch-list .selected-file-thumb img{display:block;width:100%;height:100%;object-fit:contain}
+#bg-batch-list .selected-file-info{flex:1;min-width:0}
+#bg-batch-list .selected-file-name{font-size:16px;font-weight:700;line-height:1.4;overflow-wrap:anywhere;white-space:normal}
+#bg-batch-list .selected-file-size{font-size:12px;color:#777;margin-top:4px}
+#bg-batch-list .btn.ghost.selected-file-remove{display:inline-flex;align-items:center;justify-content:center;flex:0 0 auto;min-width:0;width:auto;height:auto;min-height:0;margin:0;padding:8px;border:1px solid #e8e5ef;border-radius:10px;background:#fff;color:#51465e;font-family:inherit;font-size:12px;font-weight:700;line-height:normal;cursor:pointer}
+#bg-batch-list .btn.ghost.selected-file-remove:hover{background:#f5f0ff;border-color:#cfc4f7;color:#6547cc}
+.bg-background-control{margin-top:8px}
+.bg-background-options{display:flex;align-items:stretch;flex-wrap:wrap;gap:11px;margin-top:9px}
+.bg-transparent-option,.bg-solid-color-option{display:flex;align-items:center;gap:11px;padding:11px 14px;border:1px solid #e1dbea;border-radius:13px;background:#fff;color:#302b38;min-height:61px;cursor:pointer}
+.bg-transparent-option{font-family:inherit;font-size:13px;font-weight:700;line-height:1.4}
+.bg-transparent-option.active,.bg-solid-color-option.active{border-color:#a48be9;background:#f8f5ff;box-shadow:inset 0 0 0 1px #c1b2ee}
+.bg-checker-chip{width:31px;height:31px;flex:none;border-radius:8px;border:1px solid #ddd5e5;background-color:#fff;background-image:linear-gradient(45deg,#e3dce9 25%,transparent 25%),linear-gradient(-45deg,#e3dce9 25%,transparent 25%),linear-gradient(45deg,transparent 75%,#e3dce9 75%),linear-gradient(-45deg,transparent 75%,#e3dce9 75%);background-size:12px 12px;background-position:0 0,0 6px,6px -6px,-6px 0}
+.bg-solid-color-option input[type=color]{flex:0 0 42px;width:42px;height:40px;padding:4px;border:1px solid #ded5ed;border-radius:10px;background:#fff;cursor:pointer}
+.bg-solid-color-option span{display:flex;flex-direction:column;gap:3px}
+.bg-solid-color-option strong{font-size:13px;font-weight:750}
+.bg-solid-color-option small{font-size:11px;color:#777;font-weight:600}
+.bg-color-help{font-size:12px;color:#777;margin:10px 0 0}
+@media(max-width:500px){#bg-batch-list .media-item.selected-file{gap:8px;padding:12px}.bg-background-options>*{flex:1 1 155px}}
