@@ -12,7 +12,7 @@ if(b.size>=file.size)return {blob:file,kept:true,type};
 return {blob:b,kept:false,type};
 }
 function init(){const input=$('#fileInput'),drop=$('#dropzone'),pick=$('.chooseBtn'),summary=$('#fileSummary'),run=$('#processBtn'),results=$('#results'),zipBtn=$('#downloadZipBtn');if(!input||!drop||!run||!results)return;
-input.type='file';input.multiple=true;input.accept='image/jpeg,image/png,image/webp';input.style.setProperty('display','none','important');
+input.type='file';input.multiple=true;input.accept='image/jpeg,image/png,image/webp';input.style.removeProperty('display');
 const picker=()=>input.click();
 pick?.addEventListener('click',e=>{e.preventDefault();e.stopPropagation();picker()});
 drop.addEventListener('click',e=>{if(e.target.closest('button,input,a'))return;picker()});
