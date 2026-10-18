@@ -4,3 +4,30 @@
 
 /* Canonical capsule names and emoji across all pages. */
 (function(){function fix(){const ko=document.documentElement.lang==='ko';const labels={"compress-image":["🗜️ Compress","🗜️ 이미지 압축"],"remove-background":["✂️ Remove Background","✂️ 배경 제거"],"pdf-compressor":["📄 PDF Compressor","📄 PDF 압축"],"video-compressor":["🎬 Video Compressor","🎬 동영상 압축"],"jpg-compressor":["🟠 JPG Compressor","🟠 JPG 압축"],"png-compressor":["🔵 PNG Compressor","🔵 PNG 압축"],"resize-image":["↔️ Resize","↔️ 크기 조절"],"crop-image":["✂️ Crop","✂️ 자르기"],"convert-image":["🔁 Convert","🔁 이미지 변환"],"png-to-jpg":["🟡 PNG to JPG","🟡 PNG → JPG"],"jpg-to-png":["🔷 JPG to PNG","🔷 JPG → PNG"],"image-to-webp":["🟣 To WebP","🟣 WebP 변환"],"webp-to-jpg":["🟡 WebP to JPG","🟡 WebP → JPG"],"heic-to-jpg":["📱 HEIC to JPG","📱 HEIC → JPG"],"rotate-image":["↻ Rotate","↻ 회전"],"metadata-inspector":["🔎 Metadata Inspector · AI Metadata Checker","🔎 메타데이터 검사 · AI 정보 검사기"],"metadata-cleaner":["🧹 Metadata Cleaner ・ Remove AI Label","🧹 메타데이터 제거 · AI 정보 지우기"]};document.querySelectorAll('nav.tool-tabs a,nav.bottom-tabs a').forEach(a=>{const bits=(a.getAttribute('href')||'').split('/').filter(Boolean);const slug=bits[bits.length-1];if(labels[slug])a.textContent=labels[slug][ko?1:0];});}if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',fix);else fix();})();
+
+/* Processing feedback shared by dedicated and legacy tools. */
+(function(){
+ function init(){
+  const btn=document.querySelector('#processBtn, #pdf-compress, #run, #bg-run');
+  if(!btn||btn.dataset.loadingFeedback)return;
+  btn.dataset.loadingFeedback='1';
+  const ko=location.pathname.startsWith('/ko/');
+  const line=document.createElement('div');
+  line.className='tool-processing-feedback';line.hidden=true;
+  line.setAttribute('role','status');line.setAttribute('aria-live','polite');
+  line.innerHTML='<span class="tool-processing-spinner" aria-hidden="true"></span><span>'+(ko?'처리 중입니다…':'Processing…')+'</span>';
+  (btn.closest('.actions')||btn.parentElement).insertAdjacentElement('afterend',line);
+  let pending=false;
+  btn.addEventListener('click',()=>{
+   if(btn.disabled)return;
+   pending=true;
+   requestAnimationFrame(()=>{if(pending&&btn.disabled)line.hidden=false});
+  },true);
+  new MutationObserver(()=>{
+   if(!pending)return;
+   if(btn.disabled)line.hidden=false;
+   else{line.hidden=true;pending=false}
+  }).observe(btn,{attributes:true,attributeFilter:['disabled']});
+ }
+ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init);else init();
+})();
