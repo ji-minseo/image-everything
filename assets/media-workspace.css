@@ -46,3 +46,14 @@ body #results .video-result-error{display:flex!important;align-items:center;gap:
 body:has(#resolution) #results .media-item:not(.video-result-error){display:flex;align-items:center;gap:12px;border-radius:14px;padding:12px}
 body:has(#resolution) #results .media-item .btn{min-height:42px;border-radius:12px;background:#f0e9ff;color:#55349c;border:1px solid #d9ccef}
 body:has(#resolution) #status{font-size:12px;color:#766c7e;margin:14px 0}
+
+/* Match Remove Background spinner during local video encoding. */
+#video-processing[hidden]{display:none!important}
+.video-processing{display:flex;align-items:center;gap:12px;padding:15px 17px;margin-top:19px;border:1px solid #e7dff8;border-radius:16px;background:#faf9ff}
+.video-processing-spinner{width:25px;height:25px;flex:none;border:3px solid #e5dcf9;border-top-color:#7454e7;border-radius:50%;animation:video-processing-spin .85s linear infinite}
+@keyframes video-processing-spin{to{transform:rotate(360deg)}}
+.video-processing-copy{flex:1;min-width:0;display:flex;flex-direction:column;gap:3px}
+.video-processing-copy strong{font-size:13px;font-weight:800;color:#3c3154}
+.video-processing-copy>span{font-size:12px;color:#706584;overflow-wrap:anywhere}
+.video-processing-count{font-size:13px;font-weight:800;color:#7452c9;font-variant-numeric:tabular-nums;white-space:nowrap}
+@media(prefers-reduced-motion:reduce){.video-processing-spinner{animation:none}}
