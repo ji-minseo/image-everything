@@ -68,20 +68,20 @@ function pngColorCountFromQuality(q){
 async function encodePngQuantized(file,{colors=256,targetBytes=0}={}){
   if(typeof UPNG==="undefined")throw new Error("PNG compression library did not load. Please refresh and try again.");
   const img=await loadImage(file),canvas=makeCanvas(img,img.naturalWidth,img.naturalHeight,"image/png");
-  const ctx=canvas.getContext("2d"),rgba=ctx.getImageData(0,0,canvas.width,canvas.height).data;
+  const ctx=canvas.getContext("2d",{willReadFrequently:true}),rgba=ctx.getImageData(0,0,canvas.width,canvas.height).data;
   const tryEncode=c=>new Blob([UPNG.encode([rgba.buffer.slice(0)],canvas.width,canvas.height,c)],{type:"image/png"});
-  let blob;
-  if(targetBytes){
-    const candidates=[256,192,128,96,64,48,32,24,16,8];
-    let smallest=null;
-    for(const c of candidates){
-      const out=tryEncode(c);if(!smallest||out.size<smallest.size)smallest=out;
-      if(out.size<=targetBytes){blob=out;break}
-    }
-    blob=blob||smallest;
-  }else blob=tryEncode(colors);
-  if(!blob||blob.size>=file.size)return {blob:file,keptOriginal:true};
-  return {blob,keptOriginal:false};
+  const colorLimit=Number.isFinite(colors)?Math.max(0,Math.min(256,colors)):256;
+  // 0 = lossless RGBA; respect chosen maximum palette when looking for a size target.
+  const candidates=colorLimit===0?[0]:[...new Set([colorLimit,192,128,96,64,48,32,24,16,8].filter(c=>c<=colorLimit&&c>0))];
+  let best=null,achieved=null;
+  for(const c of (targetBytes?candidates:[colorLimit])){
+    const blob=tryEncode(c);
+    if(!best||blob.size<best.size)best=blob;
+    if(targetBytes&&blob.size<=targetBytes){achieved=blob;break}
+  }
+  const output=achieved||best;
+  if(!output||file.size<=output.size)return {blob:file,keptOriginal:true};
+  return {blob:output,keptOriginal:false};
 }
 function ratioText(w,h){
   const gcd=(a,b)=>b?gcd(b,a%b):a,g=gcd(w,h);
@@ -311,10 +311,10 @@ async function initCompress({accept="image/*",outputType=null,qualityEnabled=tru
         renderResult(file,blob,name);
         if(keptOriginal){
           const meta=$("#results")?.lastElementChild?.querySelector(".result-meta");
-          if(meta)meta.textContent=`${formatBytes(file.size)} · already optimized — original kept`;
+          if(meta)meta.textContent=`${formatBytes(file.size)} · already optimized — original kept${targetBytes?(file.size<=targetBytes?" · target already met":" · target not reached"):""}`;
         }else if(targetBytes){
           const meta=$("#results")?.lastElementChild?.querySelector(".result-meta");
-          if(meta)meta.textContent+=blob.size<=targetBytes?" · target reached":" · smallest result found";
+          if(meta)meta.textContent+=blob.size<=targetBytes?" · target reached":" · target not reached (best effort)";
         }
       }catch(e){
         const box=$("#results"),card=document.createElement("div");card.className="result-card";
