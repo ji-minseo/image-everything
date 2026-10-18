@@ -878,3 +878,6 @@ function addSiteTrustLinks() {
   footer.appendChild(nav);
 }
 addSiteTrustLinks();
+
+/* English/Korean language switch, shared by existing tool pages. */
+(function(){function addKoreanSwitch(){if(location.pathname.startsWith('/ko/')||document.querySelector('.topbar .lang-switch'))return;const header=document.querySelector('.topbar');if(!header)return;const a=document.createElement('a');a.className='lang-switch';a.lang='ko';a.textContent='한국어';a.href='/ko'+(location.pathname.startsWith('/')?location.pathname:'/'+location.pathname);a.style.cssText='margin-left:auto;font-size:12px;font-weight:800;color:#7656d3;text-decoration:none;border:1px solid #ddd4ef;border-radius:99px;padding:7px 12px';header.append(a)}if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',addKoreanSwitch);else addKoreanSwitch()})();
