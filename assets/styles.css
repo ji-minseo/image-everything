@@ -355,3 +355,6 @@ input[type="range"]{padding:0;border:0;box-shadow:none;accent-color:var(--accent
 .compress-custom-target input{width:60%}.compress-custom-target select{width:40%}
 .compress-hint{grid-column:2;margin:-4px 0 0;color:#81758a;font-size:12px;line-height:1.6}
 @media(max-width:620px){.compress-setting-row{grid-template-columns:1fr;gap:9px}.compress-custom-target,.compress-hint{grid-column:1}.compress-choice button{padding:9px 13px}}
+
+/* Hide manual target fields until Custom is selected. */
+.compress-custom-target[hidden]{display:none!important}
