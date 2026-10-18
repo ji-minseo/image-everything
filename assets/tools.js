@@ -134,7 +134,7 @@ function initDropzone({multiple=false,accept="image/*",onFiles}={}){
     }
     summary.classList.add("show");
     const head=document.createElement("div");head.className="selected-files-head";
-    head.innerHTML=`<strong>${currentFiles.length} image${currentFiles.length===1?"":"s"} ready</strong><span>Remove anything you do not want to process.</span>`;
+    head.textContent="";
     const grid=document.createElement("div");grid.className="selected-files-grid";
 
     currentFiles.forEach((file,index)=>{
@@ -154,7 +154,7 @@ function initDropzone({multiple=false,accept="image/*",onFiles}={}){
       info.innerHTML=`<div class="selected-file-name" title="${escapeHtml(file.name)}">${escapeHtml(file.name)}</div><div class="selected-file-size">${formatBytes(file.size)}</div>`;
 
       const remove=document.createElement("button");remove.type="button";remove.className="selected-file-remove";
-      remove.setAttribute("aria-label",`Remove ${file.name}`);remove.textContent="×";
+      remove.setAttribute("aria-label",`Remove ${file.name}`);remove.textContent="Remove";
       remove.addEventListener("click",async e=>{
         e.preventDefault();e.stopPropagation();
         currentFiles=currentFiles.filter((_,i)=>i!==index);
@@ -164,8 +164,8 @@ function initDropzone({multiple=false,accept="image/*",onFiles}={}){
           const preview=$("#preview");if(preview){preview.innerHTML="";preview.classList.remove("show")}
           $("#cropStage")?.classList.add("hidden");
         }
-        await Promise.resolve(onFiles?.([...currentFiles]));
         renderSelection();
+        try{await Promise.resolve(onFiles?.([...currentFiles]));}catch(error){console.error("Image selection processing error:",error);}
       });
 
       item.append(visual,info,remove);grid.appendChild(item);
@@ -176,8 +176,9 @@ function initDropzone({multiple=false,accept="image/*",onFiles}={}){
 
   const deliver=async files=>{
     currentFiles=multiple?[...files]:files.slice(0,1);
-    await Promise.resolve(onFiles?.([...currentFiles]));
     renderSelection();
+    try { await Promise.resolve(onFiles?.([...currentFiles])); }
+    catch(error){console.error("Image selection processing error:",error);const run=$("#processBtn");if(run)run.disabled=true;}
   };
 
   // Match PDF Compressor: the whole dropzone is interactive, but its
