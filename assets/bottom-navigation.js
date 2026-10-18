@@ -15,7 +15,7 @@
   const line=document.createElement('div');
   line.className='tool-processing-feedback';line.hidden=true;
   line.setAttribute('role','status');line.setAttribute('aria-live','polite');
-  line.innerHTML='<span class="tool-processing-spinner" aria-hidden="true"></span><span>'+(ko?'처리 중입니다…':'Processing…')+'</span>';
+  line.innerHTML='<span class="tool-processing-spinner" aria-hidden="true"></span><div class="tool-processing-copy"><strong>'+(ko?'파일 처리 중…':'Processing files…')+'</strong><span>'+(ko?'잠시만 기다려 주세요.':'Please wait while files are processed.')+'</span></div>';
   (btn.closest('.actions')||btn.parentElement).insertAdjacentElement('afterend',line);
   let pending=false;
   btn.addEventListener('click',()=>{
