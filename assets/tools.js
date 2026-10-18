@@ -98,7 +98,7 @@ function renderResult(file,blob,label){
   const card=document.createElement("div");card.className="result-card";
   const thumb=document.createElement("img");thumb.className="thumb";thumb.alt="";
   thumb.src=URL.createObjectURL(blob);
-  const info=document.createElement("div");
+  const info=document.createElement("div");info.className="result-detail";
   const pct=file.size?Math.round((1-blob.size/file.size)*100):0;
   info.innerHTML=`<div class="result-name">${escapeHtml(label)}</div><div class="result-meta">${formatBytes(file.size)} → ${formatBytes(blob.size)}${pct>0?` · ${pct}% smaller`:""}</div>`;
   const a=document.createElement("a");a.className="download";a.textContent="Download";a.href=URL.createObjectURL(blob);a.download=label;
