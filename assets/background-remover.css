@@ -76,3 +76,15 @@
   .bg-color-options button { font-size:11px; padding:8px; }
 }
 @media(prefers-reduced-motion:reduce) { .bg-spinner { animation:none; } }
+
+/* Batch AI processing: progress before results, concise status beneath. */
+#bg-batch-progress[hidden],#bg-batch-results[hidden],#bg-batch-status[hidden]{display:none!important}
+.bg-batch-progress{margin-top:21px;padding:17px 19px 15px;border:1px solid #e7dff8;border-radius:16px;background:#faf9ff}
+.bg-batch-progress-heading{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:12px;font-size:13px}
+.bg-batch-progress-heading strong{font-weight:800;color:#342b49}
+.bg-batch-progress-heading span{font-weight:800;font-variant-numeric:tabular-nums;color:#7452c9}
+.bg-batch-track{height:9px;background:#e9e3f7;border-radius:999px;overflow:hidden}
+.bg-batch-track>span{display:block;width:0%;height:100%;background:linear-gradient(90deg,#967cff,#7353db);border-radius:inherit;transition:width .24s ease}
+.bg-batch-status{margin:9px 3px 0;color:#776d87;font-size:12px;font-weight:600;line-height:1.55}
+#bg-batch-results{margin-top:18px}
+#bg-batch-results .bg-output-row .media-preview{object-fit:contain;background:#f7f7fa}
