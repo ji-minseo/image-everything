@@ -366,3 +366,13 @@ input[type="range"]{padding:0;border:0;box-shadow:none;accent-color:var(--accent
 @keyframes ett-processing-spin{to{transform:rotate(360deg)}}
 #compressionSummary .compression-bar{transition:width 1s cubic-bezier(.16,1,.3,1)}
 @media(prefers-reduced-motion:reduce){.tool-processing-spinner{animation-duration:2s}#compressionSummary .compression-bar{transition:none}}
+
+/* Match the Video Compressor processing indicator across other tools */
+.tool-processing-feedback{display:flex;align-items:center;gap:12px;padding:15px 17px;margin-top:19px;border:1px solid #e7dff8;border-radius:16px;background:#faf9ff;width:100%;font-size:inherit;font-weight:normal}
+.tool-processing-feedback[hidden]{display:none!important}
+.tool-processing-spinner{width:25px;height:25px;flex:none;border:3px solid #e5dcf9;border-top-color:#7454e7;border-radius:50%;animation:video-processing-spin .85s linear infinite}
+.tool-processing-copy{flex:1;min-width:0;display:flex;flex-direction:column;gap:3px}
+.tool-processing-copy strong{font-size:13px;font-weight:800;color:#3c3154}
+.tool-processing-copy>span{font-size:12px;color:#706584;overflow-wrap:anywhere}
+@keyframes video-processing-spin{to{transform:rotate(360deg)}}
+@media(prefers-reduced-motion:reduce){.tool-processing-spinner{animation:none}}
