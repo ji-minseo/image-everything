@@ -10,20 +10,30 @@ let b=await toBlob(c,type,q);
 if(type==='image/png'&&typeof UPNG!=='undefined'){
   try{
     const rgba=ctx.getImageData(0,0,c.width,c.height).data;
-    const palette=[256,192,128,96,64,48,32,16];
-    const limit=target?palette:[256];
-    let best=null;
-    for(const colors of limit){
-      const encoded=new Blob([UPNG.encode([rgba.buffer.slice(0)],c.width,c.height,colors)],{type:'image/png'});
-      if(!best||encoded.size<best.size)best=encoded;
-      if(target&&encoded.size<=target){best=encoded;break}
+    const makePng=colors=>new Blob([UPNG.encode([rgba.buffer.slice(0)],c.width,c.height,colors)],{type:'image/png'});
+    // Try preserving all colors first. If a target was requested, progressively
+    // reduce the palette, choosing the highest-detail candidate that fits.
+    const palette=target?[0,256,192,128,96,64,48,32,24,16,8]:[0,256];
+    let smallest=b,matching=null;
+    for(const colors of palette){
+      const candidate=makePng(colors);
+      if(candidate.size<smallest.size)smallest=candidate;
+      if(target&&candidate.size<=target){matching=candidate;break}
     }
-    if(best&&best.size<b.size)b=best;
+    b=matching||smallest;
   }catch(error){console.warn('PNG palette optimization unavailable:',error)}
 }
-if(target&&type!=='image/png'){let lo=.1,hi=q,best=b.size<=target?b:null;for(let i=0;i<8;i++){const mid=(lo+hi)/2,x=await toBlob(c,type,mid);if(x.size<=target){best=x;lo=mid}else hi=mid}if(best)b=best}
-if(b.size>=file.size)return {blob:file,kept:true,type};
-return {blob:b,kept:false,type};
+if(target&&type!=='image/png'){
+  let lo=.08,hi=Math.max(.08,q),best=b.size<=target?b:null,smallest=b;
+  for(let i=0;i<9;i++){
+    const mid=(lo+hi)/2,x=await toBlob(c,type,mid);
+    if(x.size<smallest.size)smallest=x;
+    if(x.size<=target){best=x;lo=mid}else hi=mid;
+  }
+  b=best||smallest;
+}
+if(b.size>=file.size)return {blob:file,kept:true,type,metTarget:!target||file.size<=target};
+return {blob:b,kept:false,type,metTarget:!target||b.size<=target};
 }
 function init(){const input=$('#fileInput'),drop=$('#dropzone'),pick=$('.chooseBtn'),summary=$('#fileSummary'),run=$('#processBtn'),results=$('#results'),zipBtn=$('#downloadZipBtn');if(!input||!drop||!run||!results)return;
 input.type='file';input.multiple=true;input.accept='image/jpeg,image/png,image/webp';input.style.removeProperty('display');
@@ -54,7 +64,7 @@ let progress=$('#compressProgress');
 if(!progress){progress=document.createElement('div');progress.id='compressProgress';progress.className='compress-progress';progress.setAttribute('role','status');run.parentElement.insertAdjacentElement('afterend',progress)}
 const controls=['#quality','#imageTargetOn','#imageTargetMB'].map($).filter(Boolean).concat(targetButtons);
 controls.forEach(el=>el.disabled=true);const q=Math.max(.2,Math.min(1,Number($('#quality')?.value||80)/100)),target=targetToggle?.checked?Math.max(0,Number(targetInput?.value||0))*1048576:Math.max(0,Number($('#targetKB')?.value||0))*1024;let totalIn=0,totalOut=0;
-for(const [index,f] of state.files.entries()){progress.textContent=ko?`압축 중 ${index+1}/${state.files.length} · ${f.name}`:`Compressing ${index+1}/${state.files.length} · ${f.name}`;await new Promise(ok=>requestAnimationFrame(ok));try{const out=await encode(f,q,target);const ext=out.type==='image/png'?'png':out.type==='image/webp'?'webp':'jpg',name=f.name.replace(/\.[^.]+$/,'')+'-compressed.'+ext;state.output.push({name,blob:out.blob});totalIn+=f.size;totalOut+=out.blob.size;addResult(f,out.blob,name,out.kept?'original kept':'compressed')}catch(e){const p=document.createElement('p');p.textContent=f.name+': '+e.message;results.append(p)}}
+for(const [index,f] of state.files.entries()){progress.textContent=ko?`압축 중 ${index+1}/${state.files.length} · ${f.name}`:`Compressing ${index+1}/${state.files.length} · ${f.name}`;await new Promise(ok=>requestAnimationFrame(ok));try{const out=await encode(f,q,target);const ext=out.type==='image/png'?'png':out.type==='image/webp'?'webp':'jpg',name=f.name.replace(/\.[^.]+$/,'')+'-compressed.'+ext;state.output.push({name,blob:out.blob});totalIn+=f.size;totalOut+=out.blob.size;addResult(f,out.blob,name,(out.kept?(ko?'원본 유지':'original kept'):(ko?'압축 완료':'compressed'))+(target?(out.metTarget?(ko?' · 목표 달성':' · target met'):(ko?' · 목표 미달 (최선 결과)':' · target not reached (best effort)')):''))}catch(e){const p=document.createElement('p');p.textContent=f.name+': '+e.message;results.append(p)}}
 if(totalIn){const panel=$('#compressionSummary');panel?.classList.remove('hidden');const pct=Math.round((1-totalOut/totalIn)*100);if($('#compressionSaved'))$('#compressionSaved').textContent=pct+'% smaller';if($('#compressionSize'))$('#compressionSize').textContent=fmt(totalIn)+' → '+fmt(totalOut);if($('#originalSize'))$('#originalSize').textContent=fmt(totalIn);if($('#compressedSize'))$('#compressedSize').textContent=fmt(totalOut);if($('#originalBar'))$('#originalBar').style.width='100%';if($('#compressedBar'))$('#compressedBar').style.width=Math.max(3,totalOut/totalIn*100)+'%';}
 if(state.output.length>1)zipBtn?.classList.remove('hidden');progress.textContent=ko?`완료 · ${state.output.length}/${state.files.length}개 파일 처리됨`:`Complete · ${state.output.length} of ${state.files.length} files processed`;controls.forEach(el=>el.disabled=false);run.disabled=!state.files.length;
 });
