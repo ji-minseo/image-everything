@@ -155,3 +155,21 @@
 .pdfc-output-item .pdfc-output-download:hover{background:#e7dcff}
 .pdfc-output-item .pdfc-output-download[hidden]{display:none!important}
 @media(max-width:520px){.pdfc-output-item{grid-template-columns:52px minmax(0,1fr);gap:10px}.pdfc-output-icon{width:52px;height:52px}.pdfc-output-item .pdfc-output-download{grid-column:1/-1;width:100%}}
+
+/* Active batch PDF compressor: same optional target-size controls as homepage. */
+.media-batch-panel .pdfc-target-control{min-width:0}
+.media-batch-panel .pdfc-target-toggle{display:flex!important;align-items:center!important;gap:8px!important;font-size:13px!important;font-weight:750!important;line-height:1.5!important}
+.media-batch-panel .pdfc-target-toggle input{flex:none;margin:0!important}
+.media-batch-panel .pdfc-target-toggle .optional{font-size:11px;color:#887b93;font-weight:650}
+.media-batch-panel .pdfc-control-hint{margin:9px 0 0;color:#83788d;font-size:12px;line-height:1.5}
+.media-batch-panel .pdfc-target-options{margin-top:12px;padding:14px;border:1px solid #eee9fa;border-radius:16px;background:#fbfaff}
+.media-batch-panel .pdfc-target-options[hidden]{display:none!important}
+.media-batch-panel .pdfc-preset-row{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:7px}
+.media-batch-panel .pdfc-preset-row .preset-btn{width:100%;min-width:0;padding:10px 6px;font-size:12px;line-height:1.4;white-space:normal}
+.media-batch-panel .pdfc-preset-row .preset-btn.active{border-color:#ae95e6;background:#f0e9ff;color:#55349c}
+.media-batch-panel .pdfc-limit-field{display:grid;gap:8px;margin-top:12px}
+.media-batch-panel .pdfc-limit-field>label{font-size:12px;font-weight:750}
+.media-batch-panel .pdfc-input-suffix{display:flex;align-items:center;max-width:180px}
+.media-batch-panel .pdfc-input-suffix input{width:100%;min-width:0;min-height:40px;padding:8px}
+.media-batch-panel .pdfc-target-note{margin:9px 0 0;color:#716778;font-size:11px;line-height:1.55}
+@media(max-width:580px){.media-batch-panel .controls>.row{grid-template-columns:minmax(0,1fr)!important;gap:20px}}
