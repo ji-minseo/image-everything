@@ -43,7 +43,7 @@
     <section class="tool-head">
       <a href="../" class="breadcrumb">← All image tools</a>
       <h1>AI 사진 배경 제거 · 누끼 따기</h1>
-      <p>Make a transparent PNG from a photo or product image in your browser. Keep the subject, remove the backdrop, and download or choose a new background color.</p>
+      <p>사진이나 상품 이미지의 배경을 제거하고 투명 PNG로 저장하세요. 배경색을 새로 선택할 수도 있습니다.</p>
     </section>
 
     <section class="panel bg-panel" aria-label="Background remover tool">
@@ -52,7 +52,7 @@
         <div>
           <div class="drop-icon" aria-hidden="true">✂️</div>
           <h2>Drop an image here</h2>
-          <p>JPG, PNG or WebP · Up to 12 MB · No account</p>
+          <p>JPG·PNG·WebP · 최대 12MB · 회원가입 불필요</p>
           <button class="btn" type="button" id="bg-choose">Choose image</button>
         </div>
       </div>
@@ -63,7 +63,7 @@
         </div>
         <button type="button" id="bg-remove-file" class="btn secondary bg-clear" aria-label="Remove selected image">Remove</button>
       </div>
-      <p class="input-note bg-ai-notice">AI-powered · On first use your browser downloads a model (about 45 MB) and may take longer to start. Processing happens on your device; images are not uploaded to our server. Some older browsers or low-memory phones may not support this tool.</p>
+      <p class="input-note bg-ai-notice">AI 기반 배경 제거 기능입니다. 처음 실행할 때 약 45MB 모델을 다운로드하므로 시간이 더 걸릴 수 있습니다. 이미지는 기기에서 처리되며 서버로 업로드되지 않습니다. 일부 오래된 브라우저나 메모리가 부족한 기기에서는 지원되지 않을 수 있습니다.</p>
       <div class="actions bg-actions">
         <button type="button" class="btn" id="bg-run" disabled>Remove background <span aria-hidden="true">↗</span></button>
       </div>
@@ -71,7 +71,7 @@
         <span class="bg-spinner" aria-hidden="true"></span>
         <div><strong>Removing background…</strong><p id="bg-progress-text">Preparing AI model…</p></div>
       </div>
-      <p class="bg-status" id="bg-status" role="status" aria-live="polite">Your image is processed locally. No uploads to our server.</p>
+      <p class="bg-status" id="bg-status" role="status" aria-live="polite">이미지는 기기에서 처리하며 서버로 업로드하지 않습니다.</p>
 
       <section class="bg-result" id="bg-result" hidden aria-labelledby="bg-result-heading">
         <div class="bg-result-heading"><div><span class="compression-kicker">RESULT</span><h2 id="bg-result-heading">Background removed</h2></div><span class="bg-result-meta" id="bg-result-meta">—</span></div>
@@ -96,13 +96,13 @@
           <div class="bg-custom-wrap" id="bg-custom-wrap" hidden><label for="bg-custom-color">Custom background color</label><input id="bg-custom-color" type="color" value="#f1e6ff" aria-label="Choose a solid background color"></div>
           <div class="actions bg-download-actions"><a class="btn bg-download" href="#" download id="bg-download">Download transparent PNG ↓</a></div>
         </div>
-        <p class="notice bg-quality-note">Automatic cutouts are not always perfect. Fine hair, transparent objects, busy scenes and soft shadows may require manual refinement. Check the result before using it.</p>
+        <p class="notice bg-quality-note">자동 배경 제거가 항상 완벽하지는 않습니다. 머리카락·투명한 물체·복잡한 배경·부드러운 그림자 등은 추가 수정이 필요할 수 있으니 결과를 확인하세요.</p>
       </section>
     </section>
 
     <section class="info info-grid" aria-label="How to use background removal">
-      <article class="info-card"><h2>1. Add your image</h2><p>Choose one JPG, PNG or WebP image. Portraits and product photos work best with a clear foreground subject.</p></article>
-      <article class="info-card"><h2>2. Remove its background</h2><p>Click Remove background. An AI model runs in your browser, separating the main subject from the surroundings.</p></article>
+      <article class="info-card"><h2>1. Add your image</h2><p>JPG·PNG·WebP 사진을 선택하세요. 피사체가 배경과 뚜렷하게 구분되는 인물이나 상품 사진에서 좋은 결과를 기대할 수 있습니다.</p></article>
+      <article class="info-card"><h2>2. Remove its background</h2><p>배경 제거 버튼을 누르면 브라우저에서 AI 모델이 실행되어 피사체와 배경을 분리합니다.</p></article>
       <article class="info-card"><h2>3. Download a cutout</h2><p>Use transparent PNG for layering, or pick white, black or a custom background color and save as JPG.</p></article>
     </section>
 
