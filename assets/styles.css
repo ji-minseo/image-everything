@@ -280,3 +280,15 @@ input[type="range"]{padding:0;border:0;box-shadow:none;accent-color:var(--accent
 .selected-file-remove{width:34px;height:34px;min-width:34px;cursor:pointer;border:1px solid #ebe6f2;background:#f8f6fc;color:#625774;justify-self:end}
 .selected-file-remove:hover{background:#f0eaff;color:#6145c3;border-color:#d7c9f1}
 @media(max-width:500px){.selected-file{grid-template-columns:46px minmax(0,1fr) 32px;gap:9px;padding:10px}.selected-file-thumb{width:46px;height:46px;min-width:46px}.selected-file-remove{width:32px;height:32px;min-width:32px}}
+
+/* File queue geometry follows Metadata Inspector's 76 × 65 preview cards. */
+.file-summary .selected-files-grid{display:grid;grid-template-columns:minmax(0,1fr);gap:12px}
+.file-summary .selected-file{display:flex;align-items:center;gap:16px;padding:12px;border:1px solid #e8e5ef;border-radius:14px;min-width:0;width:100%;box-sizing:border-box}
+.file-summary .selected-file-thumb{display:block;flex:0 0 76px;width:76px;min-width:76px;max-width:76px;height:65px;min-height:65px;max-height:65px;aspect-ratio:unset;border-radius:8px;overflow:hidden;background:#f7f7fa}
+.file-summary .selected-file-thumb img{width:100%;height:100%;object-fit:contain;display:block}
+.file-summary .selected-file-info{flex:1;min-width:0}
+.file-summary .selected-file-name{font-size:13px;font-weight:700;overflow-wrap:anywhere;white-space:normal;line-height:1.4}
+.file-summary .selected-file-size{font-size:12px;margin-top:4px}
+.file-summary .selected-file-remove{display:inline-flex;align-items:center;justify-content:center;flex:0 0 auto;width:auto;min-width:0;height:auto;min-height:34px;padding:8px 13px;border:1px solid #e8e5ef;border-radius:10px;background:#fff;color:#625774;font-size:12px;font-weight:700;line-height:1.2}
+.file-summary .selected-file-remove:hover{background:#f5f0ff;color:#6547cc;border-color:#cfc4f7}
+@media(max-width:500px){.file-summary .selected-file{gap:9px;padding:10px}.file-summary .selected-file-thumb{flex-basis:66px;width:66px;min-width:66px;max-width:66px;height:57px;min-height:57px;max-height:57px}.file-summary .selected-file-remove{padding:7px 10px}}
