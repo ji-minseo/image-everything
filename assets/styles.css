@@ -376,3 +376,6 @@ input[type="range"]{padding:0;border:0;box-shadow:none;accent-color:var(--accent
 .tool-processing-copy>span{font-size:12px;color:#706584;overflow-wrap:anywhere}
 @keyframes video-processing-spin{to{transform:rotate(360deg)}}
 @media(prefers-reduced-motion:reduce){.tool-processing-spinner{animation:none}}
+
+/* Match the Video Compressor's right-aligned batch counter. */
+.tool-processing-count{margin-left:auto;flex:none;font-size:13px;font-weight:800;color:#7452c9;font-variant-numeric:tabular-nums;white-space:nowrap}
