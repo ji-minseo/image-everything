@@ -14,6 +14,28 @@ const translations={
 };
 const prefixes=[["No image","이미지 업로드 없이"],["Drop ","파일을 끌어다 놓기 · "],["Choose ","선택: "],["Download ","다운로드: "]];
 function translate(root){const walker=document.createTreeWalker(root,NodeFilter.SHOW_TEXT);let n;const changes=[];while(n=walker.nextNode()){if(n.parentElement?.closest("script,style,textarea,code,pre,option[data-raw],.selected-file-name,.media-item strong"))continue;const t=n.nodeValue.trim();if(translations[t])changes.push([n,n.nodeValue.replace(t,translations[t])]);}for(const [n,v] of changes)n.nodeValue=v;for(const el of root.querySelectorAll?.("input[placeholder],button[title],a[title]")||[]){const a=el.hasAttribute("placeholder")?"placeholder":"title",v=el.getAttribute(a);if(translations[v])el.setAttribute(a,translations[v])}}
-function init(){translate(document.body);const bar=document.querySelector(".topbar");if(bar&&!bar.querySelector(".lang-switch")){const link=document.createElement("a");link.className="lang-switch";link.textContent="EN";link.href=location.pathname.replace(/^\/ko(?=\/|$)/,"")||"/";link.setAttribute("aria-label","English version");link.style.cssText="margin-left:auto;font-size:12px;font-weight:800;color:#7656d3;text-decoration:none;border:1px solid #ddd4ef;border-radius:99px;padding:7px 12px";bar.append(link)}const observer=new MutationObserver(records=>{for(const r of records)for(const n of r.addedNodes)if(n.nodeType===1&&n.closest?.(".topbar,.tool-layout,main"))translate(n)});observer.observe(document.body,{childList:true,subtree:true});}
+
+const pageDescriptions={
+"compress-image":["이미지를 압축해 용량을 줄이세요. JPG·PNG·WebP 파일을 기기에서 바로 처리합니다.","이미지 압축과 여러 파일 일괄 처리"],
+"remove-background":["AI로 사진의 배경을 제거하고 투명 PNG로 저장하세요. 이미지 처리는 브라우저에서 진행됩니다.","AI 이미지 배경 제거"],
+"pdf-compressor":["PDF 속 지원되는 이미지의 품질을 조절해 파일 크기를 최적화하세요. 글자와 벡터 요소는 이미지로 변환하지 않습니다.","PDF 압축기"],
+"video-compressor":["여러 동영상을 브라우저에서 압축하세요. 지원되는 브라우저에서는 WebM 형식으로 저장됩니다.","동영상 압축기"],
+"jpg-compressor":["JPG 사진의 품질과 용량을 조절해 간편하게 압축하세요.","JPG 압축기"],
+"png-compressor":["PNG 이미지의 용량을 줄이고 여러 파일을 한꺼번에 처리하세요.","PNG 압축기"],
+"resize-image":["픽셀 단위로 이미지 크기를 조절하세요. 가로세로 비율을 유지할 수 있습니다.","이미지 크기 조절"],
+"crop-image":["원하는 영역과 비율을 선택해 이미지를 잘라 저장하세요.","이미지 자르기"],
+"convert-image":["이미지 파일을 원하는 형식으로 변환하고 다운로드하세요.","이미지 형식 변환"],
+"png-to-jpg":["PNG 이미지를 JPG로 변환하세요. 투명 영역의 배경색을 선택할 수 있습니다.","PNG JPG 변환"],
+"jpg-to-png":["JPG 이미지를 PNG 형식으로 변환하고 저장하세요.","JPG PNG 변환"],
+"image-to-webp":["JPG·PNG 이미지를 WebP 형식으로 변환하세요.","WebP 변환"],
+"webp-to-jpg":["WebP 이미지를 JPG 형식으로 변환하고 저장하세요.","WebP JPG 변환"],
+"heic-to-jpg":["HEIC 사진을 호환성 높은 JPG 형식으로 변환하세요.","HEIC JPG 변환"],
+"rotate-image":["이미지를 회전하거나 반전해 원하는 방향으로 저장하세요.","이미지 회전"],
+"metadata-inspector":["EXIF·XMP·PNG 청크와 C2PA 표시 흔적을 읽기 전용으로 확인하세요. 원본은 변경하지 않습니다.","이미지 메타데이터 검사"],
+"metadata-cleaner":["EXIF 등 일반적인 이미지 메타데이터를 제거한 사본을 다운로드하세요. 모든 AI 라벨과 C2PA 정보를 완전히 제거하는 것은 보장하지 않습니다.","메타데이터 제거 · AI 라벨 제거"]
+};
+const homeDescription="이미지 배경 제거, JPG·PNG·WebP 변환, PDF·동영상 압축, 메타데이터 검사와 제거까지. 회원가입 없이 브라우저에서 사용하세요.";
+function localizeCopy(){const slug=location.pathname.split("/").filter(Boolean)[1];const info=pageDescriptions[slug];if(info){const h=document.querySelector(".tool-head h1");if(h)h.textContent=info[1];const desc=document.querySelector(".tool-head>p");if(desc)desc.textContent=info[0];}else{const hero=document.querySelector(".hero>p");if(hero)hero.textContent=homeDescription;const popular=document.querySelector(".popular-section .section-heading>p");if(popular)popular.textContent="배경 제거, 이미지 압축, 파일 형식 변환 등 자주 쓰는 도구부터 시작하세요.";const all=document.querySelector(".all-tools-section .section-heading>p");if(all)all.textContent="필요한 이미지·PDF·동영상 도구를 선택하세요. 대부분의 작업은 브라우저에서 처리됩니다.";}}
+function init(){localizeCopy();translate(document.body);const bar=document.querySelector(".topbar");if(bar&&!bar.querySelector(".lang-switch")){const link=document.createElement("a");link.className="lang-switch";link.textContent="EN";link.href=location.pathname.replace(/^\/ko(?=\/|$)/,"")||"/";link.setAttribute("aria-label","English version");link.style.cssText="margin-left:auto;font-size:12px;font-weight:800;color:#7656d3;text-decoration:none;border:1px solid #ddd4ef;border-radius:99px;padding:7px 12px";bar.append(link)}const observer=new MutationObserver(records=>{for(const r of records)for(const n of r.addedNodes)if(n.nodeType===1&&n.closest?.(".topbar,.tool-layout,main"))translate(n)});observer.observe(document.body,{childList:true,subtree:true});}
 if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",init);else init();
 })();
