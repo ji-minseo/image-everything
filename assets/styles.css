@@ -292,3 +292,10 @@ input[type="range"]{padding:0;border:0;box-shadow:none;accent-color:var(--accent
 .file-summary .selected-file-remove{display:inline-flex;align-items:center;justify-content:center;flex:0 0 auto;width:auto;min-width:0;height:auto;min-height:34px;padding:8px 13px;border:1px solid #e8e5ef;border-radius:10px;background:#fff;color:#625774;font-size:12px;font-weight:700;line-height:1.2}
 .file-summary .selected-file-remove:hover{background:#f5f0ff;color:#6547cc;border-color:#cfc4f7}
 @media(max-width:500px){.file-summary .selected-file{gap:9px;padding:10px}.file-summary .selected-file-thumb{flex-basis:66px;width:66px;min-width:66px;max-width:66px;height:57px;min-height:57px;max-height:57px}.file-summary .selected-file-remove{padding:7px 10px}}
+
+/* Final shared file row tokens copied from Metadata Inspector layout. */
+.file-summary .selected-file{gap:16px;padding:12px;border:1px solid #e8e5ef;border-radius:14px;background:#fff}
+.file-summary .selected-file-name{font-size:16px;font-weight:700;line-height:1.4}
+.file-summary .selected-file-size{font-size:12px;color:#777;margin-top:4px}
+.file-summary .selected-file-remove{font:inherit;font-size:12px;font-weight:700;padding:8px;border-radius:10px;border:1px solid #e8e5ef;background:#fff;color:#51465e;min-height:0}
+@media(max-width:500px){.file-summary .selected-file{gap:8px;padding:12px}.file-summary .selected-file-thumb{flex:0 0 76px;width:76px;min-width:76px;max-width:76px;height:65px;min-height:65px;max-height:65px}}
