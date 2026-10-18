@@ -297,7 +297,8 @@ async function initCompress({accept="image/*",outputType=null,qualityEnabled=tru
     const targetBytes=cfg.target;
     let totalOriginal=0,totalCompressed=0;
     for(const [index,file] of files.entries()){
-      window.ETTProcessingCount?.(index+1,files.length);\n      status.textContent=isKorean?`압축 중 ${index+1}/${files.length} · ${file.name}`:`Compressing ${index+1}/${files.length} · ${file.name}`;
+      window.ETTProcessingCount?.(index+1,files.length);
+      status.textContent=isKorean?`압축 중 ${index+1}/${files.length} · ${file.name}`:`Compressing ${index+1}/${files.length} · ${file.name}`;
       await new Promise(resolve=>requestAnimationFrame(resolve));
       try{
         let type=outputType||cfg.format||(["image/jpeg","image/png","image/webp"].includes(file.type)?file.type:"image/jpeg"),blob,keptOriginal=false;
@@ -336,7 +337,8 @@ async function initCompress({accept="image/*",outputType=null,qualityEnabled=tru
       renderCompressionSummary(totalOriginal,totalCompressed);
       if(processed.length>1)$("#downloadZipBtn")?.classList.remove("hidden");
     }
-    window.ETTProcessingCount?.(processed.length,files.length);\n    status.textContent=isKorean?`완료 · ${processed.length}/${files.length}개 파일 처리됨`:`Complete · ${processed.length} of ${files.length} files processed`;
+    window.ETTProcessingCount?.(processed.length,files.length);
+    status.textContent=isKorean?`완료 · ${processed.length}/${files.length}개 파일 처리됨`:`Complete · ${processed.length} of ${files.length} files processed`;
     controls.forEach(el=>el.disabled=false);
     $("#processBtn").disabled=false;
   });
