@@ -12,7 +12,7 @@ async function process(file){
 if(!window.MediaRecorder||!HTMLCanvasElement.prototype.captureStream)throw Error("This browser does not support local video recording.");
 const mime=["video/webm;codecs=vp9,opus","video/webm;codecs=vp8,opus","video/webm"].find(t=>MediaRecorder.isTypeSupported(t));if(!mime)throw Error("WebM encoding is unsupported in this browser.");
 const source=document.createElement("video");const sourceURL=URL.createObjectURL(file);source.src=sourceURL;source.preload="auto";source.playsInline=true;source.muted=true;source.style.cssText="position:fixed;left:-9999px;top:0;width:2px;height:2px";document.body.append(source);
-let recorder,frame,ctx,stream,sourceStream;
+let recorder,frame,ctx,stream,sourceStream,audioContext;
 try{
 await new Promise((resolve,reject)=>{source.onloadedmetadata=resolve;source.onerror=()=>reject(Error("Unable to decode this video."))});
 if(!Number.isFinite(source.duration)||source.duration<=0)throw Error("A finite-duration video is required.");
@@ -21,16 +21,34 @@ const canvas=document.createElement("canvas");canvas.width=w;canvas.height=h;ctx
 const capture=source.captureStream||source.mozCaptureStream;
 if(!capture)throw Error("Audio-preserving capture is unavailable in this browser. Use a Chromium-based browser.");
 // Source must play for its native audio track to become available.
-source.muted=false;source.volume=0;await source.play();sourceStream=capture.call(source);const audioTracks=sourceStream.getAudioTracks();
-if(audioTracks.length)audioTracks.forEach(t=>stream.addTrack(t));else if(file.type.match(/mp4|quicktime|webm/))throw Error("Could not safely capture the audio track. Video was not exported without audio.");
+source.muted=false;source.volume=1;sourceStream=capture.call(source);await source.play();
+await new Promise(resolve=>setTimeout(resolve,150));
+let audioTracks=sourceStream.getAudioTracks().filter(t=>t.readyState==="live");
+if(!audioTracks.length){
+  // MediaStream capture frequently exposes no audio for MOV/MP4 in Chromium.
+  // Route the media element through Web Audio rather than exporting silent output.
+  const AudioCtx=window.AudioContext||window.webkitAudioContext;
+  if(AudioCtx){
+    try{
+      audioContext=new AudioCtx();
+      const sourceNode=audioContext.createMediaElementSource(source);
+      const destination=audioContext.createMediaStreamDestination();
+      sourceNode.connect(destination);
+      await audioContext.resume();
+      audioTracks=destination.stream.getAudioTracks().filter(t=>t.readyState==="live");
+    }catch(_){audioTracks=[]}
+  }
+}
+if(audioTracks.length)audioTracks.forEach(t=>stream.addTrack(t));
+else throw Error("Audio capture is not supported for this file in this browser. Try Chrome or convert the MOV to MP4 first.");
 const chunks=[];const bitrate=Number($("#bitrate").value)*1000000;
 recorder=new MediaRecorder(stream,{mimeType:mime,videoBitsPerSecond:bitrate});
 const done=new Promise((resolve,reject)=>{recorder.ondataavailable=e=>{if(e.data.size)chunks.push(e.data)};recorder.onerror=()=>reject(Error("Encoding failed."));recorder.onstop=()=>resolve(new Blob(chunks,{type:"video/webm"}))});
 const draw=()=>{if(source.ended||source.paused)return;ctx.drawImage(source,0,0,w,h);frame=requestAnimationFrame(draw)};
 recorder.start(1000);draw();
 await new Promise((resolve,reject)=>{source.onended=resolve;source.onerror=()=>reject(Error("Video playback failed during encoding."))});cancelAnimationFrame(frame);if(recorder.state!=="inactive")recorder.stop();return await done;
-}finally{if(frame)cancelAnimationFrame(frame);if(recorder&&recorder.state!=="inactive")recorder.stop();if(stream)stream.getTracks().forEach(t=>t.stop());if(sourceStream)sourceStream.getTracks().forEach(t=>t.stop());source.pause();source.removeAttribute("src");source.load();source.remove();URL.revokeObjectURL(sourceURL)}
+}finally{if(frame)cancelAnimationFrame(frame);if(recorder&&recorder.state!=="inactive")recorder.stop();if(stream)stream.getTracks().forEach(t=>t.stop());if(sourceStream)sourceStream.getTracks().forEach(t=>t.stop());if(audioContext)await audioContext.close().catch(()=>{});source.pause();source.removeAttribute("src");source.load();source.remove();URL.revokeObjectURL(sourceURL)}
 }
-$("#run").onclick=async()=>{const run=$("#run");run.disabled=true;outputs=[];$("#results").replaceChildren();$("#zip").hidden=true;for(let i=0;i<files.length;i++){const f=files[i];$("#status").textContent="Encoding "+(i+1)+"/"+files.length+": "+f.name+" (real-time playback)";try{const blob=await process(f),name=f.name.replace(/\.[^.]+$/,"")+"-compressed.webm";outputs.push({blob,name});const line=document.createElement("div");line.className="media-item";const info=document.createElement("span");info.textContent=name+" · "+size(f.size)+" → "+size(blob.size)+(blob.size>=f.size?" · Output is not smaller":"");const btn=document.createElement("button");btn.className="btn";btn.textContent="Download";btn.onclick=()=>download(blob,name);line.append(info,btn);$("#results").append(line)}catch(e){const p=document.createElement("p");p.setAttribute("role","alert");p.textContent=f.name+": "+e.message;$("#results").append(p)}}$("#status").textContent=outputs.length+" of "+files.length+" completed";$("#zip").hidden=outputs.length<2;run.disabled=false};
+$("#run").onclick=async()=>{const run=$("#run");run.disabled=true;outputs=[];$("#results").replaceChildren();$("#zip").hidden=true;for(let i=0;i<files.length;i++){const f=files[i];$("#status").textContent="Encoding "+(i+1)+"/"+files.length+": "+f.name+" (real-time playback)";try{const blob=await process(f),name=f.name.replace(/\.[^.]+$/,"")+"-compressed.webm";outputs.push({blob,name});const line=document.createElement("div");line.className="media-item";const info=document.createElement("span");info.textContent=name+" · "+size(f.size)+" → "+size(blob.size)+(blob.size>=f.size?" · Output is not smaller":"");const btn=document.createElement("button");btn.className="btn";btn.textContent="Download";btn.onclick=()=>download(blob,name);line.append(info,btn);$("#results").append(line)}catch(e){const row=document.createElement("div");row.className="media-item video-result-error";row.setAttribute("role","alert");const icon=document.createElement("span");icon.className="video-error-icon";icon.textContent="!";const info=document.createElement("div");const title=document.createElement("strong");title.textContent=f.name;const detail=document.createElement("small");detail.textContent=e.message||"The video could not be compressed.";info.append(title,detail);row.append(icon,info);$("#results").append(row)}}$("#status").textContent=outputs.length+" of "+files.length+" completed";$("#zip").hidden=outputs.length<2;run.disabled=false};
 $("#zip").onclick=async()=>{if(!window.JSZip){$("#status").textContent="ZIP library unavailable. Download files individually.";return}const z=new JSZip();outputs.forEach(x=>z.file(x.name,x.blob));download(await z.generateAsync({type:"blob"}),"compressed-videos.zip")};
 })();
