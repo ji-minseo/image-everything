@@ -291,8 +291,15 @@ async function initCompress({accept="image/*",outputType=null,qualityEnabled=tru
         let type=outputType||(["image/jpeg","image/png","image/webp"].includes(file.type)?file.type:"image/jpeg"),blob,keptOriginal=false;
         if(type==="image/png"&&file.type==="image/png"&&typeof UPNG!=="undefined"){
           const selected=Number($("#pngColors")?.value||pngColorCountFromQuality(q));
-          const result=await encodePngQuantized(file,{colors:selected,targetBytes});
-          blob=result.blob;keptOriginal=result.keptOriginal;
+          try{
+            const result=await encodePngQuantized(file,{colors:selected,targetBytes});
+            blob=result.blob;keptOriginal=result.keptOriginal;
+          }catch(error){
+            const img=await loadImage(file),canvas=makeCanvas(img,img.naturalWidth,img.naturalHeight,"image/png");
+            const fallback=await canvasBlob(canvas,"image/png");
+            keptOriginal=fallback.size>=file.size;
+            blob=keptOriginal?file:fallback;
+          }
         }else{
           const img=await loadImage(file),canvas=makeCanvas(img,img.naturalWidth,img.naturalHeight,type);
           blob=(type==="image/jpeg"||type==="image/webp")?await encodeToTarget(canvas,type,targetBytes,q):await canvasBlob(canvas,type,q);
