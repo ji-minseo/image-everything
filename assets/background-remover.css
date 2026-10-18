@@ -146,3 +146,6 @@
 .bg-result-error{color:#ac4557;font-size:13px}
 @media(max-width:650px){.bg-preview-pair{grid-template-columns:1fr}.bg-preview-frame-batch{height:280px}.bg-compare-result{padding:13px}}
 @media(prefers-reduced-motion:reduce){.bg-batch-spinner{animation:none}}
+
+/* Hide batch status text; the spinner remains visible during processing. */
+#bg-batch-status{display:none!important}
