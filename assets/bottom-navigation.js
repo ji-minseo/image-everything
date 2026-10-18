@@ -15,7 +15,7 @@
   const line=document.createElement('div');
   line.className='tool-processing-feedback';line.hidden=true;
   line.setAttribute('role','status');line.setAttribute('aria-live','polite');
-  line.innerHTML='<span class="tool-processing-spinner" aria-hidden="true"></span><div class="tool-processing-copy"><strong>'+(ko?'파일 처리 중…':'Processing files…')+'</strong><span>'+(ko?'잠시만 기다려 주세요.':'Please wait while files are processed.')+'</span></div>';
+  line.innerHTML='<span class="tool-processing-spinner" aria-hidden="true"></span><div class="tool-processing-copy"><strong>'+(ko?'파일 처리 중…':'Processing files…')+'</strong><span>'+(ko?'잠시만 기다려 주세요.':'Please wait while files are processed.')+'</span></div><span class="tool-processing-count" aria-label="Processed files">1 / 1</span>';
   (btn.closest('.actions')||btn.parentElement).insertAdjacentElement('afterend',line);
   let pending=false;
   btn.addEventListener('click',()=>{
@@ -31,3 +31,6 @@
  }
  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init);else init();
 })();
+
+/* Keep all processing indicators aligned with the Video Compressor count. */
+window.ETTProcessingCount=function(current,total){document.querySelectorAll('.tool-processing-count').forEach(el=>{el.textContent=Math.max(0,current)+' / '+Math.max(1,total)})};
