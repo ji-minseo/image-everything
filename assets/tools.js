@@ -138,7 +138,7 @@ function initDropzone({multiple=false,accept="image/*",onFiles}={}){
     const grid=document.createElement("div");grid.className="selected-files-grid";
 
     currentFiles.forEach((file,index)=>{
-      const item=document.createElement("div");item.className="selected-file";
+      const item=document.createElement("div");item.className="media-item selected-file";
       const visual=document.createElement("div");visual.className="selected-file-thumb";
       const canPreview=file.type.startsWith("image/")&&!/\.hei[cf]$/i.test(file.name);
       if(canPreview){
@@ -153,7 +153,7 @@ function initDropzone({multiple=false,accept="image/*",onFiles}={}){
       const info=document.createElement("div");info.className="selected-file-info";
       info.innerHTML=`<div class="selected-file-name" title="${escapeHtml(file.name)}">${escapeHtml(file.name)}</div><div class="selected-file-size">${formatBytes(file.size)}</div>`;
 
-      const remove=document.createElement("button");remove.type="button";remove.className="selected-file-remove";
+      const remove=document.createElement("button");remove.type="button";remove.className="btn ghost selected-file-remove";
       remove.setAttribute("aria-label",`Remove ${file.name}`);remove.textContent="Remove";
       remove.addEventListener("click",async e=>{
         e.preventDefault();e.stopPropagation();
