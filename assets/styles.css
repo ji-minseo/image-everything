@@ -299,3 +299,7 @@ input[type="range"]{padding:0;border:0;box-shadow:none;accent-color:var(--accent
 .file-summary .selected-file-size{font-size:12px;color:#777;margin-top:4px}
 .file-summary .selected-file-remove{font:inherit;font-size:12px;font-weight:700;padding:8px;border-radius:10px;border:1px solid #e8e5ef;background:#fff;color:#51465e;min-height:0}
 @media(max-width:500px){.file-summary .selected-file{gap:8px;padding:12px}.file-summary .selected-file-thumb{flex:0 0 76px;width:76px;min-width:76px;max-width:76px;height:65px;min-height:65px;max-height:65px}}
+
+/* Resize controls: rhythm between dimensions, aspect lock and fit behavior. */
+#pixelControls .checkline{display:flex;align-items:center;gap:9px;margin-top:20px;margin-bottom:20px}
+#pixelControls .resize-behavior{margin-top:16px}
