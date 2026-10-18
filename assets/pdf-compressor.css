@@ -143,3 +143,15 @@
   .pdfc-page .pdfc-target-options{padding:11px}
   .pdfc-page .pdfc-preset-row .preset-btn{font-size:11px;min-width:0}
 }
+
+/* Match image/video conversion result cards. Preserve the existing size comparison above. */
+.pdfc-output-list{display:grid;gap:10px;margin-top:18px}
+.pdfc-output-item{display:grid;grid-template-columns:58px minmax(0,1fr) auto;align-items:center;gap:13px;padding:11px 13px;border:1px solid #eae4f2;border-radius:14px;background:#fff}
+.pdfc-output-icon{display:grid;place-items:center;width:58px;height:58px;border-radius:11px;background:#f1ebff;color:#6848b7;font-size:12px;font-weight:850}
+.pdfc-output-info{min-width:0;display:grid;gap:4px}
+.pdfc-output-info strong{font-size:13px;font-weight:750;color:#292330;line-height:1.4;overflow-wrap:anywhere}
+.pdfc-output-info small{font-size:12px;line-height:1.5;color:#796e83}
+.pdfc-output-item .pdfc-output-download{display:inline-flex;align-items:center;justify-content:center;min-width:96px;min-height:42px;padding:10px 16px;border:1px solid #d9ccef;border-radius:12px;background:#f0e9ff;color:#55349c;font-size:13px;font-weight:700;text-decoration:none;box-shadow:none}
+.pdfc-output-item .pdfc-output-download:hover{background:#e7dcff}
+.pdfc-output-item .pdfc-output-download[hidden]{display:none!important}
+@media(max-width:520px){.pdfc-output-item{grid-template-columns:52px minmax(0,1fr);gap:10px}.pdfc-output-icon{width:52px;height:52px}.pdfc-output-item .pdfc-output-download{grid-column:1/-1;width:100%}}
