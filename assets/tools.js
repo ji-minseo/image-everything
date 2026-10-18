@@ -586,7 +586,7 @@ function initInfo(){
     }
   }});
 }
-if(tool==="compress")initCompress();
+if(tool==="compress"&&!window.__dedicatedImageCompressor)initCompress();
 if(tool==="jpg-compress")initCompress({accept:"image/jpeg",outputType:"image/jpeg"});
 if(tool==="png-compress")initCompress({accept:"image/png",outputType:"image/png",qualityEnabled:false});
 if(tool==="resize")initResize();
