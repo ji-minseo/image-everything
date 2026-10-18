@@ -19,11 +19,11 @@ if(!Number.isFinite(source.duration)||source.duration<=0)throw Error("A finite-d
 const maxWidth=Number($("#resolution").value);const ratio=Math.min(1,maxWidth/source.videoWidth);const w=Math.max(2,Math.floor(source.videoWidth*ratio/2)*2),h=Math.max(2,Math.floor(source.videoHeight*ratio/2)*2);
 const canvas=document.createElement("canvas");canvas.width=w;canvas.height=h;ctx=canvas.getContext("2d");stream=canvas.captureStream(24);
 const capture=source.captureStream||source.mozCaptureStream;
-if(!capture)throw Error("Audio-preserving capture is unavailable in this browser. Use a Chromium-based browser.");
+// When native captureStream is missing, try the Web Audio output path.
 // Source must play for its native audio track to become available.
-source.muted=false;source.volume=1;sourceStream=capture.call(source);await source.play();
+source.muted=false;source.volume=1;if(capture)sourceStream=capture.call(source);await source.play();
 await new Promise(resolve=>setTimeout(resolve,150));
-let audioTracks=sourceStream.getAudioTracks().filter(t=>t.readyState==="live");
+let audioTracks=sourceStream?sourceStream.getAudioTracks().filter(t=>t.readyState==="live"):[];
 if(!audioTracks.length){
   // MediaStream capture frequently exposes no audio for MOV/MP4 in Chromium.
   // Route the media element through Web Audio rather than exporting silent output.
