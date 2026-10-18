@@ -276,22 +276,8 @@ async function initCompress({accept="image/*",outputType=null,qualityEnabled=tru
     $("#processBtn").disabled=!files.length;
   }});
   $("#quality")?.addEventListener("input",e=>$("#qualityValue").textContent=e.target.value+"%");
-  const targetToggle=$("#imageTargetOn"),targetOptions=$("#imageTargetOptions"),targetInput=$("#imageTargetMB");
-  const targetPresets=[...document.querySelectorAll("[data-image-target]")];
-  const syncTarget=()=>{
-    if(!targetToggle||!targetInput||!targetOptions)return;
-    targetOptions.hidden=!targetToggle.checked;
-    targetInput.disabled=!targetToggle.checked;
-  };
-  targetToggle?.addEventListener("change",syncTarget);
-  targetPresets.forEach(btn=>btn.addEventListener("click",()=>{
-    targetInput.value=btn.dataset.imageTarget;
-    targetPresets.forEach(item=>item.classList.toggle("active",item===btn));
-  }));
-  targetInput?.addEventListener("input",()=>{
-    targetPresets.forEach(item=>item.classList.toggle("active",Number(item.dataset.imageTarget)===Number(targetInput.value)));
-  });
-  syncTarget();
+  const targetToggle=null,targetOptions=null,targetInput=null;
+  const settings=window.ImageCompressionSettings?.init?.(document);
   $("#downloadZipBtn")?.addEventListener("click",async()=>{
     if(processed.length<2)return;
     const btn=$("#downloadZipBtn");btn.disabled=true;btn.textContent="Building ZIP…";
@@ -303,32 +289,33 @@ async function initCompress({accept="image/*",outputType=null,qualityEnabled=tru
     const isKorean=location.pathname.startsWith("/ko/");
     let status=$("#compressProgress");
     if(!status){status=document.createElement("div");status.id="compressProgress";status.className="compress-progress";status.setAttribute("role","status");status.setAttribute("aria-live","polite");$("#processBtn").parentElement.insertAdjacentElement("afterend",status);}
-    const controls=["#quality","#pngColors","#targetKB","#imageTargetOn","#imageTargetMB"].map(sel=>$(sel)).filter(Boolean).concat(targetPresets);
+    const controls=["#quality","#pngColors","#compressTargetValue","#compressTargetUnit","#compressMaxWidth"].map(sel=>$(sel)).filter(Boolean).concat([...document.querySelectorAll(".compress-choice button")]);
     controls.forEach(el=>el.disabled=true);
     status.textContent=isKorean?"이미지 압축 준비 중…":"Preparing image compression…";
     const q=qualityEnabled?Number($("#quality")?.value||80)/100:.92;
-    const targetBytes=targetToggle?.checked?Math.max(0,Number(targetInput?.value||0))*1024*1024:Math.max(0,Number($("#targetKB")?.value||0))*1024;
+    const cfg=settings?.get()||{target:0,maxWidth:0,format:null};
+    const targetBytes=cfg.target;
     let totalOriginal=0,totalCompressed=0;
     for(const [index,file] of files.entries()){
       status.textContent=isKorean?`압축 중 ${index+1}/${files.length} · ${file.name}`:`Compressing ${index+1}/${files.length} · ${file.name}`;
       await new Promise(resolve=>requestAnimationFrame(resolve));
       try{
-        let type=outputType||(["image/jpeg","image/png","image/webp"].includes(file.type)?file.type:"image/jpeg"),blob,keptOriginal=false;
+        let type=outputType||cfg.format||(["image/jpeg","image/png","image/webp"].includes(file.type)?file.type:"image/jpeg"),blob,keptOriginal=false;
         if(type==="image/png"&&file.type==="image/png"&&typeof UPNG!=="undefined"){
           const selected=Number($("#pngColors")?.value||pngColorCountFromQuality(q));
           try{
             const result=await encodePngQuantized(file,{colors:selected,targetBytes});
             blob=result.blob;keptOriginal=result.keptOriginal;
           }catch(error){
-            const img=await loadImage(file),canvas=makeCanvas(img,img.naturalWidth,img.naturalHeight,"image/png");
+            const img=await loadImage(file),factor=cfg.maxWidth&&img.naturalWidth>cfg.maxWidth?cfg.maxWidth/img.naturalWidth:1,canvas=makeCanvas(img,Math.max(1,Math.round(img.naturalWidth*factor)),Math.max(1,Math.round(img.naturalHeight*factor)),"image/png");
             const fallback=await canvasBlob(canvas,"image/png");
             keptOriginal=fallback.size>=file.size;
             blob=keptOriginal?file:fallback;
           }
         }else{
-          const img=await loadImage(file),canvas=makeCanvas(img,img.naturalWidth,img.naturalHeight,type);
+          const img=await loadImage(file),factor=cfg.maxWidth&&img.naturalWidth>cfg.maxWidth?cfg.maxWidth/img.naturalWidth:1,canvas=makeCanvas(img,Math.max(1,Math.round(img.naturalWidth*factor)),Math.max(1,Math.round(img.naturalHeight*factor)),type);
           blob=(type==="image/jpeg"||type==="image/webp")?await encodeToTarget(canvas,type,targetBytes,q):await canvasBlob(canvas,type,q);
-          if(blob.size>=file.size){blob=file;keptOriginal=true}
+          if(blob.size>=file.size&&type===file.type&&(!cfg.maxWidth||cfg.maxWidth>=img.naturalWidth)){blob=file;keptOriginal=true}
         }
         const name=`${baseName(file.name)}-compressed.${extFor(type)}`;
         processed.push({name,blob});totalOriginal+=file.size;totalCompressed+=blob.size;
