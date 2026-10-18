@@ -9,7 +9,7 @@
 (function(){
  function init(){
   const btn=document.querySelector('#processBtn, #pdf-compress, #run, #bg-run');
-  if(!btn||btn.dataset.loadingFeedback)return;
+  if(!btn||btn.dataset.loadingFeedback||document.querySelector('#video-processing'))return;
   btn.dataset.loadingFeedback='1';
   const ko=location.pathname.startsWith('/ko/');
   const line=document.createElement('div');
