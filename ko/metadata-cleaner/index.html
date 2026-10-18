@@ -1,21 +1,21 @@
 <!doctype html><html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>인스타 AI 정보 지우기 · 사진 메타데이터 제거 | Image Everything</title><link rel="icon" type="image/svg+xml" href="../../favicon.svg"><meta name="description" content="인스타 AI 정보 지우기 전에 사진 속 EXIF·XMP·C2PA 관련 메타데이터를 확인하고 제거한 사본을 만들어 보세요. 인스타그램의 AI 라벨 표시 여부는 보장할 수 없습니다."><link rel="stylesheet" href="../../assets/styles.css?v=20261018-picker-native"><link rel="stylesheet" href="../../assets/media-workspace.css?v=20261018-thumb-fix2"><link rel="canonical" href="https://image.everytinytool.com/ko/metadata-cleaner/"><script defer src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script><script defer src="https://cdn.jsdelivr.net/npm/piexifjs@1.0.6/piexif.min.js"></script><script defer src="../../assets/metadata-workspace.js?v=20261018-dropfix2"></script><script defer src="../../assets/bottom-navigation.js?v=20261018-unified"></script><link rel="alternate" hreflang="en" href="https://image.everytinytool.com/metadata-cleaner/"><link rel="alternate" hreflang="ko" href="https://image.everytinytool.com/ko/metadata-cleaner/"><script defer src="../../assets/korean-ui.js?v=20261018-instaseo"></script></head><body data-mode="clean"><div class="shell"><header class="topbar"><a class="brand" href="../">Image <span>Everything ✦</span></a><span class="toplink">Private · Runs in your browser</span></header><nav class="tool-tabs" aria-label="Quick image tool switcher">
-<a class="tool-tab" href="../compress-image/">🗜️ Compress</a>
-<a class="tool-tab" href="../remove-background/">✂️ Remove Background</a>
-<a class="tool-tab" href="../pdf-compressor/">📄 PDF Compressor</a>
-<a class="tool-tab" href="../video-compressor/">🎬 Video Compressor</a>
-<a class="tool-tab" href="../jpg-compressor/">🟠 JPG Compressor</a>
-<a class="tool-tab" href="../png-compressor/">🔵 PNG Compressor</a>
-<a class="tool-tab" href="../resize-image/">↔️ Resize</a>
-<a class="tool-tab" href="../crop-image/">✂️ Crop</a>
-<a class="tool-tab" href="../convert-image/">🔁 Convert</a>
-<a class="tool-tab" href="../png-to-jpg/">🟡 PNG to JPG</a>
-<a class="tool-tab" href="../jpg-to-png/">🔷 JPG to PNG</a>
-<a class="tool-tab" href="../image-to-webp/">🟣 To WebP</a>
-<a class="tool-tab" href="../webp-to-jpg/">🟡 WebP to JPG</a>
-<a class="tool-tab" href="../heic-to-jpg/">📱 HEIC to JPG</a>
-<a class="tool-tab" href="../rotate-image/">↻ Rotate</a>
+<a class="tool-tab" href="../compress-image/">🗜️ 이미지 압축</a>
+<a class="tool-tab" href="../remove-background/">✂️ 배경 제거</a>
+<a class="tool-tab" href="../pdf-compressor/">📄 PDF 압축</a>
+<a class="tool-tab" href="../video-compressor/">🎬 동영상 압축</a>
+<a class="tool-tab" href="../jpg-compressor/">🟠 JPG 압축</a>
+<a class="tool-tab" href="../png-compressor/">🔵 PNG 압축</a>
+<a class="tool-tab" href="../resize-image/">↔️ 크기 조절</a>
+<a class="tool-tab" href="../crop-image/">✂️ 자르기</a>
+<a class="tool-tab" href="../convert-image/">🔁 이미지 변환</a>
+<a class="tool-tab" href="../png-to-jpg/">🟡 PNG → JPG</a>
+<a class="tool-tab" href="../jpg-to-png/">🔷 JPG → PNG</a>
+<a class="tool-tab" href="../image-to-webp/">🟣 WebP 변환</a>
+<a class="tool-tab" href="../webp-to-jpg/">🟡 WebP → JPG</a>
+<a class="tool-tab" href="../heic-to-jpg/">📱 HEIC → JPG</a>
+<a class="tool-tab" href="../rotate-image/">↻ 회전</a>
 <a class="tool-tab" href="../metadata-inspector/">🔎 메타데이터 검사 · AI 정보 검사기</a>
-<a class="tool-tab active" href="../metadata-cleaner/" aria-current="page">🧹 Metadata Cleaner ・ Remove AI Label</a>
+<a class="tool-tab active" href="../metadata-cleaner/" aria-current="page">🧹 메타데이터 제거 · AI 정보 지우기</a>
 </nav><main class="tool-layout"><section class="tool-head"><a class="breadcrumb" href="../">← All tools</a><h1>메타데이터 제거 · AI 정보 지우기</h1><p>인스타그램 업로드 전 사진의 EXIF·XMP 등 메타데이터를 정리하고 싶은가요? JPG·PNG·WebP 이미지를 브라우저에서 다시 저장해 일반적인 메타데이터를 제거할 수 있어요. 단, 인스타그램의 ‘AI 정보’ 라벨이 반드시 사라지는 것은 아닙니다.</p></section><section class="panel"><div id="meta-drop" class="dropzone"><div class="drop-icon">🧹</div><h2>Drop images here</h2><p>JPEG·PNG·WebP · 여러 파일 지원</p><label class="btn" for="meta-files">Choose images</label><input class="file-input" id="meta-files" type="file" accept="image/jpeg,image/png,image/webp" multiple></div><p id="meta-count">0 image(s) selected</p><div id="meta-list" class="media-queue"></div><label class="checkline"><input id="camera-only" type="checkbox"> Keep camera EXIF only (JPEG: make, model, exposure, ISO, focal length and lens where present; removes GPS)</label><div class="actions"><button class="btn" id="meta-run" disabled>Clean metadata</button><button class="btn secondary" id="meta-zip" hidden>Download all as ZIP</button></div><p id="meta-status" role="status"></p><div id="meta-results"></div><p class="notice">이미지를 다시 저장하면 화질·방향·색상 프로필과 전자서명된 출처 정보가 달라질 수 있습니다. 카메라 정보 보존은 JPEG에만 적용되며 GPS는 제외됩니다. 일반적인 메타데이터만 검사하므로 모든 숨겨진 정보를 확인하거나 제거한다고 보장할 수 없습니다. 공유 전 결과를 확인하세요.</p></section><section class="info info-grid" aria-label="인스타 AI 정보와 사진 메타데이터 안내">
 <article class="info-card"><h2>인스타 AI 정보 지우기 전에 알아둘 점</h2><p>인스타그램 사진에 표시되는 ‘AI 정보’는 메타데이터 외에도 플랫폼 자체 감지 방식과 정책에 따라 붙을 수 있습니다. EXIF·XMP·C2PA 등 파일 내부 정보를 정리하는 것만으로 인스타그램 AI 라벨이 삭제된다고 보장할 수 없습니다.</p></article>
 <article class="info-card"><h2>사진 메타데이터 지우는 방법</h2><p>JPG·PNG·WebP 파일을 선택하고 ‘메타데이터 제거’를 누르세요. 새로 생성된 파일을 개별 다운로드하거나 ZIP으로 받을 수 있습니다. 원본 파일은 변경되지 않습니다.</p></article>
