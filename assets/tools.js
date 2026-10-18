@@ -276,6 +276,22 @@ async function initCompress({accept="image/*",outputType=null,qualityEnabled=tru
     $("#processBtn").disabled=!files.length;
   }});
   $("#quality")?.addEventListener("input",e=>$("#qualityValue").textContent=e.target.value+"%");
+  const targetToggle=$("#imageTargetOn"),targetOptions=$("#imageTargetOptions"),targetInput=$("#imageTargetMB");
+  const targetPresets=[...document.querySelectorAll("[data-image-target]")];
+  const syncTarget=()=>{
+    if(!targetToggle||!targetInput||!targetOptions)return;
+    targetOptions.hidden=!targetToggle.checked;
+    targetInput.disabled=!targetToggle.checked;
+  };
+  targetToggle?.addEventListener("change",syncTarget);
+  targetPresets.forEach(btn=>btn.addEventListener("click",()=>{
+    targetInput.value=btn.dataset.imageTarget;
+    targetPresets.forEach(item=>item.classList.toggle("active",item===btn));
+  }));
+  targetInput?.addEventListener("input",()=>{
+    targetPresets.forEach(item=>item.classList.toggle("active",Number(item.dataset.imageTarget)===Number(targetInput.value)));
+  });
+  syncTarget();
   $("#downloadZipBtn")?.addEventListener("click",async()=>{
     if(processed.length<2)return;
     const btn=$("#downloadZipBtn");btn.disabled=true;btn.textContent="Building ZIP…";
@@ -287,11 +303,11 @@ async function initCompress({accept="image/*",outputType=null,qualityEnabled=tru
     const isKorean=location.pathname.startsWith("/ko/");
     let status=$("#compressProgress");
     if(!status){status=document.createElement("div");status.id="compressProgress";status.className="compress-progress";status.setAttribute("role","status");status.setAttribute("aria-live","polite");$("#processBtn").parentElement.insertAdjacentElement("afterend",status);}
-    const controls=["#quality","#pngColors","#targetKB"].map(sel=>$(sel)).filter(Boolean);
+    const controls=["#quality","#pngColors","#targetKB","#imageTargetOn","#imageTargetMB"].map(sel=>$(sel)).filter(Boolean).concat(targetPresets);
     controls.forEach(el=>el.disabled=true);
     status.textContent=isKorean?"이미지 압축 준비 중…":"Preparing image compression…";
     const q=qualityEnabled?Number($("#quality")?.value||80)/100:.92;
-    const targetBytes=Math.max(0,Number($("#targetKB")?.value||0))*1024;
+    const targetBytes=targetToggle?.checked?Math.max(0,Number(targetInput?.value||0))*1024*1024:Math.max(0,Number($("#targetKB")?.value||0))*1024;
     let totalOriginal=0,totalCompressed=0;
     for(const [index,file] of files.entries()){
       status.textContent=isKorean?`압축 중 ${index+1}/${files.length} · ${file.name}`:`Compressing ${index+1}/${files.length} · ${file.name}`;
