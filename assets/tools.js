@@ -904,3 +904,33 @@ addSiteTrustLinks();
 
 /* Canonical capsule names and emoji across all pages. */
 (function(){function fix(){const ko=document.documentElement.lang==='ko';const labels={"compress-image":["🗜️ Compress","🗜️ 이미지 압축"],"remove-background":["✂️ Remove Background","✂️ 배경 제거"],"pdf-compressor":["📄 PDF Compressor","📄 PDF 압축"],"video-compressor":["🎬 Video Compressor","🎬 동영상 압축"],"jpg-compressor":["🟠 JPG Compressor","🟠 JPG 압축"],"png-compressor":["🔵 PNG Compressor","🔵 PNG 압축"],"resize-image":["↔️ Resize","↔️ 크기 조절"],"crop-image":["✂️ Crop","✂️ 자르기"],"convert-image":["🔁 Convert","🔁 이미지 변환"],"png-to-jpg":["🟡 PNG to JPG","🟡 PNG → JPG"],"jpg-to-png":["🔷 JPG to PNG","🔷 JPG → PNG"],"image-to-webp":["🟣 To WebP","🟣 WebP 변환"],"webp-to-jpg":["🟡 WebP to JPG","🟡 WebP → JPG"],"heic-to-jpg":["📱 HEIC to JPG","📱 HEIC → JPG"],"rotate-image":["↻ Rotate","↻ 회전"],"metadata-inspector":["🔎 Metadata Inspector · AI Metadata Checker","🔎 메타데이터 검사 · AI 정보 검사기"],"metadata-cleaner":["🧹 Metadata Cleaner ・ Remove AI Label","🧹 메타데이터 제거 · AI 정보 지우기"]};document.querySelectorAll('nav.tool-tabs a,nav.bottom-tabs a').forEach(a=>{const bits=(a.getAttribute('href')||'').split('/').filter(Boolean);const slug=bits[bits.length-1];if(labels[slug])a.textContent=labels[slug][ko?1:0];});}if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',fix);else fix();})();
+
+/* Shared processing feedback for every tool using the primary Process button. */
+(function(){
+ function mount(){
+  const button=document.querySelector('#processBtn');
+  if(!button||button.dataset.loadingFeedback)return;
+  button.dataset.loadingFeedback='1';
+  const ko=location.pathname.startsWith('/ko/');
+  const indicator=document.createElement('div');
+  indicator.className='tool-processing-feedback';
+  indicator.setAttribute('role','status');
+  indicator.setAttribute('aria-live','polite');
+  indicator.hidden=true;
+  indicator.innerHTML='<span class="tool-processing-spinner" aria-hidden="true"></span><span>'+ (ko?'처리 중입니다…':'Processing…') +'</span>';
+  const actions=button.closest('.actions')||button.parentElement;
+  actions.insertAdjacentElement('afterend',indicator);
+  let armed=false;
+  button.addEventListener('click',()=>{
+   if(button.disabled)return;
+   armed=true;
+   requestAnimationFrame(()=>{if(armed&&button.disabled)indicator.hidden=false;});
+  },true);
+  new MutationObserver(()=>{
+   if(!armed)return;
+   if(button.disabled){indicator.hidden=false}
+   else{indicator.hidden=true;armed=false}
+  }).observe(button,{attributes:true,attributeFilter:['disabled']});
+ }
+ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',mount);else mount();
+})();
