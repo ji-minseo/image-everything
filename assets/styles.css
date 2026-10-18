@@ -315,3 +315,8 @@ input[type="range"]{padding:0;border:0;box-shadow:none;accent-color:var(--accent
 .results .result-card .download{flex:none;display:inline-flex;align-items:center;justify-content:center;min-height:42px;min-width:96px;padding:10px 16px;border:1px solid #d9ccef;border-radius:12px;background:#f0e9ff;color:#55349c;font-size:13px;line-height:1.3;font-weight:700;text-decoration:none;box-shadow:none;transition:background .18s ease}
 .results .result-card .download:hover{background:#e7dcff}
 @media(max-width:520px){.results .result-card{gap:10px;flex-wrap:wrap;padding:11px}.results .result-card .thumb{flex-basis:52px;width:52px;height:52px;min-width:52px}.results .result-card .result-detail{flex-basis:calc(100% - 66px)}.results .result-card .download{width:100%;grid-column:auto}}
+
+/* Compression guidance and accessible batch progress */
+.compression-helper{margin:14px 0 12px;padding:12px 15px;border-radius:12px;border:1px solid #e8e0f2;background:#faf8ff;color:#6b6175;font-size:12px;line-height:1.75}
+.compress-progress{min-height:20px;margin:13px 0 4px;color:#634598;font-size:12px;font-weight:700;overflow-wrap:anywhere}
+.compress-progress:empty{display:none}
