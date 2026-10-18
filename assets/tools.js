@@ -917,7 +917,7 @@ addSiteTrustLinks();
   indicator.setAttribute('role','status');
   indicator.setAttribute('aria-live','polite');
   indicator.hidden=true;
-  indicator.innerHTML='<span class="tool-processing-spinner" aria-hidden="true"></span><div class="tool-processing-copy"><strong>'+(ko?'파일 처리 중…':'Processing files…')+'</strong><span>'+(ko?'잠시만 기다려 주세요.':'Please wait while files are processed.')+'</span></div>';
+  indicator.innerHTML='<span class="tool-processing-spinner" aria-hidden="true"></span><div class="tool-processing-copy"><strong>'+(ko?'파일 처리 중…':'Processing files…')+'</strong><span>'+(ko?'잠시만 기다려 주세요.':'Please wait while files are processed.')+'</span></div><span class="tool-processing-count" aria-label="Processed files">1 / 1</span>';
   const actions=button.closest('.actions')||button.parentElement;
   actions.insertAdjacentElement('afterend',indicator);
   let armed=false;
