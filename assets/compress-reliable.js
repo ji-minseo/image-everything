@@ -32,6 +32,35 @@ if(target&&type!=='image/png'){
   }
   b=best||smallest;
 }
+if(target&&b.size>target){
+  const originalWidth=c.width,originalHeight=c.height;
+  let smallest=b;
+  for(const scale of [0.85,0.7,0.55,0.4,0.3]){
+    const w=Math.max(1,Math.round(originalWidth*scale)),h=Math.max(1,Math.round(originalHeight*scale));
+    const reduced=document.createElement('canvas');reduced.width=w;reduced.height=h;
+    const rc=reduced.getContext('2d');if(!rc)continue;
+    if(type==='image/jpeg'){rc.fillStyle='#fff';rc.fillRect(0,0,w,h)}
+    rc.drawImage(c,0,0,w,h);
+    let candidate=await toBlob(reduced,type,q);
+    if(type==='image/png'&&typeof UPNG!=='undefined'){
+      try{
+        const rgba=rc.getImageData(0,0,w,h).data;
+        for(const colors of [0,256,128,64,32,16]){
+          const next=new Blob([UPNG.encode([rgba.buffer.slice(0)],w,h,colors)],{type:'image/png'});
+          if(next.size<candidate.size)candidate=next;
+          if(next.size<=target){candidate=next;break}
+        }
+      }catch(error){console.warn('PNG reduced resolution optimization unavailable',error)}
+    }else if(type!=='image/png'){
+      let lo=.08,hi=Math.max(.08,q),best=candidate.size<=target?candidate:null;
+      for(let i=0;i<7;i++){const mid=(lo+hi)/2,x=await toBlob(reduced,type,mid);if(x.size<candidate.size)candidate=x;if(x.size<=target){best=x;lo=mid}else hi=mid}
+      if(best)candidate=best;
+    }
+    if(candidate.size<smallest.size)smallest=candidate;
+    if(candidate.size<=target){smallest=candidate;break}
+  }
+  b=smallest;
+}
 if(b.size>=file.size&&type===file.type&&factor===1)return {blob:file,kept:true,type,metTarget:!target||file.size<=target};
 return {blob:b,kept:false,type,metTarget:!target||b.size<=target};
 }
