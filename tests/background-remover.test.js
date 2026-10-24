@@ -11,7 +11,7 @@ const styles = fs.readFileSync(path.join(root, 'assets/background-remover.css'),
 const page = fs.readFileSync(path.join(root, 'remove-background/index.html'), 'utf8');
 const files = ['compress-image','jpg-compressor','png-compressor','resize-image','crop-image',
   'convert-image','png-to-jpg','jpg-to-png','image-to-webp','webp-to-jpg',
-  'heic-to-jpg','rotate-image','image-info','metadata-checker','remove-exif','pdf-compressor'];
+  'heic-to-jpg','rotate-image','metadata-inspector','metadata-cleaner','pdf-compressor'];
 
 function instantiate(win = {}) {
   const api = { exports: {} };
