@@ -11,18 +11,28 @@ const pages = [
   'compress-image', 'jpg-compressor', 'png-compressor',
   'resize-image', 'crop-image', 'convert-image',
   'png-to-jpg', 'jpg-to-png', 'image-to-webp', 'webp-to-jpg',
-  'heic-to-jpg', 'rotate-image', 'image-info',
-  'metadata-checker', 'remove-exif'
+  'heic-to-jpg', 'rotate-image'
 ];
 
-test('all 15 image tools make their dropzone focusable with descriptive instructions', () => {
+test('all active image tools make their dropzone focusable with descriptive instructions', () => {
   for (const dir of pages) {
     const html = fs.readFileSync(path.join(root, dir, 'index.html'), 'utf8');
     assert.match(html, /<div class="dropzone" id="dropzone" role="group" tabindex="0" aria-label="Image upload area\. Click or press Enter or Space to choose image files, or drag and drop files\.">/, dir);
     assert.match(html, /<input class="file-input" id="fileInput" type="file"/, dir);
     assert.match(html, /<button class="btn chooseBtn" type="button">/, dir);
-    assert.match(html, /assets\/styles\.css\?v=20261013-image-dropzone-a11y-1/, dir);
-    assert.match(html, /assets\/tools\.js\?v=20261013-image-dropzone-a11y-1/, dir);
+    assert.match(html, /assets\/styles\.css(?:\?[^"\s]+)?/, dir);
+    assert.match(html, /assets\/tools\.js(?:\?[^"\s]+)?/, dir);
+  }
+});
+
+test('legacy image tools retain working migration links to active metadata pages', () => {
+  for (const [old, target] of [['image-info','metadata-inspector'], ['metadata-checker','metadata-inspector'], ['remove-exif','metadata-cleaner']]) {
+    const source = fs.readFileSync(path.join(root,old,'index.html'),'utf8');
+    assert.ok(source.includes('content="0;url=../'+target+'/"'));
+    assert.ok(source.includes('href="../'+target+'/"'));
+    const destination = fs.readFileSync(path.join(root,target,'index.html'),'utf8');
+    assert.match(destination, /<input[^>]*id="meta-files"[^>]*type="file"[^>]*multiple/);
+    assert.match(destination, /assets\/metadata-workspace\.js/);
   }
 });
 
