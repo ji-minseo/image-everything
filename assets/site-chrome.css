@@ -164,3 +164,33 @@ body .standalone-main .site-eyebrow{margin-bottom:18px}
   body .topbar.site-header .site-nav{gap:18px}
   body .topbar.site-header .site-nav a{font-size:13px}
 }
+
+
+/* Guide breadcrumbs: the same sans-serif, scale and spacing across every article. */
+body.site-guide-page nav.guide-crumb{
+ display:flex;
+ align-items:center;
+ flex-wrap:wrap;
+ gap:10px;
+ margin:8px 0 28px;
+ padding:0;
+ font-family:Inter,ui-sans-serif,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+ font-size:13px;
+ font-weight:700;
+ line-height:1.6;
+ letter-spacing:-.01em;
+ color:#697385;
+}
+body.site-guide-page nav.guide-crumb a{
+ display:inline-flex;
+ align-items:center;
+ font:inherit;
+ color:#485466;
+ text-decoration:none;
+ word-break:normal;
+}
+body.site-guide-page nav.guide-crumb a:hover{color:#244AE5}
+body.site-guide-page nav.guide-crumb a:focus-visible{outline:3px solid #315BFF;outline-offset:3px;border-radius:3px}
+body.site-guide-page nav.guide-crumb .crumb-separator{color:#A8B0BF;font-size:13px;font-weight:500}
+body.site-guide-page nav.guide-crumb [aria-current="page"]{color:#191B21;font-weight:800}
+@media(max-width:650px){body.site-guide-page nav.guide-crumb{gap:8px;margin:8px 0 22px;font-size:13px}}
