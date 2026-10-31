@@ -62,3 +62,25 @@ node --test tests/pdf-compressor.test.js
 ```
 
 GitHub Actions is configured to run tests on relevant source changes. Tests cover the optional goal, safe JPEG filters, image quality encoding settings and failure handling using mocks. **A real browser and real-PDF render comparison are still necessary before treating all document types as verified.**
+
+## Independent relaunch preview (2026-10-31 draft)
+
+The current work-in-progress branch is `feature/guides-migration-20261031` and is tracked in [Draft PR #3](https://github.com/ji-minseo/image-everything/pull/3). It is not deployed to production.
+
+- Preserve all **17 individually accessible tool pages**, with separate English `/<tool>/` and Korean `/ko/<tool>/` URLs. English and Korean landing pages have responsive white/black/lavender layouts.
+- `/guides/` contains **18 existing Every Tiny Tool articles** about image, video, PDF and metadata workflows, with original tables, FAQs and image references. Screen ruler and list comparison content stay on Every Tiny Tool for now.
+- Independent `/about/`, `/privacy/`, `/terms/` and `/contact/` pages are included.
+- `sitemap.xml` currently lists **59 URLs**. The origin remains `https://image.everytinytool.com` until a new domain is purchased and explicitly configured.
+- New static SEO checks run in GitHub Actions on pull requests, alongside the existing tool and accessibility tests.
+
+Run the automated checks after checkout:
+
+```sh
+node scripts/check-site-structure.mjs
+node --check assets/korean-ui.js
+node --check assets/metadata-workspace.js
+node --test tests/background-remover.test.js
+node --test tests/pdf-compressor.test.js
+```
+
+For domain migration and pending tests, read `docs/cloudflare-cutover-runbook-20261031.md` and `docs/guide-migration-qa-20261031.md`. **Browser/phone QA, Cloudflare preview setup, migration redirects, image self-hosting, and the previous mobile metadata cleaner issue are not yet completed.**
