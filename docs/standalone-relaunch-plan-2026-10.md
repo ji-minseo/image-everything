@@ -6,10 +6,20 @@
 - 독립 이미지·미디어 도구 서비스로 재출시한다. 운영용 브랜드명과 새 도메인은 확정 전까지 유지/미기재한다.
 - 원본 엔진과 실제로 검증된 유틸리티는 최대한 재사용한다.
 - **Image Everything의 기존 도구·내용·디자인 자산은 모두 보존한다.** 기능 삭제 또는 가이드 축소를 하지 않는다. 개선은 추가/수정으로 한다.
-- **Every Tiny Tool의 겹치는 이미지·PDF·영상·메타데이터 도구와 관련 가이드는 Image Everything으로 모두 이관한다.** Image Everything이 해당 콘텐츠의 유일한 운영 중심이 된다.
-- 콘텐츠 이관 완료·기능 검증·새 도메인 활성화 후 Every Tiny Tool에서 이관 대상 페이지/도구를 제거하고, URL별 적절한 301/308 연결을 적용한다. 기존 Every Tiny Tool의 범용·텍스트 도구까지 무조건 제거하지 않는다.
+- **Image Everything의 이미지·PDF·영상·메타데이터 도구는 이미 개별 페이지에 구현되어 있다.** Every Tiny Tool의 기능을 무조건 재구현/합치지 않고, **기능 차이만 비교하여 빠진 부분이 있을 때 보완**한다. 주된 이관 대상은 Every Tiny Tool의 관련 가이드 전문이다.
+- **각 도구는 검색 유입을 위한 독립 URL을 유지한다.** 하나의 `/tools/` 페이지나 `#` 탭으로 통합하지 않는다.
+- 가이드 이전 완료·기능 검증·새 도메인 활성화 후 Every Tiny Tool에서 이미지/미디어 관련 페이지·도구를 제거하고, URL별 적절한 301/308 연결을 적용한다. 기존 Every Tiny Tool의 범용·텍스트 도구까지 무조건 제거하지 않는다.
 - Cloudflare Pages 배포를 우선 검토하되, 프로덕션 연결과 DNS 변경은 후속 검토 후 수행한다.
 - 재색인 목표는 기존 이력 은폐가 아니라 기능/콘텐츠/검색 신호의 실질적 개선이다.
+
+## 확정된 SEO URL 원칙 (2026-10-31 사용자 확인)
+- **도구마다 독립적이고 색인 가능한 URL을 유지**한다. 새 도메인에서도 `/compress-image/`, `/jpg-compressor/`, `/png-compressor/`, `/remove-background/`, `/resize-image/`, `/crop-image/`, `/rotate-image/`, `/convert-image/`, `/pdf-compressor/`, `/video-compressor/`, `/metadata-inspector/`, `/metadata-cleaner/` 등 기존 URL path를 기본적으로 그대로 사용한다.
+- 영문·국문 페이지의 `/ko/` 경로도 구분 유지한다.
+- 메인에서 도구를 소개하고 바로 진입시킬 수 있지만, **메인 탭 또는 #hash로 도구 페이지를 대체하지 않는다**.
+- 각 도구별 고유 title, H1, 설명, 사용 사례, FAQ, canonical, 내부 링크 및 sitemap 등록을 점검한다. 유사 포맷별 도구는 실제 사용자 작업 경험 차이를 분명하게 설명한다.
+- 독립 사이트에서 가이드 허브 `/guides/`와 각 `/guides/<slug>/` 페이지를 신설하고 관련 도구 URL과 상호 링크한다.
+- **가이드를 우선 이관**한다. 실제 기능은 대부분 이미 Image Everything에 있으므로 비교 결과 누락된 부분만 보완한다.
+- 새 도메인 호스트명은 구매/확정 전이라 현재 문서에서는 특정 값을 정하지 않는다.
 
 ## 코드에서 확인한 베이스라인
 - 기존 독립 저장소: `ji-minseo/image-everything`
@@ -30,16 +40,16 @@
 - [ ] Search Console의 실제 색인/비색인 URL과 Google 선택 canonical, 라이브 HTML, 크롤링 날짜 확인.
 - [ ] 현재 36개 URL의 응답 코드, canonical, `hreflang`, 모바일 본문, 색인 가능 여부를 자동 점검.
 - [ ] 기존 Every Tiny Tool과 겹치는 도구·콘텐츠를 전체 목록화한다. **이미지·PDF·영상·메타데이터 관련 콘텐츠의 최종 대표 서비스는 Image Everything으로 이미 확정**했다.
-- [ ] 이미지 저장소와 허브의 코드 및 디자인에서 새 기능 누락이 없도록 콘텐츠/기능 1:1 대조표를 작성한다.
+- [ ] Image Everything의 기존 도구별 독립 경로를 전부 유지하면서 허브의 기능과 차이가 있는지만 대조한다. **중복 개발은 하지 않는다**.
 - [ ] 기능별 모바일 실기기 테스트: JPG/PNG/WebP/HEIC, 다중 파일, ZIP, 메타데이터 제거 재검증.
 - [ ] 기존 유입 링크 및 조회수가 있는 URL 식별(이전 시 신호·사용자 손실 방지).
 
 ### P1 — 제품/브랜드 및 고유 콘텐츠
 - [ ] 독립 브랜드 네비게이션, 통일된 파일 드롭존/파일 목록/결과 다운로드 UI.
-- [ ] 제품 우선순위: Compress, Convert, Resize, Remove Background, Metadata Inspector/Cleaner.
+- [ ] 제품 우선순위: 기존 Compress, Convert, Resize, Remove Background, Metadata Inspector/Cleaner 등 **모든 전용 도구를 독립 URL로 유지**한다.
 - [ ] 각 도구에 실제 입력·출력 예시, 포맷 한계, 처리 방식, 보안 주의점, 자주 발생하는 오류 해결을 **서로 다르게** 작성.
 - [ ] **Every Tiny Tool의 기존 이미지·PDF·영상·메타데이터 관련 가이드 전문·이미지·예시·표·FAQ를 Image Everything으로 이관한다.** 기존 자료를 삭제/요약하지 않고 필요 시 출처·문맥을 정리하며 보강한다.
-- [ ] 기존 Image Everything의 영어·한국어 페이지 및 모든 도구를 유지하고 통일된 디자인으로 개선한다.
+- [ ] 기존 Image Everything의 영어·한국어 페이지 및 모든 도구 URL을 보존하고 통일된 디자인으로 개선한다. 각 도구별 검색 의도에 맞는 고유 title/H1/description/본문/FAQ를 유지 및 보강한다.
 - [ ] 이미지 처리·미디어 관련 가이드 허브를 신규 제작하고 이미 존재하는 글을 누락 없이 연결한다.
 - [ ] 예외: `/guides/compare-two-lists-differences/`는 순수 텍스트 도구 가이드로 분류하여 기존 사이트에 남기는 것이 기본; `/guides/screen-ruler-accuracy-calibration/`는 실제 기능 대응 여부 확인 후 정한다.
 - [ ] 메타데이터 제거 결과를 감지 실패 시에도 안전하고 정직하게 안내하고, 처리 성공이 검증되지 않은 파일은 '완전히 깨끗함'이라고 표시하지 않기.
@@ -62,13 +72,13 @@
 
 ## 콘텐츠 소유권 및 이관 목록 (2026-10-31 코드의 사이트맵 기준)
 
-**절대원칙**: 현재 Image Everything의 36개 URL(영문 18개·한국어 18개)과 모든 기능은 보존. 모든 중복 콘텐츠는 Image Everything이 최종 소유. 기존 자료는 누락/삭제하지 않고 이관 및 보강한다.
+**절대원칙**: 현재 Image Everything의 36개 URL(영문 18개·한국어 18개)과 모든 기능은 보존. 기존 도구를 한 URL로 병합하지 않는다. Every Tiny Tool의 중복 도구는 기능 차이만 확인하고, **관련 가이드 및 자산을 주요 이관 대상**으로 한다. 이관 대상 자료는 누락/삭제하지 않고 이전 및 보강한다.
 
 ### Every Tiny Tool → Image Everything : 도구
-- `/quick-image-studio/` 및 메인에 내장된 이미지 도구 (압축/리사이즈/자르기/회전/변환 등) → 기존 Image Everything의 대응 기능에 **빠진 기능과 개선된 UI를 병합**; 동작/텍스트/설정 검증
-- `/video-studio/` 및 영상 패널 → 독립 비디오 도구에 기능 병합
-- 메인 PDF 패널 → 독립 PDF 도구에 기능 병합
-- `/metadata-inspector/`, `/metadata-cleaner/` 및 메인 패널 → 독립 검사/제거 도구에 기존 기능과 UI 합침; 모바일 오류 반드시 재테스트
+- `/quick-image-studio/` 및 메인에 내장된 이미지 도구 (압축/리사이즈/자르기/회전/변환 등) → Image Everything의 기존 독립 페이지와 기능 비교만 수행. 빠진 기능이 없으면 **이관 작업 불필요**
+- `/video-studio/` 및 영상 패널 → 독립 비디오 도구와 기능 차이 검토 (중복 구현 금지)
+- 메인 PDF 패널 → 독립 PDF 도구와 기능 차이 검토 (중복 구현 금지)
+- `/metadata-inspector/`, `/metadata-cleaner/` 및 메인 패널 → Image Everything의 독립 검사/제거 기능을 우선으로 유지; 모바일 오류는 반드시 재테스트
 - `/actual-size-ruler/` → 이미지 인쇄/크기 작업과 연관되므로 제품 적합성 검토 후 이관 여부 결정
 
 ### Every Tiny Tool → Image Everything : 기존 가이드 20개 전수 체크
