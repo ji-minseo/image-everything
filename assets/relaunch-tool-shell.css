@@ -15,7 +15,7 @@
 .relaunch-tool-page .tool-tab:hover{border-color:#AABFFF;background:#F2F6FF;transform:none}
 .relaunch-tool-page .tool-layout{padding-top:45px}
 .relaunch-tool-page .tool-head h1{letter-spacing:-.065em;line-height:1.08}
-.relaunch-tool-page .panel{border:1px solid #E7EBF5;border-radius:18px;box-shadow:0 14px 35px rgba(45,31,68,.045)}
+.relaunch-tool-page .panel{border:1px solid #E7EBF5;border-radius:18px;box-shadow:0 14px 35px rgba(30,58,110,.045)}
 .relaunch-tool-page .dropzone{background:#F8FAFF;border-color:#C6D4FF;border-radius:15px}
 .relaunch-tool-page .dropzone:focus-visible,.relaunch-tool-page .btn:focus-visible,.relaunch-tool-page a:focus-visible{outline:3px solid #7293FF;outline-offset:3px}
 .relaunch-tool-page .btn:not(.secondary):not(.ghost){background:#242528;box-shadow:none;color:#fff}
