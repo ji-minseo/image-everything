@@ -892,7 +892,7 @@ function initExifCleaner(){
 
 function addSiteTrustLinks() {
   const footer = document.querySelector(".footer");
-  if (!footer || footer.querySelector(".footer-trust-links")) return;
+  if (!footer || footer.querySelector("nav, .footer-trust-links")) return;
   const nav = document.createElement("nav");
   nav.className = "footer-trust-links";
   nav.setAttribute("aria-label", "Site information");
