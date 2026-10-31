@@ -173,7 +173,7 @@ test('UI styling follows the Image Everything 1080px shell and works on phones',
   assert.match(styles, /@media\(max-width:720px\)/);
   assert.match(styles, /\.bg-compare \{ grid-template-columns:1fr;/);
   assert.match(styles, /\.bg-preview-frame\.checker/);
-  assert.match(page, /href="https:\/\/everytinytool.com\/privacy\/"/);
+  assert.match(page, /href="\.\.\/privacy\/"/); // Independent Image Everything policy
 });
 
 test('new page is linked from existing utility navigation and XML sitemap', () => {
