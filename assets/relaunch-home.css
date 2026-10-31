@@ -139,3 +139,24 @@ body.brand-relaunch{
   .brand-relaunch .tool-group-number{display:block;padding:0;margin:0 0 7px}
 }
 @media(prefers-reduced-motion:reduce){.brand-relaunch .tool-card,.brand-relaunch .popular-card,.brand-relaunch .category-shortcuts a{transition:none}}
+
+
+/* Shared cobalt icon tiles and hover feedback on English/Korean homepages. */
+.brand-relaunch .popular-card .popular-icon,
+.brand-relaunch .tool-card .icon,
+.brand-relaunch .tool-card:nth-child(n) .icon{
+  background:#E9F0FF;
+  box-shadow:none;
+  transition:background-color .18s ease,transform .18s ease;
+}
+.brand-relaunch .popular-card:hover .popular-icon,
+.brand-relaunch .tool-card:hover .icon,
+.brand-relaunch .tool-card:nth-child(n):hover .icon{background:#DCE7FF;transform:translateY(-1px)}
+.brand-relaunch .popular-card:hover,
+.brand-relaunch .tool-card:hover{border-color:#A9BFFF}
+.brand-relaunch .category-shortcuts a:hover{background:#EDF3FF;color:#244AE5}
+.brand-relaunch .relaunch-secondary:hover{background:#EDF3FF;border-color:#9EB7FF;color:#244AE5}
+.brand-relaunch :is(.relaunch-primary,.relaunch-secondary,.category-shortcuts a,.tool-card,.popular-card):focus-visible{outline:3px solid #315BFF;outline-offset:3px}
+html[lang="ko"] .brand-relaunch h1,
+html[lang="ko"] .brand-relaunch h2,
+html[lang="ko"] .brand-relaunch h3{word-break:keep-all}
