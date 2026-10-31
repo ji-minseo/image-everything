@@ -44,3 +44,18 @@
  .relaunch-tool-page .relaunch-tool-nav a:nth-child(3){display:none}
  .relaunch-tool-page .relaunch-tool-lang{min-width:34px;padding:6px 7px}
 }
+
+
+/* Deliberately outrank the plain tool capsule styles; never white-on-lavender. */
+.relaunch-tool-page .tool-tab.active,
+.relaunch-tool-page .tool-tab.active:hover,
+.relaunch-tool-page .bottom-tabs .tool-tab.active,
+.relaunch-tool-page .bottom-tabs .tool-tab.active:hover{
+ background:#191B21;
+ background-image:none;
+ color:#fff;
+ border-color:#191B21;
+ box-shadow:0 5px 13px rgba(0,0,0,.14);
+}
+.relaunch-tool-page .tool-tab.active:focus-visible,
+.relaunch-tool-page .bottom-tabs .tool-tab.active:focus-visible{outline:3px solid #315BFF;outline-offset:3px}
