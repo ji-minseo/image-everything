@@ -19,15 +19,15 @@ body.brand-relaunch{
 .brand-relaunch .relaunch-nav a,.brand-relaunch .relaunch-header-meta a{transition:color .2s ease}
 .brand-relaunch .relaunch-nav a:hover,.brand-relaunch .relaunch-header-meta a:hover{color:var(--relaunch-accent)}
 .brand-relaunch .relaunch-header-meta{display:flex;align-items:center;gap:16px}
-.brand-relaunch .relaunch-header-note{font-size:10px;font-weight:800;letter-spacing:.115em;color:#8a8393;white-space:nowrap}
-.brand-relaunch .lang-switch{display:inline-flex;justify-content:center;align-items:center;min-width:42px;padding:7px 10px;border:1px solid #e2ddec;border-radius:40px;color:#4c3a68;font-weight:800;font-size:11px}
+.brand-relaunch .relaunch-header-note{font-size:12px;font-weight:800;letter-spacing:.115em;color:#8a8393;white-space:nowrap}
+.brand-relaunch .lang-switch{display:inline-flex;justify-content:center;align-items:center;min-width:42px;padding:7px 10px;border:1px solid #e2ddec;border-radius:40px;color:#4c3a68;font-weight:800;font-size:12px}
 .brand-relaunch .tool-tabs{display:flex;flex-wrap:nowrap;padding:14px 0 16px;gap:8px;border-bottom:1px solid var(--relaunch-line);overflow-x:auto}
 .brand-relaunch .tool-tab{font-size:12px;font-weight:740;padding:9px 13px;border:1px solid #e7e2ed;box-shadow:none;background:#fff;color:#403847}
 .brand-relaunch .tool-tab:hover{border-color:#cbb8fb;background:#f7f4fe;transform:none}
 .brand-relaunch .tool-tab:focus-visible,.brand-relaunch .category-shortcuts a:focus-visible,.brand-relaunch .relaunch-primary:focus-visible,.brand-relaunch .relaunch-secondary:focus-visible{outline:3px solid #a18cec;outline-offset:3px}
 .brand-relaunch .relaunch-hero{max-width:none;display:grid;grid-template-columns:minmax(0,1.45fr) minmax(290px,.75fr);align-items:stretch;gap:50px;padding:78px 0 63px}
 .brand-relaunch .relaunch-hero-copy{min-width:0;display:flex;flex-direction:column;align-items:flex-start}
-.brand-relaunch .relaunch-overline{display:inline-block;font-size:10px;font-weight:850;letter-spacing:.17em;color:var(--relaunch-accent)}
+.brand-relaunch .relaunch-overline{display:inline-block;font-size:12px;font-weight:850;letter-spacing:.17em;color:var(--relaunch-accent)}
 .brand-relaunch .relaunch-hero h1{font-size:clamp(46px,5.75vw,79px);line-height:1.055;letter-spacing:-.068em;max-width:850px;margin:23px 0 21px;font-weight:860}
 .brand-relaunch .relaunch-hero h1 em{font-weight:520;font-style:normal;color:#8d81aa}
 .brand-relaunch .relaunch-hero-copy>p{font-size:16px;max-width:595px;line-height:1.8;color:#66616e;margin:0}
@@ -38,25 +38,25 @@ body.brand-relaunch{
 .brand-relaunch .relaunch-secondary{border:1px solid #ded8e9;color:#342d3a;background:#fff}
 .brand-relaunch .relaunch-secondary:hover{background:#f8f6fd}
 .brand-relaunch .hero-trust{display:flex;align-items:center;flex-wrap:wrap;gap:10px 16px;margin-top:auto}
-.brand-relaunch .hero-trust span{display:inline-flex;align-items:center;gap:6px;margin:0;padding:0;background:none;border:0;color:#7a7481;font-size:11px;font-weight:650}
+.brand-relaunch .hero-trust span{display:inline-flex;align-items:center;gap:6px;margin:0;padding:0;background:none;border:0;color:#7a7481;font-size:12px;font-weight:650}
 .brand-relaunch .hero-trust span::before{content:"✓";color:#7150c8;font-weight:900}
 .brand-relaunch .relaunch-hero-aside{display:flex;flex-direction:column;background:#f5f3fa;border:1px solid #e9e3f2;border-radius:19px;padding:28px 26px 21px;box-shadow:0 19px 44px rgba(40,23,73,.05);min-height:330px;min-width:0}
-.brand-relaunch .relaunch-aside-kicker{font-size:10px;font-weight:850;letter-spacing:.12em;color:#7d64af;margin-bottom:15px}
+.brand-relaunch .relaunch-aside-kicker{font-size:12px;font-weight:850;letter-spacing:.12em;color:#7d64af;margin-bottom:15px}
 .brand-relaunch .relaunch-workflow-step{display:flex;gap:16px;padding:19px 0;border-bottom:1px solid #e4dfeb}
 .brand-relaunch .relaunch-workflow-step>span{flex:0 0 28px;color:#8362ca;font-size:13px;font-weight:850}
 .brand-relaunch .relaunch-workflow-step strong{font-size:16px;font-weight:810;letter-spacing:-.03em}
 .brand-relaunch .relaunch-workflow-step p{font-size:12px;color:#7b7484;margin:4px 0 0;line-height:1.6}
-.brand-relaunch .relaunch-workflow-bottom{margin-top:auto;padding-top:20px;display:flex;justify-content:space-between;align-items:center;gap:12px;color:#7f758d;font-size:10px;letter-spacing:.06em;font-weight:750}
+.brand-relaunch .relaunch-workflow-bottom{margin-top:auto;padding-top:20px;display:flex;justify-content:space-between;align-items:center;gap:12px;color:#7f758d;font-size:12px;letter-spacing:.06em;font-weight:750}
 .brand-relaunch .relaunch-workflow-bottom span:last-child{font-size:28px;color:#a58fdc}
 .brand-relaunch .category-shortcuts{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:0;margin:0 0 70px;border:1px solid var(--relaunch-line);border-radius:13px;overflow:hidden}
-.brand-relaunch .category-shortcuts a{display:flex;align-items:center;gap:8px;padding:19px 17px;border-right:1px solid var(--relaunch-line);font-size:13px;font-weight:780;white-space:nowrap;transition:background .16s ease}
+.brand-relaunch .category-shortcuts a{display:flex;align-items:center;gap:8px;padding:19px 17px;border-right:1px solid #f2eff5;font-size:13px;font-weight:780;white-space:nowrap;transition:background .16s ease}
 .brand-relaunch .category-shortcuts a:last-child{border-right:0}
-.brand-relaunch .category-shortcuts a>span:first-child{font-size:10px;color:#938ba0;font-weight:820}
+.brand-relaunch .category-shortcuts a>span:first-child{font-size:12px;color:#938ba0;font-weight:820}
 .brand-relaunch .category-shortcuts a>span:last-child{margin-left:auto;color:#8f7eb7}
 .brand-relaunch .category-shortcuts a:hover{background:#f8f6fd}
 .brand-relaunch .popular-section{padding-bottom:90px}
 .brand-relaunch .section-heading{max-width:780px;margin-bottom:29px}
-.brand-relaunch .section-kicker{color:#7f60bf;letter-spacing:.12em;font-size:10px}
+.brand-relaunch .section-kicker{color:#7f60bf;letter-spacing:.12em;font-size:12px}
 .brand-relaunch .section-heading h2{font-size:clamp(30px,4vw,48px);line-height:1.13;letter-spacing:-.055em}
 .brand-relaunch .section-heading p{font-size:14px;line-height:1.8;color:var(--relaunch-muted);margin-top:11px}
 .brand-relaunch .popular-grid{gap:14px}
@@ -64,14 +64,14 @@ body.brand-relaunch{
 .brand-relaunch .popular-card:hover{border-color:#c5b4e9;transform:translateY(-2px);box-shadow:0 12px 26px rgba(53,39,76,.06)}
 .brand-relaunch .popular-icon{width:51px;height:51px;border-radius:13px;background:#f0ebfa;font-size:25px}
 .brand-relaunch .popular-card h3{font-size:20px;font-weight:810}
-.brand-relaunch .popular-card p{font-size:13px;line-height:1.65}
+.brand-relaunch .popular-card p{font-size:14px;line-height:1.65}
 .brand-relaunch .popular-card span{font-size:12px;color:#7452df}
 .brand-relaunch .section-heading-row{max-width:none;display:flex;align-items:end;justify-content:space-between;gap:20px}
 .brand-relaunch .section-text-link{font-size:13px;color:#7452df;font-weight:790;white-space:nowrap;padding-bottom:6px}
 .brand-relaunch .all-tools-section{border-top:1px solid var(--relaunch-line);padding-top:50px}
-.brand-relaunch .tool-group{padding:28px 0 50px;scroll-margin-top:24px;border-top:1px solid #eeebf1}
+.brand-relaunch .tool-group{padding:28px 0 50px;scroll-margin-top:24px;border-top:1px solid #f2f0f5}
 .brand-relaunch .tool-group-heading{display:flex;align-items:start;gap:22px;margin-bottom:23px}
-.brand-relaunch .tool-group-number{padding-top:5px;min-width:115px;font-size:11px;font-weight:850;letter-spacing:.1em;color:#8e79bb}
+.brand-relaunch .tool-group-number{padding-top:5px;min-width:115px;font-size:12px;font-weight:850;letter-spacing:.1em;color:#8e79bb}
 .brand-relaunch .tool-group h3{margin:0 0 6px;font-size:25px;letter-spacing:-.04em}
 .brand-relaunch .tool-group-heading p{margin:0;font-size:13px;line-height:1.6;color:#77717d}
 .brand-relaunch .tool-group-grid{grid-template-columns:repeat(3,minmax(0,1fr));gap:13px;padding:0}
@@ -79,7 +79,7 @@ body.brand-relaunch{
 .brand-relaunch .tool-card:hover{transform:translateY(-2px);border-color:#c7b5eb;box-shadow:0 12px 25px rgba(53,39,76,.055)}
 .brand-relaunch .tool-card .icon{width:46px;height:46px;display:grid;place-items:center;margin-bottom:19px;border-radius:12px;font-size:23px;box-shadow:none;background:#f3effa}
 .brand-relaunch .tool-card h2{font-size:19px;line-height:1.33;letter-spacing:-.035em;margin:0 0 8px}
-.brand-relaunch .tool-card p{font-size:12px;line-height:1.7;color:#77717d}
+.brand-relaunch .tool-card p{font-size:14px;line-height:1.7;color:#77717d}
 .brand-relaunch .home-explainer,.brand-relaunch .home-faq{padding:52px 0 65px}
 .brand-relaunch .home-info-grid article{border-radius:15px;box-shadow:none;background:#fcfbfe;padding:24px}
 .brand-relaunch .home-info-grid h3{font-size:17px}
@@ -102,14 +102,14 @@ body.brand-relaunch{
   .brand-relaunch .relaunch-topbar{min-height:66px;gap:12px;padding:14px 0}
   .brand-relaunch .relaunch-topbar .brand{font-size:20px}
   .brand-relaunch .relaunch-nav{margin-left:auto;gap:13px}
-  .brand-relaunch .relaunch-nav a{font-size:12px}
+  .brand-relaunch .relaunch-nav a{font-size:13px}
   .brand-relaunch .relaunch-nav a:nth-child(3){display:none}
   .brand-relaunch .relaunch-header-meta{gap:0}
   .brand-relaunch .lang-switch{min-width:36px;padding:6px 8px}
   .brand-relaunch .tool-tabs{margin:0 calc(-1 * (15px));padding:12px 15px 15px}
   .brand-relaunch .relaunch-hero{display:block;padding:44px 0 30px}
   .brand-relaunch .relaunch-hero h1{font-size:clamp(41px,9vw,65px)}
-  .brand-relaunch .relaunch-hero-copy>p{font-size:14px}
+  .brand-relaunch .relaunch-hero-copy>p{font-size:15px}
   .brand-relaunch .relaunch-hero-aside{margin-top:37px;min-height:0;padding:22px}
   .brand-relaunch .relaunch-workflow-step{padding:12px 0}
   .brand-relaunch .category-shortcuts{grid-template-columns:repeat(2,minmax(0,1fr));margin-bottom:56px}
@@ -134,7 +134,7 @@ body.brand-relaunch{
   .brand-relaunch .relaunch-hero h1{font-size:40px}
   .brand-relaunch .relaunch-hero-actions{align-items:stretch}
   .brand-relaunch .relaunch-primary,.brand-relaunch .relaunch-secondary{width:100%}
-  .brand-relaunch .category-shortcuts a{font-size:12px}
+  .brand-relaunch .category-shortcuts a{font-size:13px}
   .brand-relaunch .tool-group-heading{display:block}
   .brand-relaunch .tool-group-number{display:block;padding:0;margin:0 0 7px}
 }
