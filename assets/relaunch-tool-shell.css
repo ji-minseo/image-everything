@@ -59,3 +59,20 @@
 }
 .relaunch-tool-page .tool-tab.active:focus-visible,
 .relaunch-tool-page .bottom-tabs .tool-tab.active:focus-visible{outline:3px solid #315BFF;outline-offset:3px}
+
+
+/* Unified hover states for Korean and English tool pages. */
+.relaunch-tool-page .tool-tabs .tool-tab:not(.active):hover,
+.relaunch-tool-page .bottom-tabs .tool-tab:not(.active):hover{
+ color:#244AE5;
+ background:#EDF3FF;
+ border-color:#A9BFFF;
+ box-shadow:none;
+}
+.relaunch-tool-page .dropzone:hover:not(.dragover){background:#F6F9FF;border-color:#9FB9FF}
+.relaunch-tool-page .relaunch-tool-nav a:hover,
+.relaunch-tool-page .relaunch-tool-footer nav a:hover{color:#244AE5}
+html[lang="ko"] .relaunch-tool-page :is(h1,h2,h3){word-break:keep-all}
+.relaunch-tool-page .related-guide-links .related-guide-grid a{border-color:#DCE6FF;background:#F8FAFF;color:#24418C}
+.relaunch-tool-page .related-guide-links .related-guide-grid a:hover{background:#EDF3FF;border-color:#A9BFFF}
+.relaunch-tool-page .related-guide-links .related-guide-grid a span{color:#315BFF}
