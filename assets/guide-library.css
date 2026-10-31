@@ -44,3 +44,16 @@
 .guide-footer{display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap}
 .guide-footer nav{display:flex;gap:16px;flex-wrap:wrap}
 @media(max-width:660px){.guide-topbar{align-items:flex-start;flex-direction:column;gap:9px}.guide-topnav{gap:14px;font-size:12px}.guide-main{padding-top:8px}}
+
+
+/* Unified independent guide shell */
+.guide-topbar{border-bottom:1px solid #ebe7f0;padding:21px 0!important}
+.guide-topbar .brand{font-size:clamp(18px,2.1vw,23px);font-weight:900;letter-spacing:-.068em}
+.guide-topbar .brand span{color:#7452df}
+.guide-topnav{margin-left:auto}
+.guide-topnav a:focus-visible,.guide-footer a:focus-visible,.guide-card:focus-visible{outline:3px solid #aa92e9;outline-offset:3px}
+.guide-footer{border-top:1px solid #ebe7f0;padding:28px 0 50px}
+.guide-footer strong{color:#242028;font-size:19px;letter-spacing:-.065em}
+.guide-footer nav a{font-size:12px;color:#736a7b;font-weight:720}
+.guide-footer nav a:hover{color:#7452df}
+@media(max-width:650px){.guide-topnav{margin-left:0}.guide-topbar{gap:12px!important}.guide-footer{align-items:flex-start;flex-direction:column}}
