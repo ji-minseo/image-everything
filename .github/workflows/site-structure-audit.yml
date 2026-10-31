@@ -1,0 +1,23 @@
+name: Image Everything static SEO audit
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+
+jobs:
+  audit-static-site:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Check sitemap, canonical tags and local links
+        run: node scripts/check-site-structure.mjs
+      - name: Check JavaScript syntax
+        run: |
+          node --check assets/korean-ui.js
+          node --check assets/metadata-workspace.js
