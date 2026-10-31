@@ -8,10 +8,10 @@
 .relaunch-tool-page .relaunch-tool-nav{display:flex;align-items:center;gap:22px;margin-left:auto}
 .relaunch-tool-page .relaunch-tool-nav a{font-size:12px;font-weight:780;color:#56505c;text-decoration:none}
 .relaunch-tool-page .relaunch-tool-nav a:hover{color:#7452df}
-.relaunch-tool-page .relaunch-tool-note{font-size:10px;font-weight:780;letter-spacing:.13em;color:#92899a;white-space:nowrap}
-.relaunch-tool-page .relaunch-tool-lang{display:inline-flex;align-items:center;justify-content:center;border:1px solid #e5dfee;border-radius:99px;min-width:40px;padding:7px 9px;font-size:11px;font-weight:800;color:#67567b}
+.relaunch-tool-page .relaunch-tool-note{font-size:12px;font-weight:780;letter-spacing:.13em;color:#92899a;white-space:nowrap}
+.relaunch-tool-page .relaunch-tool-lang{display:inline-flex;align-items:center;justify-content:center;border:1px solid #e5dfee;border-radius:99px;min-width:40px;padding:7px 9px;font-size:12px;font-weight:800;color:#67567b}
 .relaunch-tool-page .tool-tabs{display:flex;flex-wrap:nowrap;gap:8px;overflow-x:auto;padding:13px 0 15px;border-bottom:1px solid var(--relaunch-line)}
-.relaunch-tool-page .tool-tab{font-size:12px;font-weight:750;padding:9px 12px;border:1px solid #e7e2ed;border-radius:999px;box-shadow:none;background:#fff;flex:0 0 auto}
+.relaunch-tool-page .tool-tab{font-size:13px;font-weight:750;padding:9px 12px;border:1px solid #e7e2ed;border-radius:999px;box-shadow:none;background:#fff;flex:0 0 auto}
 .relaunch-tool-page .tool-tab:hover{border-color:#c6b5e9;background:#f8f5fe;transform:none}
 .relaunch-tool-page .tool-layout{padding-top:45px}
 .relaunch-tool-page .tool-head h1{letter-spacing:-.065em;line-height:1.08}
