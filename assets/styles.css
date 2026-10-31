@@ -379,3 +379,15 @@ input[type="range"]{padding:0;border:0;box-shadow:none;accent-color:var(--accent
 
 /* Match the Video Compressor's right-aligned batch counter. */
 .tool-processing-count{margin-left:auto;flex:none;font-size:13px;font-weight:800;color:#7452c9;font-variant-numeric:tabular-nums;white-space:nowrap}
+
+
+/* Editorial guide links appended to independent tool pages. */
+.related-guide-links{padding:30px 0 52px;border-top:1px solid var(--line,#e5e1f2);margin-top:30px}
+.related-guide-links h2{font-size:clamp(23px,3vw,30px);letter-spacing:-.04em;margin:0 0 9px}
+.related-guide-links>p{font-size:14px;color:var(--muted,#666);line-height:1.7;margin:0 0 18px}
+.related-guide-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.related-guide-grid a{display:flex;align-items:center;justify-content:space-between;gap:15px;min-width:0;border:1px solid #e5dcf7;border-radius:15px;background:#fcfaff;padding:16px 18px;color:#473777;font-size:14px;font-weight:750;line-height:1.45;text-decoration:none}
+.related-guide-grid a:hover{border-color:#bda9ed;background:#f5eeff}
+.related-guide-grid a:focus-visible{outline:2px solid #7856de;outline-offset:3px}
+.related-guide-grid a span{flex:0 0 auto;color:#7553d2}
+@media(max-width:650px){.related-guide-grid{grid-template-columns:1fr}.related-guide-grid a{padding:14px 15px}}
